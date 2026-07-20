@@ -44,7 +44,7 @@ const BecomeSeller = () => {
           <HiOutlineShieldCheck className="w-16 h-16 text-success mx-auto mb-4" />
           <h1 className="text-3xl font-heading font-bold text-text mb-2">You're Already a Seller!</h1>
           <p className="text-text-muted mb-6">Visit your seller dashboard to manage your store.</p>
-          <button onClick={() => navigate('/seller/dashboard')} className="px-6 py-3 bg-primary text-white rounded-xl">
+          <button onClick={() => navigate('/dashboard')} className="px-6 py-3 bg-primary text-white rounded-xl">
             Go to Dashboard
           </button>
         </div>

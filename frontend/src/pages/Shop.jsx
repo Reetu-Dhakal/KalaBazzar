@@ -95,7 +95,7 @@ const Shop = () => {
       <div className="container-custom py-8">
         <div className="flex gap-8">
           {/* Filters Sidebar */}
-          <div className={`lg:w-64 flex-shrink-0 ${filtersOpen ? 'fixed inset-0 z-50 lg:relative lg:inset-auto' : 'hidden lg:block'}`}>
+          <div className={`lg:w-64 shrink-0 ${filtersOpen ? 'fixed inset-0 z-50 lg:relative lg:inset-auto' : 'hidden lg:block'}`}>
             <div className={`bg-white rounded-xl p-6 ${filtersOpen ? 'h-full overflow-auto' : ''}`}>
               <div className="flex items-center justify-between mb-4 lg:hidden">
                 <h3 className="font-heading font-semibold">Filters</h3>

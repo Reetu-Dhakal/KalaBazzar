@@ -48,7 +48,7 @@ const Cart = () => {
                 layout
                 className="bg-white rounded-xl p-4 flex gap-4"
               >
-                <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0">
                   <img
                     src={item.image || 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=200'}
                     alt={item.name}

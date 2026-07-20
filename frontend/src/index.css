@@ -104,6 +104,11 @@ a, button {
   overflow: hidden;
 }
 
+/* Max width utility */
+.max-w-200px {
+  max-width: 200px;
+}
+
 /* Image placeholder bg */
 .image-placeholder {
   background: linear-gradient(135deg, var(--color-border) 0%, var(--color-background) 100%);

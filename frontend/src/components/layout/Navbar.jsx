@@ -29,7 +29,6 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Shop', path: '/shop' },
-    { name: 'Categories', path: '/categories' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
@@ -82,11 +81,11 @@ const Navbar = () => {
             </button>
 
             <Link
-              to="/wishlist"
+              to="/dashboard"
               className="p-2 hover:text-primary transition-colors"
-              aria-label="Wishlist"
+              aria-label="Dashboard"
             >
-              <HiOutlineHeart className="w-5 h-5" />
+              <HiOutlineUser className="w-5 h-5" />
             </Link>
 
             <Link
@@ -105,7 +104,7 @@ const Navbar = () => {
             {user ? (
               <div className="hidden lg:flex items-center gap-3">
                 <Link
-                  to={user.role === 'seller' ? '/seller/dashboard' : user.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
+                  to="/dashboard"
                   className="flex items-center gap-2 text-sm font-medium text-text-muted hover:text-primary transition-colors"
                 >
                   <HiOutlineUser className="w-5 h-5" />

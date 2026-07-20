@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HiOutlineShoppingBag, HiOutlineHeart, HiOutlineUser, HiOutlineLocationMarker, HiOutlineLogout } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
@@ -57,7 +57,7 @@ const Dashboard = () => {
             </div>
             <div className="flex gap-2">
               {user.role === 'seller' && (
-                <Link to="/seller/dashboard" className="px-4 py-2 bg-primary text-white text-sm rounded-xl">
+                <Link to="/dashboard" className="px-4 py-2 bg-primary text-white text-sm rounded-xl">
                   Seller Dashboard
                 </Link>
               )}
@@ -142,9 +142,9 @@ const Dashboard = () => {
                   </div>
                   <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
                     <p className="text-sm font-medium">Total: Rs. {order.totalPrice?.toLocaleString()}</p>
-                    <Link to={`/order/${order._id}`} className="text-sm text-primary hover:underline">
+                    <button className="text-sm text-primary hover:underline">
                       View Details
-                    </Link>
+                    </button>
                   </div>
                 </motion.div>
               ))

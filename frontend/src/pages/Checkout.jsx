@@ -209,7 +209,7 @@ const Checkout = () => {
               <div className="space-y-3 mb-4">
                 {items.map((item) => (
                   <div key={item.product} className="flex gap-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
                       <img
                         src={item.image || 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=100'}
                         alt=""
