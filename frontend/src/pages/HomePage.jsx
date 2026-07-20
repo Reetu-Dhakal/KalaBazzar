@@ -92,7 +92,7 @@ const HomePage = () => {
                   alt="Nepali Handicrafts"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent" />
               </div>
               {/* Floating cards */}
               <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg">
@@ -124,40 +124,81 @@ const HomePage = () => {
           </motion.div>
 
           <motion.div {...staggerContainer} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { name: 'Pottery & Ceramics', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400', count: '120+' },
-              { name: 'Wood Crafts', image: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=400', count: '85+' },
-              { name: 'Paintings', image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400', count: '200+' },
-              { name: 'Jewelry', image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400', count: '150+' },
-              { name: 'Textiles', image: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400', count: '90+' },
-              { name: 'Home Decor', image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400', count: '75+' },
-            ].map((cat, index) => (
-              <motion.div
-                key={cat.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link
-                  to={`/shop?category=${cat.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="group block"
+            {categories.length > 0 ? (
+              categories.map((cat, index) => {
+                const imageMap = {
+                  'pottery-ceramics': 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400',
+                  'wood-crafts': 'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=400',
+                  'paintings': 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400',
+                  'jewelry': 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400',
+                  'textiles': 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400',
+                  'home-decor': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400',
+                };
+                return (
+                  <motion.div
+                    key={cat._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Link
+                      to={`/shop?category=${cat.slug}`}
+                      className="group block"
+                    >
+                      <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
+                        <img
+                          src={imageMap[cat.slug] || 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400'}
+                          alt={cat.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-transparent" />
+                        <div className="absolute bottom-3 left-3 right-3">
+                          <h3 className="text-white font-heading font-semibold text-sm">{cat.name}</h3>
+                          <p className="text-white/70 text-xs">{cat.productCount || 0} items</p>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })
+            ) : (
+              // Fallback to static categories if API data not available
+              [
+                { name: 'Pottery & Ceramics', slug: 'pottery-ceramics', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400', count: '120+' },
+                { name: 'Wood Crafts', slug: 'wood-crafts', image: 'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=400', count: '85+' },
+                { name: 'Paintings', slug: 'paintings', image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400', count: '200+' },
+                { name: 'Jewelry', slug: 'jewelry', image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400', count: '150+' },
+                { name: 'Textiles', slug: 'textiles', image: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400', count: '90+' },
+                { name: 'Home Decor', slug: 'home-decor', image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400', count: '75+' },
+              ].map((cat, index) => (
+                <motion.div
+                  key={cat.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
                 >
-                  <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
-                    <img
-                      src={cat.image}
-                      alt={cat.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent" />
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <h3 className="text-white font-heading font-semibold text-sm">{cat.name}</h3>
-                      <p className="text-white/70 text-xs">{cat.count} items</p>
+                  <Link
+                    to={`/shop?category=${cat.slug}`}
+                    className="group block"
+                  >
+                    <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
+                      <img
+                        src={cat.image}
+                        alt={cat.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <h3 className="text-white font-heading font-semibold text-sm">{cat.name}</h3>
+                        <p className="text-white/70 text-xs">{cat.count} items</p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              ))
+            )}
           </motion.div>
         </div>
       </section>
@@ -181,47 +222,89 @@ const HomePage = () => {
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-              <motion.div
-                key={item}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: item * 0.05 }}
-              >
-                <Link to={`/product/handmade-product-${item}`} className="group block">
-                  <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <div className="relative aspect-square overflow-hidden">
-                      <img
-                        src={`https://images.unsplash.com/photo-${1565193566173 + item}?w=400`}
-                        alt="Product"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={(e) => {
-                          e.target.src = `https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400`;
-                        }}
-                      />
-                      <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors">
-                        <HiOutlineHeart className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-xs text-text-muted mb-1">Pottery & Ceramics</p>
-                      <h3 className="font-medium text-sm text-text group-hover:text-primary transition-colors line-clamp-2">
-                        Handcrafted Ceramic Vase
-                      </h3>
-                      <div className="flex items-center gap-1 mt-1">
-                        <HiOutlineStar className="w-3.5 h-3.5 text-secondary" />
-                        <span className="text-xs text-text-muted">4.8 (24 reviews)</span>
+            {featuredProducts.length > 0 ? (
+              featuredProducts.map((product, index) => (
+                <motion.div
+                  key={product._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Link to={`/product/${product.slug}`} className="group block">
+                    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                      <div className="relative aspect-square overflow-hidden">
+                        <img
+                          src={product.images?.[0]?.url || 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400'}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors">
+                          <HiOutlineHeart className="w-4 h-4" />
+                        </button>
                       </div>
-                      <div className="flex items-center justify-between mt-3">
-                        <span className="text-lg font-heading font-bold text-primary">Rs. 1,500</span>
-                        <span className="text-xs text-text-muted">Kathmandu</span>
+                      <div className="p-4">
+                        <p className="text-xs text-text-muted mb-1">{product.category?.name}</p>
+                        <h3 className="font-medium text-sm text-text group-hover:text-primary transition-colors line-clamp-2">
+                          {product.name}
+                        </h3>
+                        <div className="flex items-center gap-1 mt-1">
+                          <HiOutlineStar className="w-3.5 h-3.5 text-secondary" />
+                          <span className="text-xs text-text-muted">{product.rating?.toFixed(1) || '0.0'} ({product.numReviews || 0} reviews)</span>
+                        </div>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="text-lg font-heading font-bold text-primary">Rs. {product.price?.toLocaleString()}</span>
+                          <span className="text-xs text-text-muted">{product.district || 'Nepal'}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              ))
+            ) : (
+              // Fallback to static products if API data not available
+              [1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: item * 0.05 }}
+                >
+                  <Link to={`/product/handmade-product-${item}`} className="group block">
+                    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                      <div className="relative aspect-square overflow-hidden">
+                        <img
+                          src={`https://images.unsplash.com/photo-${1565193566173 + item}?w=400`}
+                          alt="Product"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            e.target.src = `https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400`;
+                          }}
+                        />
+                        <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors">
+                          <HiOutlineHeart className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="p-4">
+                        <p className="text-xs text-text-muted mb-1">Pottery & Ceramics</p>
+                        <h3 className="font-medium text-sm text-text group-hover:text-primary transition-colors line-clamp-2">
+                          Handcrafted Ceramic Vase
+                        </h3>
+                        <div className="flex items-center gap-1 mt-1">
+                          <HiOutlineStar className="w-3.5 h-3.5 text-secondary" />
+                          <span className="text-xs text-text-muted">4.8 (24 reviews)</span>
+                        </div>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="text-lg font-heading font-bold text-primary">Rs. 1,500</span>
+                          <span className="text-xs text-text-muted">Kathmandu</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-10 md:hidden">
@@ -282,14 +365,14 @@ const HomePage = () => {
               transition={{ duration: 0.6 }}
             >
               <div className="relative">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden">
+                <div className="aspect-video rounded-2xl overflow-hidden">
                   <img
                     src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800"
                     alt="Nepali Artisan"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-6 -right-6 bg-primary text-white rounded-xl p-6 shadow-lg max-w-[200px]">
+                <div className="absolute -bottom-6 -right-6 bg-primary text-white rounded-xl p-6 shadow-lg max-w-200px">
                   <p className="text-3xl font-heading font-bold">10+</p>
                   <p className="text-sm text-white/80">Years of empowering artisans</p>
                 </div>

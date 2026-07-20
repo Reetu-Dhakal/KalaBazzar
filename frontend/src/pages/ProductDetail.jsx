@@ -1,59 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineHeart, HiOutlineShoppingBag, HiOutlineStar, HiOutlineMinus, HiOutlinePlus, HiOutlineShare, HiOutlineLocationMarker, HiOutlineTruck } from 'react-icons/hi';
+import { HiOutlineHeart, HiOutlineShoppingBag, HiOutlineStar, HiOutlineMinus, HiOutlinePlus, HiOutlineShare, HiOutlineLocationMarker, HiOutlineTruck, HiOutlineArrowLeft } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
+import API from '../utils/axios';
 
 const ProductDetail = () => {
   const { slug } = useParams();
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock product data
-  const product = {
-    _id: '1',
-    name: 'Handcrafted Ceramic Vase',
-    slug: 'handcrafted-ceramic-vase',
-    price: 1500,
-    comparePrice: 2000,
-    description: 'This beautiful handcrafted ceramic vase is made by skilled artisans in Bhaktapur using traditional techniques passed down through generations. Each piece is unique and tells a story of Nepal\'s rich pottery heritage. The natural clay finish and elegant design make it perfect for both traditional and modern home decor.',
-    shortDescription: 'Handcrafted ceramic vase made with traditional techniques',
-    images: [
-      'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600',
-      'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600',
-      'https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=600',
-    ],
-    category: { name: 'Pottery & Ceramics', slug: 'pottery-ceramics' },
-    seller: {
-      name: 'Sita Devi',
-      sellerProfile: {
-        storeName: 'Sita\'s Pottery Studio',
-        district: 'Bhaktapur',
-        rating: 4.9,
-      },
-    },
-    district: 'Bhaktapur',
-    materials: ['Natural Clay', 'Ceramic Glaze'],
-    dimensions: { height: 25, width: 15, unit: 'cm' },
-    deliveryEstimate: '5-7 business days',
-    stock: 10,
-    rating: 4.8,
-    numReviews: 24,
-    reviews: [
-      { name: 'Ram Thapa', rating: 5, comment: 'Absolutely beautiful vase! The craftsmanship is incredible.', createdAt: '2024-01-15' },
-      { name: 'Sita Sharma', rating: 5, comment: 'Perfect addition to my home. Love the natural finish.', createdAt: '2024-01-10' },
-    ],
-  };
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const { data } = await API.get(`/products/${slug}`);
+        setProduct(data.data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (slug) {
+      fetchProduct();
+    }
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-20">
+        <div className="container-custom py-8">
+          <div className="flex items-center gap-2 text-sm text-text-muted mb-8">
+            <Link to="/" className="hover:text-primary">Home</Link>
+            <span>/</span>
+            <Link to="/shop" className="hover:text-primary">Shop</Link>
+            <span>/</span>
+            <span className="text-text">Loading...</span>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-12">
+            <div className="aspect-square bg-gray-200 rounded-2xl animate-pulse" />
+            <div className="space-y-4">
+              <div className="h-8 bg-gray-200 rounded w-3/4 animate-pulse" />
+              <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse" />
+              <div className="h-24 bg-gray-200 rounded animate-pulse" />
+              <div className="h-12 bg-gray-200 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen pt-20">
+        <div className="container-custom py-8">
+          <div className="text-center py-20">
+            <p className="text-text-muted mb-4">Product not found</p>
+            <Link to="/shop" className="text-primary hover:underline">
+              Back to Shop
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleAddToCart = () => {
     addItem({
       product: product._id,
       name: product.name,
-      image: product.images[0],
+      image: product.images?.[0]?.url || 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400',
       price: product.price,
       quantity,
-      seller: product.seller._id || 'seller1',
+      seller: product.seller?._id || 'seller1',
       slug: product.slug,
     });
   };
@@ -71,7 +94,7 @@ const ProductDetail = () => {
           <span>/</span>
           <Link to="/shop" className="hover:text-primary">Shop</Link>
           <span>/</span>
-          <Link to={`/shop?category=${product.category.slug}`} className="hover:text-primary">{product.category.name}</Link>
+          <Link to={`/shop?category=${product.category?.slug || ''}`} className="hover:text-primary">{product.category?.name}</Link>
           <span>/</span>
           <span className="text-text">{product.name}</span>
         </div>
@@ -81,7 +104,7 @@ const ProductDetail = () => {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-white mb-4">
               <img
-                src={product.images[selectedImage]}
+                src={product.images?.[selectedImage]?.url || product.images?.[0]?.url || 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=600'}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -91,26 +114,28 @@ const ProductDetail = () => {
                 </span>
               )}
             </div>
-            <div className="flex gap-3">
-              {product.images.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedImage(i)}
-                  className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors ${
-                    selectedImage === i ? 'border-primary' : 'border-transparent'
-                  }`}
-                >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+            {product.images && product.images.length > 1 && (
+              <div className="flex gap-3">
+                {product.images.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedImage(i)}
+                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors ${
+                      selectedImage === i ? 'border-primary' : 'border-transparent'
+                    }`}
+                  >
+                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Product Info */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="sticky top-24">
               <div className="mb-6">
-                <p className="text-sm text-text-muted mb-2">{product.category.name}</p>
+                <p className="text-sm text-text-muted mb-2">{product.category?.name}</p>
                 <h1 className="text-3xl md:text-4xl font-heading font-bold text-text">
                   {product.name}
                 </h1>
@@ -139,34 +164,36 @@ const ProductDetail = () => {
                   {[...Array(5)].map((_, i) => (
                     <HiOutlineStar
                       key={i}
-                      className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'text-secondary fill-current' : 'text-gray-300'}`}
+                      className={`w-4 h-4 ${i < Math.floor(product.rating || 0) ? 'text-secondary fill-current' : 'text-gray-300'}`}
                     />
                   ))}
                 </div>
                 <span className="text-sm text-text-muted">
-                  {product.rating} ({product.numReviews} reviews)
+                  {(product.rating || 0).toFixed(1)} ({product.numReviews || 0} reviews)
                 </span>
               </div>
 
               {/* Description */}
-              <p className="text-text-muted leading-relaxed mb-6">{product.description}</p>
+              <p className="text-text-muted leading-relaxed mb-6">{product.description || product.shortDescription || 'No description available.'}</p>
 
               {/* Details */}
               <div className="space-y-3 mb-8">
                 <div className="flex items-center gap-2 text-sm">
                   <HiOutlineLocationMarker className="w-4 h-4 text-primary" />
                   <span className="text-text-muted">Made in:</span>
-                  <span className="font-medium">{product.district}</span>
+                  <span className="font-medium">{product.district || 'Nepal'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <HiOutlineTruck className="w-4 h-4 text-primary" />
                   <span className="text-text-muted">Delivery:</span>
-                  <span className="font-medium">{product.deliveryEstimate}</span>
+                  <span className="font-medium">{product.deliveryEstimate || '5-7 business days'}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-sm">Materials:</span>
-                  <span className="font-medium">{product.materials?.join(', ')}</span>
-                </div>
+                {product.materials && product.materials.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-sm text-text-muted">Materials:</span>
+                    <span className="font-medium">{product.materials.join(', ')}</span>
+                  </div>
+                )}
                 {product.dimensions?.height && (
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-text-muted">Dimensions:</span>
@@ -188,7 +215,7 @@ const ProductDetail = () => {
                   </button>
                   <span className="px-6 font-medium">{quantity}</span>
                   <button
-                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                    onClick={() => setQuantity(Math.min(product.stock || 10, quantity + 1))}
                     className="p-3 hover:bg-background transition-colors"
                   >
                     <HiOutlinePlus className="w-4 h-4" />
@@ -217,48 +244,46 @@ const ProductDetail = () => {
               </div>
 
               {/* Seller Info */}
-              <div className="mt-8 p-6 bg-background rounded-xl">
-                <p className="text-sm text-text-muted mb-1">Sold by</p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{product.seller.sellerProfile?.storeName || product.seller.name}</p>
-                    <p className="text-sm text-text-muted">{product.seller.sellerProfile?.district}</p>
+              {product.seller && (
+                <div className="mt-8 p-6 bg-background rounded-xl">
+                  <p className="text-sm text-text-muted mb-1">Sold by</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{product.seller.sellerProfile?.storeName || product.seller.name}</p>
+                      <p className="text-sm text-text-muted">{product.seller.sellerProfile?.district || 'Nepal'}</p>
+                    </div>
                   </div>
-                  <Link
-                    to={`/seller/${product.seller._id}`}
-                    className="text-sm text-primary font-medium hover:underline"
-                  >
-                    View Store
-                  </Link>
                 </div>
-              </div>
+              )}
             </div>
           </motion.div>
         </div>
 
         {/* Reviews */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-heading font-bold mb-6">Customer Reviews</h2>
-          <div className="space-y-4">
-            {product.reviews.map((review, i) => (
-              <div key={i} className="bg-white rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, j) => (
-                      <HiOutlineStar
-                        key={j}
-                        className={`w-4 h-4 ${j < review.rating ? 'text-secondary fill-current' : 'text-gray-300'}`}
-                      />
-                    ))}
+        {product.reviews && product.reviews.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-heading font-bold mb-6">Customer Reviews</h2>
+            <div className="space-y-4">
+              {product.reviews.map((review, i) => (
+                <div key={i} className="bg-white rounded-xl p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex">
+                      {[...Array(5)].map((_, j) => (
+                        <HiOutlineStar
+                          key={j}
+                          className={`w-4 h-4 ${j < review.rating ? 'text-secondary fill-current' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium">{review.name}</span>
+                    <span className="text-xs text-text-muted">{new Date(review.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <span className="text-sm font-medium">{review.name}</span>
-                  <span className="text-xs text-text-muted">{new Date(review.createdAt).toLocaleDateString()}</span>
+                  <p className="text-text-muted text-sm">{review.comment}</p>
                 </div>
-                <p className="text-text-muted text-sm">{review.comment}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
