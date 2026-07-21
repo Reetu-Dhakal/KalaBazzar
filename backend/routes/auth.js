@@ -8,11 +8,15 @@ const {
   updatePassword,
   becomeSeller,
   verifyEmail,
+  forgotPassword,
+  resetPassword,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
 router.post('/register', register);
 router.post('/login', login);
+router.post('/forgot-password', forgotPassword);
+router.put('/reset-password/:resetToken', resetPassword);
 router.get('/verify-email/:token', verifyEmail);
 router.get('/me', protect, getMe);
 router.put('/me', protect, updateProfile);

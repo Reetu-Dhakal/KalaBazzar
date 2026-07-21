@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineMapPin } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlinePhone, HiOutlineMap } from 'react-icons/hi';
 import { FaInstagram, FaFacebook, FaTwitter } from 'react-icons/fa';
 
 const Footer = () => {
@@ -84,7 +84,7 @@ const Footer = () => {
             <ul className="space-y-4">
               <li>
                 <div className="flex items-start gap-3">
-                  <HiOutlineMapPin className="w-4 h-4 text-primary mt-0.5" />
+                  <HiOutlineMap className="w-4 h-4 text-primary mt-0.5" />
                   <span className="text-sm text-text-muted">Kathmandu, Nepal</span>
                 </div>
               </li>

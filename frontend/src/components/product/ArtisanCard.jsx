@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineArrowRight, HiOutlineMapPin, HiOutlineStar } from 'react-icons/hi';
+import { HiOutlineArrowRight, HiOutlineMap, HiOutlineStar } from 'react-icons/hi';
 
 const ArtisanCard = ({ artisan, index = 0 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -56,7 +56,7 @@ const ArtisanCard = ({ artisan, index = 0 }) => {
             <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted mb-4">
               {artisan.sellerProfile?.district && (
                 <span className="flex items-center gap-1">
-                  <HiOutlineMapPin className="w-3.5 h-3.5" />
+                  <HiOutlineMap className="w-3.5 h-3.5" />
                   {artisan.sellerProfile.district}
                 </span>
               )}

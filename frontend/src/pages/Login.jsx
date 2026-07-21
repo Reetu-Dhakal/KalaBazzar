@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineMail, HiOutlineLock, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import { Button, Container } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -85,7 +85,7 @@ const Login = () => {
                   Password
                 </label>
                 <div className="relative">
-                  <HiOutlineLock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                  <HiOutlineLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required

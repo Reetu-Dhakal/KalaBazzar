@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineArrowRight, HiOutlineAward, HiOutlineHeart, HiOutlineTruck, HiOutlineShieldCheck } from 'react-icons/hi';
+import { HiOutlineArrowRight, HiOutlineBadgeCheck, HiOutlineHeart, HiOutlineTruck, HiOutlineShieldCheck } from 'react-icons/hi';
 import { Button, Container } from '../components/ui';
 
 const BecomeSeller = () => {
@@ -16,7 +16,7 @@ const BecomeSeller = () => {
 
   const benefits = [
     {
-      icon: HiOutlineAward,
+      icon: HiOutlineBadgeCheck,
       title: 'Zero Setup Cost',
       desc: 'Create your online store for free. No hidden fees or charges.',
     },

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineArrowLeft, HiOutlineMapPin, HiOutlineMail, HiOutlinePhone } from 'react-icons/hi';
+import { HiOutlineArrowLeft, HiOutlineMap, HiOutlineMail, HiOutlinePhone } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 import { Button } from '../components/ui';
 
@@ -269,7 +269,7 @@ const Checkout = () => {
               {/* Trust Badges */}
               <div className="flex flex-col gap-3 pt-6 border-t border-border">
                 <div className="flex items-center gap-3 text-sm text-text-muted">
-                  <HiOutlineMapPin className="w-4 h-4 text-primary" />
+                  <HiOutlineMap className="w-4 h-4 text-primary" />
                   <span>Pan-Nepal delivery available</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-text-muted">

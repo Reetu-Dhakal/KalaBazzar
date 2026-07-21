@@ -43,6 +43,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/categories', require('./routes/categories'));
+app.use('/api/regions', require('./routes/regions'));
+app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/admin', require('./routes/admin'));
 
 // Health check

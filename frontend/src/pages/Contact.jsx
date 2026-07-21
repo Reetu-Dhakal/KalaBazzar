@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineMapPin, HiOutlineSend } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlinePhone, HiOutlineMap, HiOutlinePaperAirplane } from 'react-icons/hi';
 import { Button, Container } from '../components/ui';
 
 const Contact = () => {
@@ -19,7 +19,7 @@ const Contact = () => {
 
   const contactInfo = [
     {
-      icon: HiOutlineMapPin,
+      icon: HiOutlineMap,
       title: 'Visit Us',
       detail: 'Kathmandu, Nepal',
     },
@@ -171,7 +171,7 @@ const Contact = () => {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full" icon={HiOutlineSend}>
+                  <Button type="submit" size="lg" className="w-full" icon={HiOutlinePaperAirplane}>
                     Send Message
                   </Button>
                 </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlineSearch, HiOutlineUser, HiOutlineShoppingBag, HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
+import { HiOutlineSearch, HiOutlineUser, HiOutlineShoppingBag, HiOutlineMenu, HiOutlineX, HiOutlineCube, HiOutlineCog } from 'react-icons/hi';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
@@ -9,14 +9,14 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -26,13 +26,28 @@ const Navbar = () => {
     setSearchOpen(false);
   }, [location]);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setSearchOpen(false);
+    }
+  };
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Shop', path: '/shop' },
-    { name: 'Artisans', path: '/shop' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
+
+  const getDashboardLink = () => {
+    if (!user) return '/login';
+    if (user.role === 'admin') return '/admin';
+    if (user.role === 'seller') return '/seller';
+    return '/dashboard';
+  };
 
   return (
     <header
@@ -91,7 +106,7 @@ const Navbar = () => {
 
             {/* Account */}
             <Link
-              to="/dashboard"
+              to={getDashboardLink()}
               className="p-2.5 text-text/70 hover:text-text transition-colors duration-300 hidden sm:flex"
               aria-label="Account"
             >
@@ -116,7 +131,7 @@ const Navbar = () => {
             {user ? (
               <div className="hidden lg:flex items-center gap-3 ml-2">
                 <Link
-                  to="/dashboard"
+                  to={getDashboardLink()}
                   className="flex items-center gap-2 text-sm font-medium text-text/70 hover:text-text transition-colors"
                 >
                   <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
@@ -124,7 +139,24 @@ const Navbar = () => {
                   </span>
                   <span>{user.name.split(' ')[0]}</span>
                 </Link>
-                {user.role !== 'seller' && (
+                {user.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="p-2 text-text/70 hover:text-primary transition-colors"
+                    title="Admin Dashboard"
+                  >
+                    <HiOutlineCog className="w-5 h-5" />
+                  </Link>
+                )}
+                {user.role === 'seller' && (
+                  <Link
+                    to="/seller/products/new"
+                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-light transition-all duration-300 shadow-sm hover:shadow-md"
+                  >
+                    + Add Product
+                  </Link>
+                )}
+                {user.role === 'customer' && (
                   <Link
                     to="/become-seller"
                     className="px-5 py-2.5 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-light transition-all duration-300 shadow-sm hover:shadow-md"
@@ -148,11 +180,7 @@ const Navbar = () => {
               className="lg:hidden p-2.5 text-text/70 hover:text-text transition-colors duration-300 ml-1"
               aria-label="Toggle menu"
             >
-              {isOpen ? (
-                <HiOutlineX className="w-6 h-6" />
-              ) : (
-                <HiOutlineMenu className="w-6 h-6" />
-              )}
+              {isOpen ? <HiOutlineX className="w-6 h-6" /> : <HiOutlineMenu className="w-6 h-6" />}
             </button>
           </div>
         </div>
@@ -167,17 +195,25 @@ const Navbar = () => {
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="overflow-hidden"
             >
-              <div className="py-4">
+              <form onSubmit={handleSearch} className="py-4">
                 <div className="relative max-w-2xl mx-auto">
                   <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search handmade treasures..."
-                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-border rounded-2xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                    className="w-full pl-12 pr-20 py-3.5 bg-white border border-border rounded-2xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                     autoFocus
                   />
+                  <button
+                    type="submit"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-light transition-colors"
+                  >
+                    Search
+                  </button>
                 </div>
-              </div>
+              </form>
             </motion.div>
           )}
         </AnimatePresence>
@@ -193,7 +229,7 @@ const Navbar = () => {
             transition={{ duration: 0.3 }}
             className="lg:hidden bg-white/98 backdrop-blur-lg border-t border-border/50"
           >
-            <div className="px-6 py-6 space-y-1">
+            <div className="px-6 py-6 space-y-1 max-h-[70vh] overflow-y-auto">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -207,22 +243,43 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
-              
+
               <div className="pt-4 mt-4 border-t border-border">
                 {user ? (
                   <>
                     <Link
-                      to="/dashboard"
+                      to={getDashboardLink()}
                       className="flex items-center gap-3 py-3 px-4 text-base font-medium text-text/70 hover:bg-background rounded-xl"
                     >
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                       {user.name}
+                      <span className="ml-auto px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full capitalize">
+                        {user.role}
+                      </span>
                     </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-3 py-3 px-4 text-base font-medium text-text/70 hover:bg-background rounded-xl"
+                      >
+                        <HiOutlineCog className="w-5 h-5" />
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    {user.role === 'seller' && (
+                      <Link
+                        to="/seller"
+                        className="flex items-center gap-3 py-3 px-4 text-base font-medium text-text/70 hover:bg-background rounded-xl"
+                      >
+                        <HiOutlineCube className="w-5 h-5" />
+                        Seller Dashboard
+                      </Link>
+                    )}
                     <button
                       onClick={logout}
-                      className="block w-full text-left py-3 px-4 text-base font-medium text-error hover:bg-background rounded-xl mt-1"
+                      className="block w-full text-left py-3 px-4 text-base font-medium text-red-600 hover:bg-red-50 rounded-xl mt-1"
                     >
                       Logout
                     </button>
@@ -237,19 +294,17 @@ const Navbar = () => {
                     </Link>
                     <Link
                       to="/register"
-                      className="block py-3 px-4 text-base font-medium text-primary hover:bg-background rounded-xl"
+                      className="block py-3 px-4 text-base font-medium text-primary hover:bg-primary/5 rounded-xl"
                     >
                       Create Account
                     </Link>
+                    <Link
+                      to="/become-seller"
+                      className="block mt-2 py-3.5 px-4 bg-primary text-white text-center font-medium rounded-xl"
+                    >
+                      Start Selling
+                    </Link>
                   </>
-                )}
-                {user?.role !== 'seller' && (
-                  <Link
-                    to="/become-seller"
-                    className="block mt-2 py-3.5 px-4 bg-primary text-white text-center font-medium rounded-xl"
-                  >
-                    Start Selling
-                  </Link>
                 )}
               </div>
             </div>

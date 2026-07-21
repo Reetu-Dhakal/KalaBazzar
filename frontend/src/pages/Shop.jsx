@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineAdjustments, HiOutlineX, HiOutlineStar, HiOutlineHeart, HiOutlineGrid, HiOutlineList } from 'react-icons/hi';
+import { HiOutlineAdjustments, HiOutlineX, HiOutlineStar, HiOutlineHeart, HiOutlineViewGrid, HiOutlineViewList } from 'react-icons/hi';
 import ProductCard from '../components/product/ProductCard';
 import { Button } from '../components/ui';
 import API from '../utils/axios';
@@ -84,7 +84,7 @@ const Shop = () => {
                 }`}
                 aria-label="Grid view"
               >
-                <HiOutlineGrid className="w-5 h-5" />
+                <HiOutlineViewGrid className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
@@ -93,7 +93,7 @@ const Shop = () => {
                 }`}
                 aria-label="List view"
               >
-                <HiOutlineList className="w-5 h-5" />
+                <HiOutlineViewList className="w-5 h-5" />
               </button>
             </div>
           </div>

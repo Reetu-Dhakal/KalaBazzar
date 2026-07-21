@@ -223,6 +223,78 @@ exports.verifyEmail = async (req, res, next) => {
   }
 };
 
+// @desc    Forgot password - send reset email
+// @route   POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No user with that email',
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    user.resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
+    await user.save({ validateBeforeSave: false });
+
+    // In production, send email here. For now, return the token.
+    res.status(200).json({
+      success: true,
+      message: 'Password reset token generated',
+      resetToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Reset password
+// @route   PUT /api/auth/reset-password/:resetToken
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(req.params.resetToken)
+      .digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset token',
+      });
+    }
+
+    if (!req.body.password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a new password',
+      });
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    sendTokenResponse(user, 200, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Helper: Send token response
 const sendTokenResponse = (user, statusCode, res) => {
   const token = user.signJwt();
