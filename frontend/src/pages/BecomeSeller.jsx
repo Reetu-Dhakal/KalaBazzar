@@ -1,188 +1,224 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { HiOutlineArrowRight, HiOutlineShieldCheck } from 'react-icons/hi';
-import { useAuth } from '../context/AuthContext';
+import { HiOutlineArrowRight, HiOutlineAward, HiOutlineHeart, HiOutlineTruck, HiOutlineShieldCheck } from 'react-icons/hi';
+import { Button, Container } from '../components/ui';
 
 const BecomeSeller = () => {
   const [formData, setFormData] = useState({
-    storeName: '',
-    district: '',
-    province: '',
-    story: '',
-    specialization: '',
-    yearsOfExperience: '',
+    name: '',
+    email: '',
+    phone: '',
+    craft: '',
+    experience: '',
+    message: '',
   });
-  const [loading, setLoading] = useState(false);
-  const { becomeSeller, user } = useAuth();
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const benefits = [
+    {
+      icon: HiOutlineAward,
+      title: 'Zero Setup Cost',
+      desc: 'Create your online store for free. No hidden fees or charges.',
+    },
+    {
+      icon: HiOutlineHeart,
+      title: 'Direct Connection',
+      desc: 'Connect directly with customers who appreciate authentic handmade products.',
+    },
+    {
+      icon: HiOutlineTruck,
+      title: 'We Handle Logistics',
+      desc: 'Focus on crafting while we handle shipping, payments, and customer support.',
+    },
+    {
+      icon: HiOutlineShieldCheck,
+      title: 'Secure Payments',
+      desc: 'Receive payments securely through multiple payment options.',
+    },
+  ];
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      await becomeSeller({
-        storeName: formData.storeName,
-        district: formData.district,
-        province: formData.province,
-        story: formData.story,
-        specialization: formData.specialization.split(',').map(s => s.trim()),
-        yearsOfExperience: parseInt(formData.yearsOfExperience),
-      });
-      navigate('/');
-    } catch (error) {
-      // Handled in context
-    } finally {
-      setLoading(false);
-    }
+    console.log('Form submitted:', formData);
   };
 
-  if (user?.role === 'seller') {
-    return (
-      <div className="min-h-screen flex items-center justify-center py-20">
-        <div className="text-center">
-          <HiOutlineShieldCheck className="w-16 h-16 text-success mx-auto mb-4" />
-          <h1 className="text-3xl font-heading font-bold text-text mb-2">You're Already a Seller!</h1>
-          <p className="text-text-muted mb-6">Visit your seller dashboard to manage your store.</p>
-          <button onClick={() => navigate('/dashboard')} className="px-6 py-3 bg-primary text-white rounded-xl">
-            Go to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen py-20">
-      <div className="container-custom">
-        <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen">
+      {/* Hero */}
+      <section className="py-24 md:py-32 bg-white">
+        <Container>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl mx-auto text-center"
           >
-            <h1 className="text-4xl md:text-5xl font-heading font-bold text-text mb-4">
-              Become a <span className="text-primary">Seller</span>
+            <span className="inline-block px-4 py-2 bg-primary/5 text-primary text-sm font-medium rounded-full mb-6">
+              Become a Seller
+            </span>
+            <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-semibold text-text mb-6 leading-tight">
+              Share Your <span className="text-primary">Craft</span> With The World
             </h1>
-            <p className="text-text-muted max-w-xl mx-auto">
-              Join hundreds of Nepali artisans selling their handmade products on Kala Bazaar. 
-              Set up your free store in minutes.
+            <p className="text-lg md:text-xl text-text-muted leading-relaxed">
+              Join Nepal's largest community of artisans. Set up your free online store in minutes 
+              and start reaching customers across Nepal and beyond.
             </p>
           </motion.div>
+        </Container>
+      </section>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {[
-              { step: '1', title: 'Create Profile', desc: 'Tell us about your craft and store' },
-              { step: '2', title: 'Upload Products', desc: 'List your handmade products with photos' },
-              { step: '3', title: 'Start Selling', desc: 'Receive orders and grow your business' },
-            ].map((item) => (
-              <div key={item.step} className="bg-white rounded-xl p-6 text-center">
-                <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
-                  {item.step}
-                </div>
-                <h3 className="font-heading font-semibold mb-1">{item.title}</h3>
-                <p className="text-sm text-text-muted">{item.desc}</p>
-              </div>
-            ))}
+      {/* Benefits */}
+      <section className="py-24 md:py-32 bg-background">
+        <Container>
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-2 bg-primary/5 text-primary text-sm font-medium rounded-full mb-4">
+              Why Join Us
+            </span>
+            <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-semibold text-text mb-4 tracking-tight">
+              Built for Artisans
+            </h2>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-2xl shadow-sm p-8"
-          >
-            <h2 className="text-2xl font-heading font-bold mb-6">Seller Application</h2>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Store Name *</label>
-                  <input
-                    type="text"
-                    value={formData.storeName}
-                    onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
-                    placeholder="e.g., Sita's Pottery Studio"
-                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">District *</label>
-                  <input
-                    type="text"
-                    value={formData.district}
-                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                    placeholder="e.g., Bhaktapur"
-                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Province</label>
-                  <select
-                    value={formData.province}
-                    onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
-                  >
-                    <option value="">Select Province</option>
-                    <option value="Province 1">Province 1</option>
-                    <option value="Madhesh">Madhesh</option>
-                    <option value="Bagmati">Bagmati</option>
-                    <option value="Gandaki">Gandaki</option>
-                    <option value="Lumbini">Lumbini</option>
-                    <option value="Karnali">Karnali</option>
-                    <option value="Sudurpashchim">Sudurpashchim</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text mb-1.5">Years of Experience</label>
-                  <input
-                    type="number"
-                    value={formData.yearsOfExperience}
-                    onChange={(e) => setFormData({ ...formData, yearsOfExperience: e.target.value })}
-                    placeholder="e.g., 5"
-                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text mb-1.5">Specialization (comma separated)</label>
-                <input
-                  type="text"
-                  value={formData.specialization}
-                  onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                  placeholder="e.g., Pottery, Ceramics, Traditional Arts"
-                  className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text mb-1.5">Your Story</label>
-                <textarea
-                  value={formData.story}
-                  onChange={(e) => setFormData({ ...formData, story: e.target.value })}
-                  placeholder="Tell us about your craft, your journey, and what makes your products special..."
-                  rows={4}
-                  className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-light transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={benefit.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="bg-white rounded-2xl p-6 border border-border/50"
               >
-                {loading ? 'Submitting...' : 'Submit Application'}
-                <HiOutlineArrowRight className="w-5 h-5" />
-              </button>
-            </form>
-          </motion.div>
-        </div>
-      </div>
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                  <benefit.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-heading text-xl font-semibold text-text mb-2">
+                  {benefit.title}
+                </h3>
+                <p className="text-sm text-text-muted leading-relaxed">
+                  {benefit.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* Application Form */}
+      <section className="py-24 md:py-32 bg-white">
+        <Container>
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="font-heading text-4xl md:text-5xl font-semibold text-text mb-4 tracking-tight">
+                Get Started
+              </h2>
+              <p className="text-text-muted text-lg">
+                Fill out the form below and we'll get back to you within 48 hours.
+              </p>
+            </div>
+
+            <motion.form
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.8 }}
+              onSubmit={handleSubmit}
+              className="bg-background rounded-2xl p-8 md:p-10"
+            >
+              <div className="space-y-5">
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 bg-white border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-3 bg-white border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-4 py-3 bg-white border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                      placeholder="+977-98XXXXXXXX"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Your Craft
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.craft}
+                      onChange={(e) => setFormData({ ...formData, craft: e.target.value })}
+                      className="w-full px-4 py-3 bg-white border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                      placeholder="e.g. Pottery, Wood carving"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Years of Experience
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.experience}
+                    onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                    placeholder="e.g. 10+ years"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Tell us about yourself
+                  </label>
+                  <textarea
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    rows={5}
+                    className="w-full px-4 py-3 bg-white border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none"
+                    placeholder="Share your story and what makes your craft special..."
+                  />
+                </div>
+
+                <Button type="submit" size="lg" className="w-full">
+                  Submit Application
+                </Button>
+              </div>
+            </motion.form>
+          </div>
+        </Container>
+      </section>
     </div>
   );
 };

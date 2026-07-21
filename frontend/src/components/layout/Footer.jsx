@@ -1,51 +1,53 @@
 import { Link } from 'react-router-dom';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from 'react-icons/hi';
-import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
+import { HiOutlineMail, HiOutlinePhone, HiOutlineMapPin } from 'react-icons/hi';
+import { FaInstagram, FaFacebook, FaTwitter } from 'react-icons/fa';
 
 const Footer = () => {
   return (
-    <footer className="bg-primary text-white">
-      <div className="container-custom py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div>
-            <Link to="/" className="inline-flex items-center gap-2 mb-4">
-              <span className="text-2xl font-heading font-bold text-white">Kala</span>
-              <span className="text-2xl font-heading font-light text-secondary">Bazaar</span>
+    <footer className="bg-white border-t border-border/50">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8">
+          {/* Brand Column */}
+          <div className="lg:col-span-4">
+            <Link to="/" className="inline-flex items-center gap-1 mb-5">
+              <span className="text-2xl font-heading font-semibold text-primary tracking-tight">Kala</span>
+              <span className="text-2xl font-heading font-light text-text/80 tracking-tight">Bazaar</span>
             </Link>
-            <p className="text-white/70 text-sm leading-relaxed mb-6">
-              Nepal's trusted marketplace connecting you with authentic handmade products from skilled artisans across the country.
+            <p className="text-text-muted text-sm leading-relaxed mb-8 max-w-sm">
+              A curated marketplace for authentic Nepali handcrafted treasures. Connecting artisans with appreciative homes worldwide.
             </p>
-            <div className="flex gap-3">
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors" aria-label="Facebook">
-                <FaFacebook className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors" aria-label="Instagram">
-                <FaInstagram className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors" aria-label="Twitter">
-                <FaTwitter className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors" aria-label="Youtube">
-                <FaYoutube className="w-4 h-4" />
-              </a>
+            <div className="flex gap-2">
+              {[
+                { icon: FaInstagram, label: 'Instagram' },
+                { icon: FaFacebook, label: 'Facebook' },
+                { icon: FaTwitter, label: 'Twitter' },
+              ].map(({ icon: Icon, label }) => (
+                <a
+                  key={label}
+                  href="#"
+                  aria-label={label}
+                  className="w-10 h-10 rounded-full bg-background hover:bg-primary hover:text-white text-text/70 flex items-center justify-center transition-all duration-300"
+                >
+                  <Icon className="w-4 h-4" />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-heading font-semibold mb-4">Quick Links</h3>
+          <div className="lg:col-span-2 lg:col-start-6">
+            <h4 className="text-sm font-semibold text-text uppercase tracking-wider mb-5">Discover</h4>
             <ul className="space-y-3">
               {[
-                { name: 'About Us', path: '/about' },
                 { name: 'Shop All', path: '/shop' },
-                { name: 'Become a Seller', path: '/become-seller' },
-                { name: 'Contact', path: '/contact' },
+                { name: 'Artisans', path: '/shop' },
+                { name: 'Categories', path: '/shop' },
+                { name: 'New Arrivals', path: '/shop?sort=newest' },
               ].map((link) => (
-                <li key={link.path}>
+                <li key={link.name}>
                   <Link
                     to={link.path}
-                    className="text-white/70 text-sm hover:text-secondary transition-colors"
+                    className="text-sm text-text-muted hover:text-primary transition-colors duration-300"
                   >
                     {link.name}
                   </Link>
@@ -54,21 +56,20 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Service */}
-          <div>
-            <h3 className="text-lg font-heading font-semibold mb-4">Customer Service</h3>
+          {/* Company */}
+          <div className="lg:col-span-2">
+            <h4 className="text-sm font-semibold text-text uppercase tracking-wider mb-5">Company</h4>
             <ul className="space-y-3">
               {[
-                { name: 'Help Center', path: '/contact' },
-                { name: 'Shipping Info', path: '/about' },
-                { name: 'Returns & Refunds', path: '/contact' },
-                { name: 'Privacy Policy', path: '/about' },
-                { name: 'Terms of Service', path: '/about' },
+                { name: 'About', path: '/about' },
+                { name: 'Become a Seller', path: '/become-seller' },
+                { name: 'Contact', path: '/contact' },
+                { name: 'Privacy', path: '/about' },
               ].map((link) => (
-                <li key={link.path}>
+                <li key={link.name}>
                   <Link
                     to={link.path}
-                    className="text-white/70 text-sm hover:text-secondary transition-colors"
+                    className="text-sm text-text-muted hover:text-primary transition-colors duration-300"
                   >
                     {link.name}
                   </Link>
@@ -78,63 +79,38 @@ const Footer = () => {
           </div>
 
           {/* Contact */}
-          <div>
-            <h3 className="text-lg font-heading font-semibold mb-4">Get in Touch</h3>
+          <div className="lg:col-span-2">
+            <h4 className="text-sm font-semibold text-text uppercase tracking-wider mb-5">Contact</h4>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <HiOutlineLocationMarker className="w-5 h-5 text-secondary mt-0.5" />
-                <span className="text-white/70 text-sm">
-                  Kathmandu, Nepal
-                </span>
+              <li>
+                <div className="flex items-start gap-3">
+                  <HiOutlineMapPin className="w-4 h-4 text-primary mt-0.5" />
+                  <span className="text-sm text-text-muted">Kathmandu, Nepal</span>
+                </div>
               </li>
-              <li className="flex items-center gap-3">
-                <HiOutlinePhone className="w-5 h-5 text-secondary" />
-                <a href="tel:+977-1-2345678" className="text-white/70 text-sm hover:text-secondary transition-colors">
-                  +977-1-2345678
+              <li>
+                <a href="tel:+977-1-2345678" className="flex items-center gap-3 text-text-muted hover:text-primary transition-colors">
+                  <HiOutlinePhone className="w-4 h-4" />
+                  <span className="text-sm">+977-1-2345678</span>
                 </a>
               </li>
-              <li className="flex items-center gap-3">
-                <HiOutlineMail className="w-5 h-5 text-secondary" />
-                <a href="mailto:info@kalabazaar.com" className="text-white/70 text-sm hover:text-secondary transition-colors">
-                  info@kalabazaar.com
+              <li>
+                <a href="mailto:info@kalabazaar.com" className="flex items-center gap-3 text-text-muted hover:text-primary transition-colors">
+                  <HiOutlineMail className="w-4 h-4" />
+                  <span className="text-sm">info@kalabazaar.com</span>
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Newsletter */}
-        <div className="mt-12 pt-8 border-t border-white/10">
-          <div className="max-w-xl mx-auto text-center">
-            <h3 className="text-lg font-heading font-semibold mb-2">Stay Connected</h3>
-            <p className="text-white/70 text-sm mb-4">
-              Subscribe to discover new artisans, exclusive offers, and Nepali craft stories.
-            </p>
-            <form className="flex gap-2 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:border-secondary"
-              />
-              <button
-                type="submit"
-                className="px-6 py-2.5 bg-secondary text-primary font-medium text-sm rounded-lg hover:bg-secondary/90 transition-colors whitespace-nowrap"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom */}
-      <div className="border-t border-white/10">
-        <div className="container-custom py-4 flex flex-col md:flex-row items-center justify-between gap-2">
-          <p className="text-white/60 text-xs">
-            © {new Date().getFullYear()} Kala Bazaar Nepal. All rights reserved.
+        {/* Bottom Bar */}
+        <div className="mt-16 pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-text-muted">
+            {new Date().getFullYear()} Kala Bazaar Nepal. Crafted with care.
           </p>
-          <p className="text-white/40 text-xs">
-            Empowering Nepali artisans, one craft at a time.
+          <p className="text-xs text-text-muted">
+            Preserving heritage through craftsmanship.
           </p>
         </div>
       </div>

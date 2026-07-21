@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlineMenu, HiOutlineX, HiOutlineShoppingBag, HiOutlineHeart, HiOutlineUser, HiOutlineSearch } from 'react-icons/hi';
+import { HiOutlineSearch, HiOutlineUser, HiOutlineShoppingBag, HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
@@ -15,7 +15,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      setScrolled(window.scrollY > 40);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -29,91 +29,105 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Shop', path: '/shop' },
+    { name: 'Artisans', path: '/shop' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-sm'
+          ? 'bg-white/90 backdrop-blur-lg shadow-[0_1px_0_0_rgba(0,0,0,0.05)]'
           : 'bg-transparent'
       }`}
     >
-      <div className="container-custom">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-heading font-bold text-primary">
+          <Link to="/" className="relative z-10 flex items-center gap-1">
+            <span className="text-2xl font-heading font-semibold text-primary tracking-tight">
               Kala
             </span>
-            <span className="text-2xl font-heading font-light text-primary-light">
+            <span className="text-2xl font-heading font-light text-text/80 tracking-tight">
               Bazaar
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-10">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
+                className={`relative text-sm font-medium transition-colors duration-300 ${
                   location.pathname === link.path
                     ? 'text-primary'
-                    : 'text-text-muted'
+                    : 'text-text/70 hover:text-text'
                 }`}
               >
                 {link.name}
+                {location.pathname === link.path && (
+                  <motion.div
+                    layoutId="navbar-indicator"
+                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
               </Link>
             ))}
-          </div>
+          </nav>
 
-          {/* Right Icons */}
-          <div className="flex items-center gap-4">
+          {/* Right Actions */}
+          <div className="flex items-center gap-1">
+            {/* Search */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 hover:text-primary transition-colors"
+              className="p-2.5 text-text/70 hover:text-text transition-colors duration-300"
               aria-label="Search"
             >
               <HiOutlineSearch className="w-5 h-5" />
             </button>
 
+            {/* Account */}
             <Link
               to="/dashboard"
-              className="p-2 hover:text-primary transition-colors"
-              aria-label="Dashboard"
+              className="p-2.5 text-text/70 hover:text-text transition-colors duration-300 hidden sm:flex"
+              aria-label="Account"
             >
               <HiOutlineUser className="w-5 h-5" />
             </Link>
 
+            {/* Cart */}
             <Link
               to="/cart"
-              className="p-2 hover:text-primary transition-colors relative"
+              className="p-2.5 text-text/70 hover:text-text transition-colors duration-300 relative"
               aria-label="Cart"
             >
               <HiOutlineShoppingBag className="w-5 h-5" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-white text-[10px] font-medium rounded-full flex items-center justify-center">
                   {itemCount}
                 </span>
               )}
             </Link>
 
+            {/* Auth Button */}
             {user ? (
-              <div className="hidden lg:flex items-center gap-3">
+              <div className="hidden lg:flex items-center gap-3 ml-2">
                 <Link
                   to="/dashboard"
-                  className="flex items-center gap-2 text-sm font-medium text-text-muted hover:text-primary transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium text-text/70 hover:text-text transition-colors"
                 >
-                  <HiOutlineUser className="w-5 h-5" />
+                  <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
                   <span>{user.name.split(' ')[0]}</span>
                 </Link>
                 {user.role !== 'seller' && (
                   <Link
                     to="/become-seller"
-                    className="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary-light transition-colors"
+                    className="px-5 py-2.5 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-light transition-all duration-300 shadow-sm hover:shadow-md"
                   >
                     Sell
                   </Link>
@@ -122,7 +136,7 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="hidden lg:inline-flex px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary-light transition-colors"
+                className="hidden lg:inline-flex px-5 py-2.5 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-light transition-all duration-300 shadow-sm hover:shadow-md ml-2"
               >
                 Sign In
               </Link>
@@ -131,7 +145,7 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden p-2"
+              className="lg:hidden p-2.5 text-text/70 hover:text-text transition-colors duration-300 ml-1"
               aria-label="Toggle menu"
             >
               {isOpen ? (
@@ -142,92 +156,107 @@ const Navbar = () => {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Search Bar */}
-      <AnimatePresence>
-        {searchOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="bg-white border-t border-border"
-          >
-            <div className="container-custom py-4">
-              <div className="relative max-w-2xl mx-auto">
-                <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-                <input
-                  type="text"
-                  placeholder="Search handmade products..."
-                  className="w-full pl-12 pr-4 py-3 border border-border rounded-xl focus:outline-none focus:border-primary bg-background"
-                  autoFocus
-                />
+        {/* Search Bar */}
+        <AnimatePresence>
+          {searchOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <div className="py-4">
+                <div className="relative max-w-2xl mx-auto">
+                  <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                  <input
+                    type="text"
+                    placeholder="Search handmade treasures..."
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-border rounded-2xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                    autoFocus
+                  />
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="lg:hidden bg-white border-t border-border"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="lg:hidden bg-white/98 backdrop-blur-lg border-t border-border/50"
           >
-            <div className="container-custom py-4 space-y-1">
+            <div className="px-6 py-6 space-y-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`block py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  className={`block py-3 px-4 rounded-xl text-base font-medium transition-all ${
                     location.pathname === link.path
                       ? 'bg-primary/5 text-primary'
-                      : 'text-text-muted hover:bg-background'
+                      : 'text-text/70 hover:bg-background'
                   }`}
                 >
                   {link.name}
                 </Link>
               ))}
-              <hr className="my-2 border-border" />
-              {user ? (
-                <>
+              
+              <div className="pt-4 mt-4 border-t border-border">
+                {user ? (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center gap-3 py-3 px-4 text-base font-medium text-text/70 hover:bg-background rounded-xl"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                      {user.name}
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="block w-full text-left py-3 px-4 text-base font-medium text-error hover:bg-background rounded-xl mt-1"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className="block py-3 px-4 text-base font-medium text-text/70 hover:bg-background rounded-xl"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="block py-3 px-4 text-base font-medium text-primary hover:bg-background rounded-xl"
+                    >
+                      Create Account
+                    </Link>
+                  </>
+                )}
+                {user?.role !== 'seller' && (
                   <Link
-                    to="/dashboard"
-                    className="block py-3 px-4 text-sm font-medium text-text-muted hover:bg-background rounded-lg"
+                    to="/become-seller"
+                    className="block mt-2 py-3.5 px-4 bg-primary text-white text-center font-medium rounded-xl"
                   >
-                    Dashboard
+                    Start Selling
                   </Link>
-                  <button
-                    onClick={logout}
-                    className="block w-full text-left py-3 px-4 text-sm font-medium text-error hover:bg-background rounded-lg"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="block py-3 px-4 text-sm font-medium text-text-muted hover:bg-background rounded-lg"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="block py-3 px-4 text-sm font-medium text-primary hover:bg-background rounded-lg"
-                  >
-                    Create Account
-                  </Link>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </header>
   );
 };
 

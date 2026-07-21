@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme {
   --color-primary: #6E1E1E;
   --color-primary-light: #8D3A3A;
   --color-secondary: #C89B3C;
-  --color-background: #FBEED3;
+  --color-background: #FAF7F2;
   --color-card: #FFFFFF;
   --color-border: #EADBC8;
   --color-text: #3A2A1F;
-  --color-text-muted: #7A6A58;
+  --color-text-muted: #6B7280;
   --color-success: #059669;
   --color-error: #DC2626;
   --color-warning: #D97706;
@@ -93,6 +94,7 @@ a, button {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -100,6 +102,7 @@ a, button {
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

@@ -1,103 +1,185 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineLocationMarker } from 'react-icons/hi';
-import toast from 'react-hot-toast';
+import { HiOutlineMail, HiOutlinePhone, HiOutlineMapPin, HiOutlineSend } from 'react-icons/hi';
+import { Button, Container } from '../components/ui';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success('Message sent! We will get back to you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    // Handle form submission
+    console.log('Form submitted:', formData);
   };
 
+  const contactInfo = [
+    {
+      icon: HiOutlineMapPin,
+      title: 'Visit Us',
+      detail: 'Kathmandu, Nepal',
+    },
+    {
+      icon: HiOutlinePhone,
+      title: 'Call Us',
+      detail: '+977-1-2345678',
+    },
+    {
+      icon: HiOutlineMail,
+      title: 'Email Us',
+      detail: 'info@kalabazaar.com',
+    },
+  ];
+
   return (
-    <div className="min-h-screen pt-20">
-      <div className="container-custom py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto"
-        >
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-heading font-bold text-text mb-4">Contact Us</h1>
-            <p className="text-text-muted">We'd love to hear from you. Get in touch with us.</p>
-          </div>
+    <div className="min-h-screen">
+      {/* Hero */}
+      <section className="py-24 md:py-32 bg-white">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl mx-auto text-center"
+          >
+            <span className="inline-block px-4 py-2 bg-primary/5 text-primary text-sm font-medium rounded-full mb-6">
+              Get in Touch
+            </span>
+            <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-semibold text-text mb-6 leading-tight">
+              Let's Start a <span className="text-primary">Conversation</span>
+            </h1>
+            <p className="text-lg md:text-xl text-text-muted leading-relaxed">
+              Have a question, suggestion, or just want to say hello? We'd love to hear from you.
+            </p>
+          </motion.div>
+        </Container>
+      </section>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-xl p-8">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Name</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Subject</label>
-                  <input
-                    type="text"
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    required
-                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Message</label>
-                  <textarea
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    required
-                    rows={4}
-                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background resize-none"
-                  />
-                </div>
-                <button type="submit" className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-light transition-colors">
-                  Send Message
-                </button>
-              </form>
-            </div>
+      {/* Contact Section */}
+      <section className="py-24 md:py-32 bg-background">
+        <Container>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
+            {/* Contact Info */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="font-heading text-4xl md:text-5xl font-semibold text-text mb-6 tracking-tight">
+                Contact Information
+              </h2>
+              <p className="text-text-muted text-lg mb-12 leading-relaxed">
+                Reach out to us through any of these channels. We typically respond within 24 hours.
+              </p>
 
-            <div className="space-y-6">
-              {[
-                { icon: HiOutlineMail, label: 'Email', value: 'info@kalabazaar.com', href: 'mailto:info@kalabazaar.com' },
-                { icon: HiOutlinePhone, label: 'Phone', value: '+977-1-2345678', href: 'tel:+977-1-2345678' },
-                { icon: HiOutlineLocationMarker, label: 'Address', value: 'Kathmandu, Nepal' },
-              ].map((item) => (
-                <div key={item.label} className="bg-white rounded-xl p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center">
-                    <item.icon className="w-6 h-6 text-primary" />
+              <div className="space-y-6">
+                {contactInfo.map(({ icon: Icon, title, detail }, index) => (
+                  <motion.div
+                    key={title}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    className="flex items-start gap-4 bg-white rounded-2xl p-6 border border-border/50"
+                  >
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                      <Icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-lg font-semibold text-text mb-1">
+                        {title}
+                      </h3>
+                      <p className="text-text-muted">{detail}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border/50 p-8">
+                <h2 className="font-heading text-2xl font-semibold text-text mb-6">
+                  Send us a Message
+                </h2>
+
+                <div className="space-y-5">
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-text mb-2">
+                        Your Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                        placeholder="john@example.com"
+                      />
+                    </div>
                   </div>
+
                   <div>
-                    <p className="text-sm text-text-muted">{item.label}</p>
-                    {item.href ? (
-                      <a href={item.href} className="font-medium hover:text-primary transition-colors">{item.value}</a>
-                    ) : (
-                      <p className="font-medium">{item.value}</p>
-                    )}
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Subject
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                      placeholder="How can we help?"
+                    />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Message
+                    </label>
+                    <textarea
+                      required
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      rows={6}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none"
+                      placeholder="Tell us more..."
+                    />
+                  </div>
+
+                  <Button type="submit" size="lg" className="w-full" icon={HiOutlineSend}>
+                    Send Message
+                  </Button>
                 </div>
-              ))}
-            </div>
+              </form>
+            </motion.div>
           </div>
-        </motion.div>
-      </div>
+        </Container>
+      </section>
     </div>
   );
 };

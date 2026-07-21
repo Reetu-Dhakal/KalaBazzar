@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineAdjustments, HiOutlineX, HiOutlineStar, HiOutlineHeart } from 'react-icons/hi';
+import { HiOutlineAdjustments, HiOutlineX, HiOutlineStar, HiOutlineHeart, HiOutlineGrid, HiOutlineList } from 'react-icons/hi';
+import ProductCard from '../components/product/ProductCard';
+import { Button } from '../components/ui';
 import API from '../utils/axios';
 
 const Shop = () => {
@@ -12,6 +14,7 @@ const Shop = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
   const [filters, setFilters] = useState({
     category: searchParams.get('category') || '',
     minPrice: '',
@@ -58,26 +61,45 @@ const Shop = () => {
   }, [filters, currentPage]);
 
   return (
-    <div className="min-h-screen pt-20">
+    <div className="min-h-screen pt-24">
       {/* Header */}
-      <div className="bg-white border-b border-border">
-        <div className="container-custom py-6">
-          <div className="flex items-center justify-between">
+      <div className="bg-white border-b border-border/50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+          <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-heading font-bold">Shop</h1>
-              <p className="text-sm text-text-muted mt-1">Discover handmade products from Nepali artisans</p>
+              <h1 className="font-heading text-4xl md:text-5xl font-semibold text-text mb-2">
+                Shop
+              </h1>
+              <p className="text-text-muted">
+                Discover handmade products from Nepali artisans
+              </p>
             </div>
-            <button
-              onClick={() => setFiltersOpen(!filtersOpen)}
-              className="lg:hidden flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm"
-            >
-              <HiOutlineAdjustments className="w-5 h-5" />
-              Filters
-            </button>
+            
+            {/* View Toggle */}
+            <div className="hidden md:flex items-center gap-2 bg-background rounded-xl p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-all ${
+                  viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-text-muted'
+                }`}
+                aria-label="Grid view"
+              >
+                <HiOutlineGrid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-all ${
+                  viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-text-muted'
+                }`}
+                aria-label="List view"
+              >
+                <HiOutlineList className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
-          {/* Search */}
-          <div className="mt-4">
+          {/* Search & Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               placeholder="Search products..."
@@ -86,31 +108,46 @@ const Shop = () => {
                 setFilters({ ...filters, search: e.target.value });
                 setCurrentPage(1);
               }}
-              className="w-full max-w-md px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:border-primary bg-background"
+              className="flex-1 max-w-md px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
             />
+            <Button
+              onClick={() => setFiltersOpen(!filtersOpen)}
+              variant="outline"
+              className="lg:hidden"
+              icon={HiOutlineAdjustments}
+            >
+              Filters
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="container-custom py-8">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
         <div className="flex gap-8">
           {/* Filters Sidebar */}
           <div className={`lg:w-64 shrink-0 ${filtersOpen ? 'fixed inset-0 z-50 lg:relative lg:inset-auto' : 'hidden lg:block'}`}>
-            <div className={`bg-white rounded-xl p-6 ${filtersOpen ? 'h-full overflow-auto' : ''}`}>
-              <div className="flex items-center justify-between mb-4 lg:hidden">
-                <h3 className="font-heading font-semibold">Filters</h3>
-                <button onClick={() => setFiltersOpen(false)}>
-                  <HiOutlineX className="w-5 h-5" />
-                </button>
-              </div>
+            {filtersOpen && (
+              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm lg:hidden" onClick={() => setFiltersOpen(false)} />
+            )}
+            <div className={`bg-white rounded-2xl border border-border/50 p-6 ${filtersOpen ? 'h-full overflow-auto relative z-10' : ''}`}>
+              {filtersOpen && (
+                <div className="flex items-center justify-between mb-6 lg:hidden">
+                  <h2 className="font-heading text-xl font-semibold text-text">Filters</h2>
+                  <button onClick={() => setFiltersOpen(false)} className="p-2">
+                    <HiOutlineX className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
 
-              {/* Category */}
+              {/* Categories */}
               <div className="mb-6">
-                <h4 className="font-medium text-sm mb-3">Category</h4>
+                <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-4">Categories</h3>
                 <div className="space-y-2">
                   <button
                     onClick={() => { setFilters({ ...filters, category: '' }); setCurrentPage(1); }}
-                    className={`block text-sm w-full text-left px-3 py-1.5 rounded-lg transition-colors ${!filters.category ? 'bg-primary text-white' : 'text-text-muted hover:bg-background'}`}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                      !filters.category ? 'bg-primary/10 text-primary font-medium' : 'text-text-muted hover:bg-background'
+                    }`}
                   >
                     All Categories
                   </button>
@@ -118,7 +155,9 @@ const Shop = () => {
                     <button
                       key={cat._id}
                       onClick={() => { setFilters({ ...filters, category: cat.slug }); setCurrentPage(1); }}
-                      className={`block text-sm w-full text-left px-3 py-1.5 rounded-lg transition-colors ${filters.category === cat.slug ? 'bg-primary text-white' : 'text-text-muted hover:bg-background'}`}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                        filters.category === cat.slug ? 'bg-primary/10 text-primary font-medium' : 'text-text-muted hover:bg-background'
+                      }`}
                     >
                       {cat.name}
                     </button>
@@ -128,39 +167,37 @@ const Shop = () => {
 
               {/* Price Range */}
               <div className="mb-6">
-                <h4 className="font-medium text-sm mb-3">Price Range</h4>
+                <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-4">Price Range</h3>
                 <div className="flex gap-2">
                   <input
                     type="number"
                     placeholder="Min"
                     value={filters.minPrice}
                     onChange={(e) => { setFilters({ ...filters, minPrice: e.target.value }); setCurrentPage(1); }}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
                   />
-                  <span className="text-text-muted self-center">-</span>
                   <input
                     type="number"
                     placeholder="Max"
                     value={filters.maxPrice}
                     onChange={(e) => { setFilters({ ...filters, maxPrice: e.target.value }); setCurrentPage(1); }}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
 
               {/* Sort */}
-              <div className="mb-6">
-                <h4 className="font-medium text-sm mb-3">Sort By</h4>
+              <div>
+                <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-4">Sort By</h3>
                 <select
                   value={filters.sort}
                   onChange={(e) => { setFilters({ ...filters, sort: e.target.value }); setCurrentPage(1); }}
-                  className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary bg-background"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="newest">Newest</option>
+                  <option value="popular">Most Popular</option>
                   <option value="price-asc">Price: Low to High</option>
                   <option value="price-desc">Price: High to Low</option>
-                  <option value="rating">Top Rated</option>
-                  <option value="popular">Most Popular</option>
                 </select>
               </div>
             </div>
@@ -169,83 +206,65 @@ const Shop = () => {
           {/* Products Grid */}
           <div className="flex-1">
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl overflow-hidden animate-pulse">
-                    <div className="aspect-square bg-gray-200" />
-                    <div className="p-4 space-y-2">
-                      <div className="h-3 bg-gray-200 rounded w-1/3" />
-                      <div className="h-4 bg-gray-200 rounded w-2/3" />
-                      <div className="h-3 bg-gray-200 rounded w-1/4" />
+              <div className={`grid ${viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
+                {[...Array(12)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="aspect-square bg-gray-200 rounded-2xl mb-4" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-4 bg-gray-200 rounded w-1/2" />
                     </div>
                   </div>
                 ))}
               </div>
-            ) : products.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-text-muted">No products found.</p>
-              </div>
-            ) : (
+            ) : products.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <div className={`grid ${viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
                   {products.map((product, index) => (
-                    <motion.div
-                      key={product._id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <Link to={`/product/${product.slug}`} className="group block">
-                        <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                          <div className="relative aspect-square overflow-hidden">
-                            <img
-                              src={product.images?.[0]?.url || 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400'}
-                              alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors">
-                              <HiOutlineHeart className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <div className="p-4">
-                            <p className="text-xs text-text-muted mb-1">{product.category?.name}</p>
-                            <h3 className="font-medium text-sm text-text group-hover:text-primary transition-colors line-clamp-2">
-                              {product.name}
-                            </h3>
-                            <div className="flex items-center gap-1 mt-1">
-                              <HiOutlineStar className="w-3.5 h-3.5 text-secondary" />
-                              <span className="text-xs text-text-muted">{product.rating?.toFixed(1)} ({product.numReviews} reviews)</span>
-                            </div>
-                            <div className="flex items-center justify-between mt-3">
-                              <span className="text-lg font-heading font-bold text-primary">Rs. {product.price?.toLocaleString()}</span>
-                              <span className="text-xs text-text-muted">{product.district}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
+                    <ProductCard key={product._id} product={product} index={index} />
                   ))}
                 </div>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center gap-2 mt-10">
+                  <div className="flex items-center justify-center gap-2 mt-12">
+                    <Button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Previous
+                    </Button>
                     {[...Array(totalPages)].map((_, i) => (
                       <button
                         key={i}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`w-10 h-10 rounded-xl text-sm font-medium transition-colors ${
+                        className={`w-10 h-10 rounded-lg font-medium transition-all ${
                           currentPage === i + 1
                             ? 'bg-primary text-white'
-                            : 'bg-white text-text-muted hover:bg-background border border-border'
+                            : 'bg-white text-text hover:bg-background'
                         }`}
                       >
                         {i + 1}
                       </button>
                     ))}
+                    <Button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Next
+                    </Button>
                   </div>
                 )}
               </>
+            ) : (
+              <div className="text-center py-20">
+                <p className="text-text-muted mb-4 text-lg">No products found</p>
+                <p className="text-sm text-text-muted">Try adjusting your filters or search terms</p>
+              </div>
             )}
           </div>
         </div>
