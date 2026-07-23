@@ -1,137 +1,80 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
-import { Button, Container } from '../components/ui';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
+import usePageTitle from '../hooks/usePageTitle';
 import toast from 'react-hot-toast';
 
-const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [showPassword, setShowPassword] = useState(false);
+export default function Login() {
+  usePageTitle('Login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  const redirectTo = searchParams.get('redirect') || location.state?.from;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const result = await login(formData);
-      if (result.success) {
-        toast.success('Welcome back!');
-        navigate('/dashboard');
+      const user = await login(email, password);
+      toast.success('Welcome back!');
+      if (redirectTo) {
+        navigate(redirectTo, { replace: true });
+      } else if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (user.role === 'seller') {
+        navigate('/seller/dashboard');
       } else {
-        toast.error(result.message || 'Login failed');
+        navigate('/');
       }
-    } catch (error) {
-      toast.error('An error occurred');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-24">
-      <Container size="narrow">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-md mx-auto"
-        >
-          <div className="text-center mb-10">
-            <Link to="/" className="inline-flex items-center gap-1 mb-6">
-              <span className="text-3xl font-heading font-semibold text-primary tracking-tight">Kala</span>
-              <span className="text-3xl font-heading font-light text-text/80 tracking-tight">Bazaar</span>
-            </Link>
-            <h1 className="font-heading text-4xl md:text-5xl font-semibold text-text mb-3">
-              Welcome Back
-            </h1>
-            <p className="text-text-muted">
-              Sign in to your account to continue
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl">Welcome Back</CardTitle>
+          <CardDescription>Sign in to your Kala Bazaar account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="your@email.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
+            </div>
+            <div className="text-right">
+              <Link to="/forgot-password" className="text-sm text-primary hover:underline">Forgot password?</Link>
+            </div>
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
+          <div className="mt-6 text-center space-y-2">
+            <p className="text-sm text-text-secondary">
+              Don't have an account? <Link to="/register" className="text-primary font-medium hover:underline">Sign up</Link>
+            </p>
+            <p className="text-sm">
+              <Link to="/seller/login" className="text-text-muted hover:text-primary text-xs">Artisan login</Link>
             </p>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="bg-white rounded-2xl border border-border/50 p-8 md:p-10"
-          >
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <HiOutlineMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3.5 bg-background border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <HiOutlineLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full pl-12 pr-12 py-3.5 bg-background border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                    placeholder="Enter your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
-                  >
-                    {showPassword ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 text-primary rounded border-border" />
-                  <span className="text-text-muted">Remember me</span>
-                </label>
-                <Link to="/forgot-password" className="text-primary hover:underline underline-offset-4 decoration-1">
-                  Forgot password?
-                </Link>
-              </div>
-
-              <Button type="submit" size="lg" className="w-full" loading={loading}>
-                Sign In
-              </Button>
-            </form>
-
-            <div className="mt-8 pt-6 border-t border-border">
-              <p className="text-center text-sm text-text-muted">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-primary font-medium hover:underline underline-offset-4 decoration-1">
-                  Create Account
-                </Link>
-              </p>
-            </div>
-          </motion.div>
-        </motion.div>
-      </Container>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default Login;
+}

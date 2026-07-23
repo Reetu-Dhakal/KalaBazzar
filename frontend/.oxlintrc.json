@@ -1,8 +1,11 @@
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "oxc"],
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+export default {
+  plugins: [
+    'react/rules-of-hooks',
+    'react/only-export-components',
+  ],
+  rules: {
+    'no-console': 'warn',
+    'no-debugger': 'error',
+    'no-unused-vars': 'warn',
+  },
+};

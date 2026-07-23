@@ -1,121 +1,64 @@
-import { Link } from 'react-router-dom';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineMap } from 'react-icons/hi';
-import { FaInstagram, FaFacebook, FaTwitter } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { Heart, Shield, Truck, Leaf } from 'lucide-react';
 
-const Footer = () => {
+export default function Footer() {
+  const navigate = useNavigate();
+
+  const scrollToContact = (e) => {
+    e.preventDefault();
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } else {
+      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <footer className="bg-white border-t border-border/50">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8">
-          {/* Brand Column */}
-          <div className="lg:col-span-4">
-            <Link to="/" className="inline-flex items-center gap-1 mb-5">
-              <span className="text-2xl font-heading font-semibold text-primary tracking-tight">Kala</span>
-              <span className="text-2xl font-heading font-light text-text/80 tracking-tight">Bazaar</span>
-            </Link>
-            <p className="text-text-muted text-sm leading-relaxed mb-8 max-w-sm">
-              A curated marketplace for authentic Nepali handcrafted treasures. Connecting artisans with appreciative homes worldwide.
+    <footer className="bg-primary text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 className="text-2xl font-heading font-bold mb-4">Kala Bazaar</h3>
+            <p className="text-primary-100 text-sm leading-relaxed">
+              Nepal's premier marketplace connecting you with authentic Nepali artisans and handmade crafts.
             </p>
-            <div className="flex gap-2">
-              {[
-                { icon: FaInstagram, label: 'Instagram' },
-                { icon: FaFacebook, label: 'Facebook' },
-                { icon: FaTwitter, label: 'Twitter' },
-              ].map(({ icon: Icon, label }) => (
-                <a
-                  key={label}
-                  href="#"
-                  aria-label={label}
-                  className="w-10 h-10 rounded-full bg-background hover:bg-primary hover:text-white text-text/70 flex items-center justify-center transition-all duration-300"
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
           </div>
-
-          {/* Quick Links */}
-          <div className="lg:col-span-2 lg:col-start-6">
-            <h4 className="text-sm font-semibold text-text uppercase tracking-wider mb-5">Discover</h4>
-            <ul className="space-y-3">
-              {[
-                { name: 'Shop All', path: '/shop' },
-                { name: 'Artisans', path: '/shop' },
-                { name: 'Categories', path: '/shop' },
-                { name: 'New Arrivals', path: '/shop?sort=newest' },
-              ].map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.path}
-                    className="text-sm text-text-muted hover:text-primary transition-colors duration-300"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+          <div>
+            <h4 className="font-semibold mb-4 uppercase tracking-wider text-sm">Quick Links</h4>
+            <ul className="space-y-2 text-sm text-primary-100">
+              <li><Link to="/shop" className="hover:text-secondary transition-colors">All Products</Link></li>
+              <li><Link to="/seller/register" className="hover:text-secondary transition-colors">Become an Artisan</Link></li>
+              <li><Link to="/faq" className="hover:text-secondary transition-colors">Help Center</Link></li>
             </ul>
           </div>
-
-          {/* Company */}
-          <div className="lg:col-span-2">
-            <h4 className="text-sm font-semibold text-text uppercase tracking-wider mb-5">Company</h4>
-            <ul className="space-y-3">
-              {[
-                { name: 'About', path: '/about' },
-                { name: 'Become a Seller', path: '/become-seller' },
-                { name: 'Contact', path: '/contact' },
-                { name: 'Privacy', path: '/about' },
-              ].map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.path}
-                    className="text-sm text-text-muted hover:text-primary transition-colors duration-300"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+          <div>
+            <h4 className="font-semibold mb-4 uppercase tracking-wider text-sm">Support</h4>
+            <ul className="space-y-2 text-sm text-primary-100">
+              <li><a href="/" onClick={scrollToContact} className="hover:text-secondary transition-colors cursor-pointer">Contact Us</a></li>
+              <li><a href="#" className="hover:text-secondary transition-colors">Shipping Info</a></li>
+              <li><a href="#" className="hover:text-secondary transition-colors">Returns</a></li>
             </ul>
           </div>
-
-          {/* Contact */}
-          <div className="lg:col-span-2">
-            <h4 className="text-sm font-semibold text-text uppercase tracking-wider mb-5">Contact</h4>
-            <ul className="space-y-4">
-              <li>
-                <div className="flex items-start gap-3">
-                  <HiOutlineMap className="w-4 h-4 text-primary mt-0.5" />
-                  <span className="text-sm text-text-muted">Kathmandu, Nepal</span>
-                </div>
-              </li>
-              <li>
-                <a href="tel:+977-1-2345678" className="flex items-center gap-3 text-text-muted hover:text-primary transition-colors">
-                  <HiOutlinePhone className="w-4 h-4" />
-                  <span className="text-sm">+977-1-2345678</span>
-                </a>
-              </li>
-              <li>
-                <a href="mailto:info@kalabazaar.com" className="flex items-center gap-3 text-text-muted hover:text-primary transition-colors">
-                  <HiOutlineMail className="w-4 h-4" />
-                  <span className="text-sm">info@kalabazaar.com</span>
-                </a>
-              </li>
+          <div>
+            <h4 className="font-semibold mb-4 uppercase tracking-wider text-sm">Why Kala Bazaar</h4>
+            <ul className="space-y-3 text-sm text-primary-100">
+              <li className="flex items-center gap-2"><Shield size={16} /> Verified Artisans</li>
+              <li className="flex items-center gap-2"><Truck size={16} /> Nationwide Delivery</li>
+              <li className="flex items-center gap-2"><Heart size={16} /> Authentic Crafts</li>
+              <li className="flex items-center gap-2"><Leaf size={16} /> Eco-friendly</li>
             </ul>
           </div>
         </div>
-
-        {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-text-muted">
-            {new Date().getFullYear()} Kala Bazaar Nepal. Crafted with care.
-          </p>
-          <p className="text-xs text-text-muted">
-            Preserving heritage through craftsmanship.
-          </p>
+        <div className="border-t border-primary-700 mt-8 pt-8 text-center text-sm text-primary-200">
+          <div className="flex justify-center gap-4 mb-3">
+            <Link to="/privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-secondary transition-colors">Terms of Service</Link>
+            <Link to="/faq" className="hover:text-secondary transition-colors">FAQ</Link>
+          </div>
+          <p>&copy; {new Date().getFullYear()} Kala Bazaar. All rights reserved.</p>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

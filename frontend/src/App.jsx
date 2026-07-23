@@ -1,107 +1,105 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './context/AuthContext';
-import { CartProvider } from './context/CartContext';
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
-import ProtectedRoute from './components/ProtectedRoute';
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/layout/Layout';
+import { Spinner } from './components/ui/Spinner';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 
-// Lazy-loaded pages for code splitting
-const HomePage = lazy(() => import('./pages/HomePage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
-const BecomeSeller = lazy(() => import('./pages/BecomeSeller'));
+const SellerLogin = lazy(() => import('./pages/SellerLogin'));
+const SellerRegister = lazy(() => import('./pages/SellerRegister'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
 const Shop = lazy(() => import('./pages/Shop'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
-const Cart = lazy(() => import('./pages/Cart'));
-const Checkout = lazy(() => import('./pages/Checkout'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const WishlistPage = lazy(() => import('./pages/WishlistPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const OrdersPage = lazy(() => import('./pages/OrdersPage'));
 const OrderDetail = lazy(() => import('./pages/OrderDetail'));
-const SellerDashboard = lazy(() => import('./pages/seller/SellerDashboard'));
-const SellerProducts = lazy(() => import('./pages/seller/SellerProducts'));
-const SellerProductForm = lazy(() => import('./pages/seller/SellerProductForm'));
-const SellerOrders = lazy(() => import('./pages/seller/SellerOrders'));
-const SellerStore = lazy(() => import('./pages/seller/SellerStore'));
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
-const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
-const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
-const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'));
-const About = lazy(() => import('./pages/About'));
-const Contact = lazy(() => import('./pages/Contact'));
+const OrderInvoice = lazy(() => import('./pages/OrderInvoice'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
+const SellerDashboard = lazy(() => import('./pages/SellerDashboard'));
+const SellerFeed = lazy(() => import('./pages/SellerFeed'));
+const SellerEarnings = lazy(() => import('./pages/SellerEarnings'));
+const SellerSettings = lazy(() => import('./pages/SellerSettings'));
+const SellerApplication = lazy(() => import('./pages/SellerApplication'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminCoupons = lazy(() => import('./pages/AdminCoupons'));
+const AdminOrders = lazy(() => import('./pages/AdminOrders'));
+const AdminReviews = lazy(() => import('./pages/AdminReviews'));
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const StorePage = lazy(() => import('./pages/StorePage'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
+const RegionPage = lazy(() => import('./pages/RegionPage'));
+const RecentlyViewed = lazy(() => import('./pages/RecentlyViewed'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
-const PageLoader = () => (
-  <div className="min-h-screen pt-24 flex items-center justify-center">
-    <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-  </div>
-);
+const Lazy = ({ children }) => <Suspense fallback={<div className="py-20 text-center"><Spinner /></div>}>{children}</Suspense>;
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <CartProvider>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main className="flex-1">
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/product/:slug" element={<ProductDetail />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
+    <Routes>
+      {/* Auth screens — standalone, no persistent layout */}
+      <Route path="/login" element={<Lazy><Login /></Lazy>} />
+      <Route path="/register" element={<Lazy><Register /></Lazy>} />
+      <Route path="/seller/login" element={<Lazy><SellerLogin /></Lazy>} />
+      <Route path="/seller/register" element={<Lazy><SellerRegister /></Lazy>} />
+      <Route path="/admin/login" element={<Lazy><AdminLogin /></Lazy>} />
+      <Route path="/forgot-password" element={<Lazy><ForgotPassword /></Lazy>} />
+      <Route path="/reset-password/:token" element={<Lazy><ResetPassword /></Lazy>} />
 
-                  {/* Customer Routes */}
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+      {/* App shell — Layout provides Navbar / Footer / CartDrawer */}
+      <Route element={<Layout />}>
+        {/* Public Landing */}
+        <Route path="/" element={<Lazy><LandingPage /></Lazy>} />
 
-                  {/* Seller Routes */}
-                  <Route path="/become-seller" element={<ProtectedRoute><BecomeSeller /></ProtectedRoute>} />
-                  <Route path="/seller" element={<ProtectedRoute roles={['seller']}><SellerDashboard /></ProtectedRoute>} />
-                  <Route path="/seller/products" element={<ProtectedRoute roles={['seller']}><SellerProducts /></ProtectedRoute>} />
-                  <Route path="/seller/products/new" element={<ProtectedRoute roles={['seller']}><SellerProductForm /></ProtectedRoute>} />
-                  <Route path="/seller/products/edit/:id" element={<ProtectedRoute roles={['seller']}><SellerProductForm /></ProtectedRoute>} />
-                  <Route path="/seller/orders" element={<ProtectedRoute roles={['seller']}><SellerOrders /></ProtectedRoute>} />
-                  <Route path="/seller/store" element={<ProtectedRoute roles={['seller']}><SellerStore /></ProtectedRoute>} />
+        {/* Shop App — browsable by guests */}
+        <Route path="/shop" element={<Lazy><Shop /></Lazy>} />
+        <Route path="/product/:slug" element={<Lazy><ProductDetail /></Lazy>} />
+        <Route path="/category/:slug" element={<Lazy><CategoryPage /></Lazy>} />
+        <Route path="/region/:slug" element={<Lazy><RegionPage /></Lazy>} />
+        <Route path="/artisan/:slug" element={<Lazy><StorePage /></Lazy>} />
+        <Route path="/recently-viewed" element={<Lazy><RecentlyViewed /></Lazy>} />
 
-                  {/* Admin Routes */}
-                  <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminUsers /></ProtectedRoute>} />
-                  <Route path="/admin/products" element={<ProtectedRoute roles={['admin']}><AdminProducts /></ProtectedRoute>} />
-                  <Route path="/admin/orders" element={<ProtectedRoute roles={['admin']}><AdminOrders /></ProtectedRoute>} />
-                  <Route path="/admin/categories" element={<ProtectedRoute roles={['admin']}><AdminCategories /></ProtectedRoute>} />
+        {/* Customer (protected) */}
+        <Route path="/cart" element={<Lazy><ProtectedRoute><CartPage /></ProtectedRoute></Lazy>} />
+        <Route path="/wishlist" element={<Lazy><ProtectedRoute><WishlistPage /></ProtectedRoute></Lazy>} />
+        <Route path="/profile" element={<Lazy><ProtectedRoute><ProfilePage /></ProtectedRoute></Lazy>} />
+        <Route path="/orders" element={<Lazy><ProtectedRoute><OrdersPage /></ProtectedRoute></Lazy>} />
+        <Route path="/orders/:id" element={<Lazy><ProtectedRoute><OrderDetail /></ProtectedRoute></Lazy>} />
+        <Route path="/orders/:id/invoice" element={<Lazy><ProtectedRoute><OrderInvoice /></ProtectedRoute></Lazy>} />
+        <Route path="/checkout" element={<Lazy><ProtectedRoute><Checkout /></ProtectedRoute></Lazy>} />
+        <Route path="/order-success/:id" element={<Lazy><ProtectedRoute><OrderSuccess /></ProtectedRoute></Lazy>} />
 
-                  {/* 404 */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </main>
-            <Footer />
-          </div>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                background: '#3A2A1F',
-                color: '#FBEED3',
-                borderRadius: '12px',
-                fontSize: '14px',
-              },
-            }}
-          />
-        </CartProvider>
-      </AuthProvider>
-    </Router>
+        {/* Seller (protected) */}
+        <Route path="/seller/apply" element={<Lazy><ProtectedRoute><SellerApplication /></ProtectedRoute></Lazy>} />
+        <Route path="/seller/dashboard" element={<Lazy><ProtectedRoute><SellerDashboard /></ProtectedRoute></Lazy>} />
+        <Route path="/seller/feed" element={<Lazy><ProtectedRoute><SellerFeed /></ProtectedRoute></Lazy>} />
+        <Route path="/seller/earnings" element={<Lazy><ProtectedRoute><SellerEarnings /></ProtectedRoute></Lazy>} />
+        <Route path="/seller/settings" element={<Lazy><ProtectedRoute><SellerSettings /></ProtectedRoute></Lazy>} />
+
+        {/* Admin (admin only) */}
+        <Route path="/admin/dashboard" element={<Lazy><AdminRoute><AdminDashboard /></AdminRoute></Lazy>} />
+        <Route path="/admin/coupons" element={<Lazy><AdminRoute><AdminCoupons /></AdminRoute></Lazy>} />
+        <Route path="/admin/orders" element={<Lazy><AdminRoute><AdminOrders /></AdminRoute></Lazy>} />
+        <Route path="/admin/reviews" element={<Lazy><AdminRoute><AdminReviews /></AdminRoute></Lazy>} />
+        <Route path="/admin/users" element={<Lazy><AdminRoute><AdminUsers /></AdminRoute></Lazy>} />
+
+        {/* Static pages */}
+        <Route path="/faq" element={<Lazy><FAQ /></Lazy>} />
+        <Route path="/privacy" element={<Lazy><Privacy /></Lazy>} />
+        <Route path="/terms" element={<Lazy><Terms /></Lazy>} />
+
+        <Route path="*" element={<Lazy><NotFound /></Lazy>} />
+      </Route>
+    </Routes>
   );
 }
-
-export default App;

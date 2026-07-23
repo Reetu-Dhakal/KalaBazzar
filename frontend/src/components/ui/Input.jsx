@@ -1,29 +1,19 @@
-import React from 'react';
+import * as React from 'react';
+import { cn } from '../../lib/utils';
 
-export const Input = React.forwardRef(({ label, error, helperText, className = '', ...rest }, ref) => {
-  const id = rest.id || rest.name || label?.toLowerCase().replace(/\s+/g, '-');
-
+const Input = React.forwardRef(({ className, type, ...props }, ref) => {
   return (
-    <div className="w-full">
-      {label && (
-        <label htmlFor={id} className="font-body text-sm font-medium text-text mb-1.5 block">
-          {label}
-        </label>
+    <input
+      type={type}
+      className={cn(
+        'flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50',
+        className
       )}
-      <input
-        ref={ref}
-        id={id}
-        className={`w-full rounded-xl border px-4 py-3 font-body text-sm text-text placeholder:text-text-muted/60 bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary ${error ? 'border-error' : 'border-border'} ${className}`}
-        {...rest}
-      />
-      {error && (
-        <p className="mt-1.5 text-sm text-error font-body">{error}</p>
-      )}
-      {!error && helperText && (
-        <p className="mt-1.5 text-sm text-text-muted font-body">{helperText}</p>
-      )}
-    </div>
+      ref={ref}
+      {...props}
+    />
   );
 });
-
 Input.displayName = 'Input';
+
+export { Input };

@@ -1,118 +1,37 @@
 @import "tailwindcss";
 
-/* stylelint-disable-next-line at-rule-no-unknown */
 @theme {
   --color-primary: #6E1E1E;
-  --color-primary-light: #8D3A3A;
+  --color-primary-50: #FDF2F2;
+  --color-primary-100: #FBE0E0;
+  --color-primary-200: #F5B8B8;
+  --color-primary-300: #EF8F8F;
+  --color-primary-400: #E36666;
+  --color-primary-500: #D43D3D;
+  --color-primary-600: #B32E2E;
+  --color-primary-700: #8F2222;
+  --color-primary-800: #6E1E1E;
+  --color-primary-900: #4A1414;
+
   --color-secondary: #C89B3C;
-  --color-background: #FAF7F2;
-  --color-card: #FFFFFF;
-  --color-border: #EADBC8;
+  --color-secondary-50: #FDF8ED;
+  --color-secondary-100: #F9EECC;
+  --color-secondary-200: #F2DA94;
+  --color-secondary-300: #EAC660;
+  --color-secondary-400: #D9AD3C;
+  --color-secondary-500: #C89B3C;
+  --color-secondary-600: #A67D2E;
+  --color-secondary-700: #856223;
+  --color-secondary-800: #6A4E1C;
+  --color-secondary-900: #4A3613;
+
+  --color-background: #FBEED3;
+  --color-surface: #FAF7F2;
+
   --color-text: #3A2A1F;
-  --color-text-muted: #6B7280;
-  --color-success: #059669;
-  --color-error: #DC2626;
-  --color-warning: #D97706;
+  --color-text-secondary: #6B5D4F;
+  --color-text-muted: #9C8E80;
 
-  --font-heading: 'Cormorant Garamond', serif;
-  --font-body: 'Poppins', sans-serif;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: var(--font-body);
-  background-color: var(--color-background);
-  color: var(--color-text);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-light);
-}
-
-/* Smooth transitions */
-a, button {
-  transition: all 0.2s ease-in-out;
-}
-
-/* Focus styles */
-*:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* Container */
-.container-custom {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-@media (min-width: 640px) {
-  .container-custom {
-    padding: 0 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container-custom {
-    padding: 0 2rem;
-  }
-}
-
-/* Line clamp */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Max width utility */
-.max-w-200px {
-  max-width: 200px;
-}
-
-/* Image placeholder bg */
-.image-placeholder {
-  background: linear-gradient(135deg, var(--color-border) 0%, var(--color-background) 100%);
+  --font-heading: "Cormorant Garamond", serif;
+  --font-body: "Poppins", sans-serif;
 }

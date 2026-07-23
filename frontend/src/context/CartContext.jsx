@@ -1,109 +1,77 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import api from '../services/api';
+import { useAuth } from './AuthContext';
 
-const CartContext = createContext();
+const CartContext = createContext(null);
 
-const CART_STORAGE_KEY = 'kalabazaar_cart';
-
-const cartReducer = (state, action) => {
-  switch (action.type) {
-    case 'ADD_ITEM': {
-      const existingIndex = state.items.findIndex(
-        (item) => item.product === action.payload.product
-      );
-
-      if (existingIndex >= 0) {
-        const updatedItems = [...state.items];
-        updatedItems[existingIndex].quantity += action.payload.quantity;
-        return { ...state, items: updatedItems };
-      }
-
-      return { ...state, items: [...state.items, action.payload] };
-    }
-
-    case 'REMOVE_ITEM':
-      return {
-        ...state,
-        items: state.items.filter(
-          (item) => item.product !== action.payload
-        ),
-      };
-
-    case 'UPDATE_QUANTITY': {
-      const updatedItems = state.items.map((item) =>
-        item.product === action.payload.product
-          ? { ...item, quantity: action.payload.quantity }
-          : item
-      );
-      return { ...state, items: updatedItems };
-    }
-
-    case 'CLEAR_CART':
-      return { ...state, items: [] };
-
-    default:
-      return state;
-  }
-};
-
-const calculateSubtotal = (items) =>
-  items.reduce((total, item) => total + item.price * item.quantity, 0);
-
-export const CartProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, { items: [] }, () => {
-    try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : { items: [] };
-    } catch {
-      return { items: [] };
-    }
-  });
+export function CartProvider({ children }) {
+  const { user } = useAuth();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const debounceTimers = useRef({});
 
   useEffect(() => {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+    if (user) {
+      fetchCart();
+    } else {
+      setItems([]);
+    }
+  }, [user]);
 
-  const addItem = (item) => {
-    dispatch({ type: 'ADD_ITEM', payload: item });
-    toast.success('Added to cart!');
+  const fetchCart = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get('/cart');
+      setItems(data.data?.items || []);
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeItem = (productId) => {
-    dispatch({ type: 'REMOVE_ITEM', payload: productId });
-    toast.success('Removed from cart');
+  const addItem = async (productId, quantity = 1) => {
+    const { data } = await api.post('/cart/add', { productId, quantity });
+    setItems(data.data.items);
+    return data;
   };
 
-  const updateQuantity = (productId, quantity) => {
+  const updateQuantity = useCallback(async (productId, quantity) => {
     if (quantity < 1) return;
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { product: productId, quantity } });
+    setItems((prev) => prev.map((i) => (i.product?._id === productId || i.product === productId) ? { ...i, quantity } : i));
+    clearTimeout(debounceTimers.current[productId]);
+    debounceTimers.current[productId] = setTimeout(async () => {
+      try {
+        const { data } = await api.put('/cart/update', { productId, quantity });
+        setItems(data.data.items);
+      } catch {
+        fetchCart();
+      }
+    }, 400);
+  }, []);
+
+  const removeItem = async (productId) => {
+    const { data } = await api.delete(`/cart/remove/${productId}`);
+    setItems(data.data.items);
   };
 
-  const clearCart = () => {
-    dispatch({ type: 'CLEAR_CART' });
+  const clearCart = async () => {
+    await api.delete('/cart/clear');
+    setItems([]);
   };
 
-  const subtotal = calculateSubtotal(state.items);
-  const itemCount = state.items.reduce((count, item) => count + item.quantity, 0);
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = items.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0);
 
-  const value = {
-    items: state.items,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart,
-    subtotal,
-    itemCount,
-  };
-
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-};
+  return (
+    <CartContext.Provider value={{ items, loading, itemCount, subtotal, addItem, updateQuantity, removeItem, clearCart, fetchCart }}>
+      {children}
+    </CartContext.Provider>
+  );
+}
 
 export const useCart = () => {
   const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within CartProvider');
-  }
+  if (!context) throw new Error('useCart must be used within CartProvider');
   return context;
 };
-
-export default CartContext;

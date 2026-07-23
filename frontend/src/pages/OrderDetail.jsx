@@ -1,354 +1,172 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import {
-  HiOutlineArrowLeft,
-  HiOutlineCheckCircle,
-  HiOutlineClock,
-  HiOutlineTruck,
-  HiOutlineXCircle,
-  HiOutlineCog,
-  HiOutlineMap,
-  HiOutlinePhone,
-} from 'react-icons/hi';
-import API from '../utils/axios';
-import { Button, Container, LoadingSkeleton } from '../components/ui';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Spinner } from '../components/ui/Spinner';
+import usePageTitle from '../hooks/usePageTitle';
+import { ArrowLeft, MapPin, CreditCard, Truck, Check, Circle, FileText } from 'lucide-react';
+import toast from 'react-hot-toast';
+import CancelOrderModal from '../components/layout/CancelOrderModal';
 
-const statusSteps = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
-
-const statusColors = {
-  pending: 'bg-amber-100 text-amber-700',
-  confirmed: 'bg-blue-100 text-blue-700',
-  processing: 'bg-indigo-100 text-indigo-700',
-  shipped: 'bg-purple-100 text-purple-700',
-  delivered: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+const statusVariant = {
+  pending: 'warning', confirmed: 'info', processing: 'info',
+  shipped: 'info', delivered: 'success', cancelled: 'danger', returned: 'danger',
 };
 
-const statusIcons = {
-  pending: HiOutlineClock,
-  confirmed: HiOutlineCheckCircle,
-  processing: HiOutlineCog,
-  shipped: HiOutlineTruck,
-  delivered: HiOutlineCheckCircle,
-  cancelled: HiOutlineXCircle,
-};
-
-const OrderDetail = () => {
+export default function OrderDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  usePageTitle('Order Details');
+  const [cancelling, setCancelling] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const { data } = await API.get(`/orders/${id}`);
-        setOrder(data.data);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load order');
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (id) fetchOrder();
+    api.get(`/orders/${id}`)
+      .then(({ data }) => setOrder(data.data))
+      .catch(() => toast.error('Failed to load order'))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-24">
-        <Container>
-          <div className="py-8">
-            <LoadingSkeleton variant="text" count={5} />
-          </div>
-        </Container>
-      </div>
-    );
-  }
+  const handleCancel = async (reason) => {
+    setCancelling(true);
+    try {
+      await api.put(`/orders/${id}/cancel`, { reason });
+      toast.success('Order cancelled');
+      const { data } = await api.get(`/orders/${id}`);
+      setOrder(data.data);
+      setShowCancelModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to cancel');
+    } finally {
+      setCancelling(false);
+    }
+  };
 
-  if (error || !order) {
-    return (
-      <div className="min-h-screen pt-24">
-        <Container>
-          <div className="py-16 text-center">
-            <p className="text-text-muted mb-4">{error || 'Order not found'}</p>
-            <Link to="/dashboard">
-              <Button variant="outline" icon={HiOutlineArrowLeft}>
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </Container>
-      </div>
-    );
-  }
+  if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
+  if (!order) return <div className="text-center py-20 text-text-secondary">Order not found</div>;
 
-  const StatusIcon = statusIcons[order.orderStatus] || HiOutlineClock;
-  const currentStepIndex = statusSteps.indexOf(order.orderStatus);
-  const isCancelled = order.orderStatus === 'cancelled';
+  const totalItems = order.items.reduce((s, i) => s + i.quantity, 0);
+
+  const statusSteps = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+  const currentIdx = statusSteps.indexOf(order.status);
+  const cancelledOrReturned = ['cancelled', 'returned'].includes(order.status);
 
   return (
-    <div className="min-h-screen pt-24">
-      <Container>
-        <div className="py-8">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm text-text-muted hover:text-primary transition-colors mb-4">
-              <HiOutlineArrowLeft className="w-4 h-4" />
-              Back to Dashboard
-            </Link>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="font-heading text-3xl md:text-4xl font-semibold text-text">
-                  Order #{order.invoiceNumber || order._id.slice(-6)}
-                </h1>
-                <p className="text-text-muted mt-1">
-                  Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric',
-                  })}
-                </p>
-              </div>
-              <span className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full capitalize self-start ${statusColors[order.orderStatus] || ''}`}>
-                <StatusIcon className="w-4 h-4" />
-                {order.orderStatus}
-              </span>
-            </div>
-          </motion.div>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-primary mb-4">
+        <ArrowLeft size={16} /> Back
+      </button>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Progress Tracker */}
-              {!isCancelled && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-2xl border border-border/50 p-6"
-                >
-                  <h2 className="font-heading text-lg font-semibold text-text mb-6">Order Progress</h2>
-                  <div className="flex items-center justify-between">
-                    {statusSteps.map((step, idx) => {
-                      const reached = idx <= currentStepIndex;
-                      const StepIcon = statusIcons[step] || HiOutlineClock;
-                      return (
-                        <div key={step} className="flex-1 flex flex-col items-center">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all ${
-                            reached ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'
-                          }`}>
-                            <StepIcon className="w-5 h-5" />
-                          </div>
-                          <span className={`text-xs capitalize ${reached ? 'text-primary font-medium' : 'text-text-muted'}`}>
-                            {step}
-                          </span>
-                          {idx < statusSteps.length - 1 && (
-                            <div className={`absolute h-0.5 w-full ${
-                              idx < currentStepIndex ? 'bg-primary' : 'bg-gray-200'
-                            }`} />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              )}
-
-              {isCancelled && order.cancellationReason && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 rounded-2xl border border-red-200 p-6"
-                >
-                  <h2 className="font-heading text-lg font-semibold text-red-700 mb-2">Order Cancelled</h2>
-                  <p className="text-red-600 text-sm">{order.cancellationReason}</p>
-                </motion.div>
-              )}
-
-              {/* Order Items */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white rounded-2xl border border-border/50 p-6"
-              >
-                <h2 className="font-heading text-lg font-semibold text-text mb-4">Items</h2>
-                <div className="space-y-4">
-                  {order.orderItems?.map((item, idx) => (
-                    <div key={idx} className="flex gap-4 pb-4 border-b border-border last:border-0 last:pb-0">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-text truncate">{item.name}</p>
-                        <p className="text-sm text-text-muted">Qty: {item.quantity}</p>
-                      </div>
-                      <p className="font-heading font-semibold text-primary shrink-0">
-                        Rs. {(item.price * item.quantity).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Shipping Address */}
-              {order.shippingAddress && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="bg-white rounded-2xl border border-border/50 p-6"
-                >
-                  <h2 className="font-heading text-lg font-semibold text-text mb-4">Shipping Address</h2>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-text">
-                      <HiOutlineMap className="w-4 h-4 text-primary shrink-0" />
-                      <span>{order.shippingAddress.fullName}</span>
-                    </div>
-                    <p className="text-text-muted pl-6">{order.shippingAddress.street}</p>
-                    <p className="text-text-muted pl-6">
-                      {[order.shippingAddress.city, order.shippingAddress.district].filter(Boolean).join(', ')}
-                    </p>
-                    <p className="text-text-muted pl-6">
-                      {[order.shippingAddress.province, order.shippingAddress.zipCode].filter(Boolean).join(' ')}
-                    </p>
-                    {order.shippingAddress.phone && (
-                      <div className="flex items-center gap-2 text-text-muted pt-2">
-                        <HiOutlinePhone className="w-4 h-4 shrink-0" />
-                        <span>{order.shippingAddress.phone}</span>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </div>
-
-            {/* Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Order Summary */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="bg-white rounded-2xl border border-border/50 p-6"
-              >
-                <h2 className="font-heading text-lg font-semibold text-text mb-4">Summary</h2>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-text-muted">Subtotal</span>
-                    <span className="text-text font-medium">Rs. {order.itemsPrice?.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-muted">Shipping</span>
-                    <span className="text-text font-medium">
-                      {order.shippingPrice === 0 ? 'Free' : `Rs. ${order.shippingPrice?.toLocaleString()}`}
-                    </span>
-                  </div>
-                  {order.taxPrice > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-text-muted">Tax</span>
-                      <span className="text-text font-medium">Rs. {order.taxPrice?.toLocaleString()}</span>
-                    </div>
-                  )}
-                  {order.discountPrice > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-text-muted">Discount</span>
-                      <span className="text-green-600 font-medium">- Rs. {order.discountPrice?.toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div className="h-px bg-border my-2" />
-                  <div className="flex justify-between text-lg">
-                    <span className="font-semibold text-text">Total</span>
-                    <span className="font-heading font-semibold text-primary">
-                      Rs. {order.totalPrice?.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Payment Info */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="bg-white rounded-2xl border border-border/50 p-6"
-              >
-                <h2 className="font-heading text-lg font-semibold text-text mb-4">Payment</h2>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-text-muted">Method</span>
-                    <span className="text-text font-medium capitalize">{order.paymentMethod}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-muted">Status</span>
-                    <span className={`font-medium ${order.isPaid ? 'text-green-600' : 'text-amber-600'}`}>
-                      {order.isPaid ? 'Paid' : 'Pending'}
-                    </span>
-                  </div>
-                  {order.paidAt && (
-                    <div className="flex justify-between">
-                      <span className="text-text-muted">Paid on</span>
-                      <span className="text-text">
-                        {new Date(order.paidAt).toLocaleDateString('en-US', {
-                          year: 'numeric', month: 'short', day: 'numeric',
-                        })}
-                      </span>
-                    </div>
-                  )}
-                  {order.invoiceNumber && (
-                    <div className="flex justify-between">
-                      <span className="text-text-muted">Invoice</span>
-                      <span className="text-text font-mono text-xs">{order.invoiceNumber}</span>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              {/* Delivery Estimate */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-                className="bg-white rounded-2xl border border-border/50 p-6"
-              >
-                <h2 className="font-heading text-lg font-semibold text-text mb-3">Delivery</h2>
-                {order.deliveredAt ? (
-                  <p className="text-sm text-green-600 font-medium">
-                    Delivered on {new Date(order.deliveredAt).toLocaleDateString('en-US', {
-                      year: 'numeric', month: 'long', day: 'numeric',
-                    })}
-                  </p>
-                ) : (
-                  <p className="text-sm text-text-muted">
-                    Estimated delivery: 5-7 business days after confirmation
-                  </p>
-                )}
-              </motion.div>
-
-              {/* Help */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45 }}
-                className="bg-background rounded-2xl p-6 text-center"
-              >
-                <p className="text-sm text-text-muted mb-3">Need help with this order?</p>
-                <Link to="/contact">
-                  <Button variant="outline" size="sm" className="w-full">
-                    Contact Support
-                  </Button>
-                </Link>
-              </motion.div>
-            </div>
-          </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-1">Order Details</h1>
+          <p className="text-sm text-text-muted font-mono">#{order._id}</p>
         </div>
-      </Container>
+        <Badge variant={statusVariant[order.status] || 'default'} className="text-sm px-4 py-1.5">{order.status.toUpperCase()}</Badge>
+      </div>
+
+      {cancelledOrReturned ? (
+        <Card className="mb-6 border-red-200 bg-red-50">
+          <CardContent className="p-4 text-center">
+            <p className="font-semibold text-red-600 capitalize">{order.status}</p>
+            {order.cancellationReason && <p className="text-sm text-red-500 mt-1">Reason: {order.cancellationReason}</p>}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              {statusSteps.map((step, idx) => (
+                <div key={step} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${idx <= currentIdx ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'}`}>
+                      {idx < currentIdx ? <Check size={18} /> : <Circle size={18} />}
+                    </div>
+                    <p className={`text-xs mt-2 font-medium capitalize ${idx <= currentIdx ? 'text-primary' : 'text-text-muted'}`}>{step}</p>
+                  </div>
+                  {idx < statusSteps.length - 1 && (
+                    <div className={`w-12 sm:w-20 h-0.5 mx-2 ${idx < currentIdx ? 'bg-primary' : 'bg-gray-200'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <Card className="lg:col-span-2">
+          <CardHeader><CardTitle>Items ({totalItems})</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {order.items.map((item, idx) => (
+                <div key={idx} className="flex gap-4 items-center">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
+                    {item.image && <img loading="lazy" src={item.image} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link to={`/product/${item.product}`} className="font-medium hover:text-primary line-clamp-1">{item.name}</Link>
+                    <p className="text-sm text-text-muted">Qty: {item.quantity} × Rs. {item.price?.toLocaleString()}</p>
+                  </div>
+                  <p className="font-semibold text-right">Rs. {item.subtotal?.toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Order Summary</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-text-secondary">Subtotal</span><span>Rs. {order.subtotal?.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-text-secondary">Shipping</span><span>{order.shippingCost === 0 ? 'Free' : `Rs. ${order.shippingCost}`}</span></div>
+              {order.discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-Rs. {order.discount}</span></div>}
+              <div className="border-t pt-2 flex justify-between font-bold text-lg">
+                <span>Total</span><span className="text-primary">Rs. {order.total?.toLocaleString()}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 space-y-3 text-sm">
+              <div className="flex items-start gap-2">
+                <MapPin size={16} className="text-text-muted mt-0.5" />
+                <div>
+                  <p className="font-medium">{order.shippingAddress?.fullName}</p>
+                  <p className="text-text-secondary">{order.shippingAddress?.address}, {order.shippingAddress?.city}</p>
+                  <p className="text-text-secondary">{order.shippingAddress?.district}, {order.shippingAddress?.province}</p>
+                  <p className="text-text-secondary">{order.shippingAddress?.phone}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <CreditCard size={16} className="text-text-muted" />
+                <span className="capitalize">{order.paymentMethod}</span>
+                <Badge variant={order.paymentStatus === 'completed' ? 'success' : 'warning'} size="sm">{order.paymentStatus}</Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <Truck size={16} className="text-text-muted" />
+                <span className="text-text-secondary">{order.createdAt && new Date(order.createdAt).toLocaleDateString()}</span>
+              </div>
+              {order.trackingNumber && <div className="flex items-center gap-2"><Truck size={16} className="text-text-muted" /><span className="font-medium">Tracking: {order.trackingNumber}</span></div>}
+            </CardContent>
+          </Card>
+
+          <Link to={`/orders/${id}/invoice`} className="w-full"><Button variant="outline" className="w-full"><FileText size={16} className="mr-1" /> View Invoice</Button></Link>
+
+          {['pending', 'confirmed'].includes(order.status) && (
+            <Button variant="danger" className="w-full" onClick={() => setShowCancelModal(true)} disabled={cancelling}>
+              {cancelling ? 'Cancelling...' : 'Cancel Order'}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <CancelOrderModal isOpen={showCancelModal} onClose={() => setShowCancelModal(false)} onConfirm={handleCancel} />
     </div>
   );
-};
-
-export default OrderDetail;
+}
