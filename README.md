@@ -1,13 +1,13 @@
 # Kala Bazaar Nepal
 
-A production-ready multi-vendor marketplace connecting Nepali artisans with customers across Nepal. Built with Express/MongoDB backend and React 19 + Vite 6 + Tailwind v4 frontend.
+A production-ready multi-vendor marketplace connecting Nepali artisans with customers across Nepal. Built with TypeScript, Express/MongoDB backend and React 19 + Vite 6 + Tailwind v4 frontend.
 
 ## Features
 
 ### For Customers
 - Browse authentic handmade Nepali products by category, region, or artisan store
 - Advanced search with autocomplete, filters (price, category, region), and sort
-- Product quick view, image lightbox (keyboard nav), share buttons
+- Product quick view, image lightbox, share buttons
 - Cart slide-out drawer with debounced quantity updates
 - Secure checkout — COD, Khalti, eSewa with coupon validation
 - Order tracking with 5-step timeline + printable invoice
@@ -16,21 +16,18 @@ A production-ready multi-vendor marketplace connecting Nepali artisans with cust
 - Address manager (add/edit/delete/set-default)
 
 ### For Sellers
-- Role-distinct auth (seller/login, seller/register)
-- Seller application → admin approval flow
-- Onboarding checklist (profile → product → payout)
+- Seller application with 3 verification paths (social media, marketplace, offline artisan)
+- Admin approval flow with email notifications
 - Dashboard with stats, revenue chart, low-stock alerts
-- Product CRUD (create/edit/publish/unpublish/delete)
+- Product CRUD (create/edit/publish/unpublish/delete) with variants
 - Order management with status updates + tracking number
 - Store settings: name, bio, craft story, specialization, open/close toggle
 - Payout info with QR code uploads (Bank, eSewa, Khalti)
-- Seller feed for posting updates
 - Earnings page with history
 
 ### For Admins
-- Admin login at `/admin/login`
-- Dashboard with platform-wide stats
-- Seller approval/rejection
+- Dashboard with platform-wide stats and charts
+- Seller approval/rejection with reason
 - Coupon CRUD (create/edit/toggle/delete)
 - Orders management with status filters + inline updates
 - Reviews management with delete
@@ -39,22 +36,25 @@ A production-ready multi-vendor marketplace connecting Nepali artisans with cust
 ## Tech Stack
 
 ### Frontend
-- **React 19** + **Vite 6** with `@tailwindcss/vite` plugin
+- **React 19** + **TypeScript** + **Vite 6** with `@tailwindcss/vite` plugin
 - **Tailwind CSS v4** (no config file — `@theme` directives in CSS)
 - **React Router v7** with lazy-loaded routes (30+ pages)
-- **TanStack Query v5** (ready for advanced data fetching)
+- **TanStack Query v5** for data fetching
 - **Axios** with 401 refresh token interceptor
-- **Shadcn/UI**-style primitives (Button, Card, Input, Badge, Skeleton)
-- **react-hot-toast**, **Recharts**, **Lucide React**
+- **React Hook Form** + **Zod** for form validation
+- **Framer Motion** for animations
+- **Recharts** for charts
+- **Lucide React** for icons
+- **react-hot-toast** for notifications
 
 ### Backend
-- **Node.js** + **Express** with modular route/controller/service layers
-- **MongoDB** + **Mongoose** (12 models)
+- **Node.js** + **Express** + **TypeScript** with modular route/controller/service layers
+- **MongoDB** + **Mongoose** (16 models)
 - **JWT** access tokens (15m) + refresh tokens (7d, HTTP-only cookie)
 - **Cloudinary** + **Multer** for image uploads
 - **express-validator** for input validation
 - **Helmet** for security headers
-- **Nodemailer** for email notifications (order confirm, status change, password reset, seller approval)
+- **Nodemailer** for email notifications
 
 ## Quick Start
 
@@ -75,7 +75,32 @@ npm install
 npm run dev             # UI on :5173, proxies /api -> :5000
 
 # 4. Seed database
-node backend/src/seed.js
+cd backend
+npm run seed
+```
+
+### Environment Variables
+
+Create `backend/.env`:
+
+```env
+PORT=5000
+NODE_ENV=development
+MONGODB_URI=mongodb://localhost:27017/kala-bazaar
+JWT_SECRET=your-secret-key
+JWT_REFRESH_SECRET=your-refresh-secret
+CLIENT_URL=http://localhost:5173
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+
+# SMTP (Nodemailer)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
 ```
 
 ### Test Credentials
@@ -92,28 +117,28 @@ node backend/src/seed.js
 KalaBazzar/
 ├── backend/
 │   └── src/
-│       ├── config/         # DB, Cloudinary, constants
-│       ├── controllers/    # 15 controllers (auth, seller, product, order, etc.)
-│       ├── middleware/     # auth, validate, upload, error, rateLimiter
-│       ├── models/         # 12 Mongoose models
-│       ├── routes/         # 16 route groups mounted in app.js
-│       ├── services/       # Business logic (auth, seller, product, payment, cloudinary)
-│       ├── utils/          # ApiError, ApiResponse, asyncHandler, generateToken, pagination, sendEmail
+│       ├── config/         # DB, Cloudinary, constants (enums)
+│       ├── controllers/    # 17 controllers (auth, seller, product, order, etc.)
+│       ├── middleware/      # auth, validation, upload, error handler, rate limiter
+│       ├── models/         # 16 Mongoose models
+│       ├── routes/         # 18 route groups
+│       ├── services/       # email service
+│       ├── utils/          # ApiError, ApiResponse, tokenGenerator, pagination, helpers
 │       ├── validators/     # express-validator schemas
-│       ├── app.js          # Express app setup + middleware + route mounting
-│       ├── seed.js         # Database seed script
-│       └── server.js       # Entry point
+│       ├── app.ts          # Express app setup + middleware + route mounting
+│       ├── seed.ts         # Database seed script
+│       └── server.ts       # Entry point
 ├── frontend/
 │   └── src/
 │       ├── components/
 │       │   ├── auth/       # ProtectedRoute, AdminRoute
-│       │   ├── layout/     # Layout, Navbar, Footer, CartDrawer, BackToTop, etc.
-│       │   ├── seller/     # SellerOnboardingChecklist
-│       │   └── ui/         # Button, Card, Input, Badge, Skeleton, Spinner
-│       ├── context/        # Auth, Cart, Wishlist, Notification
+│       │   ├── layout/     # Layout, Navbar, Footer, CartDrawer, NotificationBell, AdminLayout
+│       │   └── ui/         # Button, Card, Input, Badge, Skeleton
+│       ├── context/        # Auth, Cart, Wishlist, Notification providers
 │       ├── hooks/          # usePageTitle, useRecentlyViewed
+│       ├── lib/            # api (Axios), utils (cn, formatCurrency)
 │       ├── pages/          # 30+ lazy-loaded route pages
-│       └── services/       # Axios instance with JWT interceptor
+│       └── types/          # TypeScript type definitions
 ├── AGENTS.md
 └── README.md
 ```
@@ -124,21 +149,33 @@ KalaBazzar/
 - **Secondary:** `#C89B3C` — Gold
 - **Background:** `#FBEED3` — Warm cream
 - **Text:** `#3A2A1F` — Dark brown
+- **Fonts:** Cormorant Garamond (headings) + Poppins (body)
 
 ## Key Routes
 
 | Route | Access |
 |-------|--------|
 | `/` | Public landing page |
-| `/shop`, `/product/:slug`, `/category/:slug`, `/region/:slug`, `/artisan/:slug` | Guest-browsable |
+| `/shop`, `/product/:slug` | Guest-browsable |
 | `/cart`, `/wishlist`, `/checkout`, `/orders`, `/profile` | Customer only |
-| `/seller/login`, `/seller/register` | Standalone auth (no layout) |
-| `/seller/dashboard`, `/seller/feed`, `/seller/earnings`, `/seller/settings` | Seller only |
-| `/admin/login` | Standalone |
-| `/admin/dashboard`, `/admin/coupons`, `/admin/orders`, `/admin/reviews`, `/admin/users` | Admin only |
+| `/seller/apply`, `/seller/dashboard`, `/seller/products`, `/seller/orders`, `/seller/earnings`, `/seller/settings` | Seller only |
+| `/admin/dashboard`, `/admin/sellers`, `/admin/coupons`, `/admin/orders`, `/admin/reviews`, `/admin/users` | Admin only |
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register user |
+| POST | `/api/auth/login` | Login |
+| GET | `/api/products` | Get products (paginated, filterable) |
+| GET | `/api/products/featured` | Get featured products |
+| POST | `/api/sellers/apply` | Apply as seller |
+| POST | `/api/orders` | Create order |
+| GET | `/api/cart` | Get cart |
+| POST | `/api/cart/items` | Add to cart |
 
 ## Payment Gateways
 
-- **COD** — no gateway call
+- **COD** — no gateway call, paymentStatus stays 'Pending'
 - **Khalti** — initiate → redirect → verify (stubs)
 - **eSewa** — initiate → callback → verify (stubs)
