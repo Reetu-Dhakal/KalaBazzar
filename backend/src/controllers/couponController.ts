@@ -257,9 +257,6 @@ export const applyCoupon = asyncHandler(async (req: AuthRequest, res: Response) 
     discountAmount = Math.min(coupon.discountValue, orderSubtotal);
   }
 
-  coupon.usedCount += 1;
-  await coupon.save();
-
   res.json(
     ApiResponse.success(
       {

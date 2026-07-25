@@ -46,10 +46,10 @@ export default function OrdersPage() {
         limit: String(LIMIT),
       };
       if (statusFilter) params.status = statusFilter;
-      const { data } = await api.get('/orders', { params });
+      const { data } = await api.get('/orders/my-orders', { params });
       return {
-        orders: data.data.orders || [],
-        pagination: data.data.pagination as PaginationMeta,
+        orders: data.data || [],
+        pagination: data.meta?.pagination as PaginationMeta,
       };
     },
   });

@@ -62,8 +62,8 @@ export default function SellerProducts() {
       if (sort) params.set('sort', sort);
 
       const { data } = await api.get(`/sellers/dashboard/products?${params.toString()}`);
-      setProducts(data.data.products || []);
-      setPagination(data.data.pagination || null);
+      setProducts(data.data || []);
+      setPagination(data.meta?.pagination || null);
     } catch {
       toast.error('Failed to load products');
     } finally {

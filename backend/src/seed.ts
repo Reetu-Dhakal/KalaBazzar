@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
+
+dotenv.config();
 import User from './models/User';
 import SellerProfile from './models/SellerProfile';
 import Product from './models/Product';
@@ -41,7 +44,7 @@ async function seedUsers() {
     lastName: 'User',
     role: UserRole.ADMIN,
     isEmailVerified: true,
-    phone: '+977-9841000001',
+    phone: '+9779841000001',
   });
   log(`Admin created: ${admin.email}`);
 
@@ -52,7 +55,7 @@ async function seedUsers() {
     lastName: 'Sharma',
     role: UserRole.SELLER,
     isEmailVerified: true,
-    phone: '+977-9841234567',
+    phone: '+9779841234567',
   });
   log(`Seller created: ${seller.email}`);
 
@@ -63,7 +66,7 @@ async function seedUsers() {
     lastName: 'Devii',
     role: UserRole.CUSTOMER,
     isEmailVerified: true,
-    phone: '+977-9851234567',
+    phone: '+9779851234567',
     addresses: [
       {
         label: 'home',
@@ -799,7 +802,7 @@ async function seedOrders(
     state: 'Bagmati',
     zipCode: '44600',
     country: 'Nepal',
-    phone: '+977-9851234567',
+    phone: '+9779851234567',
     recipientName: 'Sita Devii',
   };
 

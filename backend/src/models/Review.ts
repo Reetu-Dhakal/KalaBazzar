@@ -126,6 +126,11 @@ reviewSchema.statics.calculateAverageRating = async function(productId: mongoose
       'analytics.averageRating': Math.round(average * 10) / 10,
       'analytics.reviewCount': count,
     });
+  } else {
+    await mongoose.model('Product').findByIdAndUpdate(productId, {
+      'analytics.averageRating': 0,
+      'analytics.reviewCount': 0,
+    });
   }
 };
 

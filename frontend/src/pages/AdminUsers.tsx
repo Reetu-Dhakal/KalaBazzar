@@ -57,9 +57,10 @@ export default function AdminUsers() {
       if (roleFilter !== 'all') params.role = roleFilter;
       if (search.trim()) params.search = search.trim();
       const { data } = await api.get('/admin/users', { params });
-      setUsers(data.data.users || data.data || []);
-      setPagination(data.pagination);
+      setUsers(data.data || []);
+      setPagination(data.meta?.pagination);
     } catch {
+      toast.error('Failed to load users');
       setUsers([]);
     } finally {
       setIsLoading(false);

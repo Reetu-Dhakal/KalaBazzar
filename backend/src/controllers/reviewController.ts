@@ -10,7 +10,8 @@ import { AuthRequest } from '../middleware/auth';
 
 export const createReview = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user._id;
-  const { productId, orderId, rating, title, comment, pros, cons } = req.body;
+  const productId = req.params.productId || req.body.productId;
+  const { orderId, rating, title, comment, pros, cons } = req.body;
 
   if (!productId || !orderId || !rating || !comment) {
     throw ApiError.badRequest('Product ID, order ID, rating, and comment are required');

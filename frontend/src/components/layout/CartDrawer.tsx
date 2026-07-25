@@ -76,7 +76,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <Link
                           to={`/shop/${product.slug}`}
                           onClick={onClose}
-                          className="flex-shrink-0"
+                          className="shrink-0"
                         >
                           <div className="w-20 h-20 rounded-lg overflow-hidden bg-accent">
                             {imageUrl ? (

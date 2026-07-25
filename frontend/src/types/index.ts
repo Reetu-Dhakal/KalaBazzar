@@ -346,6 +346,7 @@ export interface Order {
   deliveredAt?: string;
   cancelledAt?: string;
   cancellationReason?: string;
+  trackingNumber?: string;
   refundAmount?: number;
   refundReason?: string;
   statusHistory: StatusHistory[];

@@ -59,9 +59,9 @@ export default function SellerOrders() {
       if (status) params.set('status', status);
       if (search) params.set('search', search);
 
-      const { data } = await api.get(`/orders?${params.toString()}`);
-      setOrders(data.data.orders || []);
-      setPagination(data.data.pagination || null);
+      const { data } = await api.get(`/orders/seller?${params.toString()}`);
+      setOrders(data.data || []);
+      setPagination(data.meta?.pagination || null);
     } catch {
       toast.error('Failed to load orders');
     } finally {

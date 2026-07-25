@@ -9,6 +9,7 @@ import {
 } from 'react';
 import api from '@/lib/api';
 import type { CartItem, Product } from '@/types';
+import { useAuth } from './AuthContext';
 
 interface CartItemWithProduct extends CartItem {
   product: Product;
@@ -29,7 +30,6 @@ interface CartState {
 }
 
 interface CartContextType extends CartState {
-  fetchCart: () => Promise<void>;
   addToCart: (productId: string, quantity?: number, selectedVariants?: Record<string, string>) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => Promise<void>;
@@ -44,6 +44,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItemWithProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<CartState['appliedCoupon']>(null);
+  const { isAuthenticated } = useAuth();
   const updateTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -51,27 +52,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const discountAmount = appliedCoupon
     ? appliedCoupon.discountType === 'percentage'
-      ? Math.min(subtotal * (appliedCoupon.discountValue / 100), appliedCoupon.discountValue)
+      ? subtotal * (appliedCoupon.discountValue / 100)
       : appliedCoupon.discountValue
     : 0;
 
   const total = Math.max(0, subtotal - discountAmount);
 
   const fetchCart = useCallback(async () => {
+    if (!isAuthenticated) return;
     setIsLoading(true);
     try {
       const { data } = await api.get('/cart');
-      setItems(data.data.items || []);
-      setAppliedCoupon(data.data.appliedCoupon || null);
+      const cart = data.data?.cart;
+      setItems(cart?.items || []);
+      setAppliedCoupon(cart?.appliedCoupon || null);
     } catch {
       setItems([]);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchCart();
+    return () => {
+      updateTimers.current.forEach((timer) => clearTimeout(timer));
+    };
   }, [fetchCart]);
 
   const addToCart = async (
@@ -79,22 +85,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     quantity = 1,
     selectedVariants?: Record<string, string>,
   ) => {
-    const { data } = await api.post('/cart/items', {
+    await api.post('/cart/items', {
       productId,
       quantity,
       selectedVariants,
     });
-    setItems(data.data.items);
-    setAppliedCoupon(data.data.appliedCoupon || null);
+    await fetchCart();
   };
 
   const performUpdate = async (productId: string, quantity: number) => {
     try {
-      const { data } = await api.put(`/cart/items/${productId}`, { quantity });
-      setItems(data.data.items);
-      setAppliedCoupon(data.data.appliedCoupon || null);
+      await api.put(`/cart/items/${productId}`, { quantity });
+      await fetchCart();
     } catch {
-      // Revert handled by re-fetch on next interaction
+      await fetchCart();
     }
   };
 
@@ -122,9 +126,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromCart = async (productId: string) => {
-    const { data } = await api.delete(`/cart/items/${productId}`);
-    setItems(data.data.items);
-    setAppliedCoupon(data.data.appliedCoupon || null);
+    await api.delete(`/cart/items/${productId}`);
+    await fetchCart();
   };
 
   const clearCart = async () => {
@@ -134,8 +137,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const applyCoupon = async (code: string) => {
-    const { data } = await api.post('/cart/coupon', { code });
-    setAppliedCoupon(data.data.coupon);
+    const { data } = await api.post('/coupons/apply', { code });
+    setAppliedCoupon(data.data);
   };
 
   const removeCoupon = () => {
@@ -151,7 +154,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         isLoading,
         appliedCoupon,
         total,
-        fetchCart,
         addToCart,
         updateQuantity,
         removeFromCart,
@@ -165,7 +167,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useCart(): CartContextType {
+export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {
     throw new Error('useCart must be used within a CartProvider');

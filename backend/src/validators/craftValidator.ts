@@ -30,8 +30,9 @@ export const craftValidation = [
     .isLength({ max: 50 }),
   body('region')
     .optional()
-    .isMongoId()
-    .withMessage('Valid region ID'),
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Region must be a valid string'),
   body('techniques')
     .optional()
     .isArray(),

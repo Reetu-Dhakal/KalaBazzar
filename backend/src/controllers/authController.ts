@@ -28,13 +28,13 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
   });
 
-  await emailService.sendEmailVerification(email, verificationToken, firstName);
+  emailService.sendEmailVerification(email, verificationToken, firstName)
+    .catch(err => console.error('Failed to send verification email:', err));
 
   const accessToken = generateAccessToken(user._id.toString(), user.role);
   const refreshToken = generateRefreshToken(user._id.toString());
 
-  user.refreshToken = refreshToken;
-  await user.save();
+  await User.findByIdAndUpdate(user._id, { refreshToken });
 
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
@@ -53,8 +53,9 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     message: 'Registration successful. Please verify your email.',
     data: {
+      accessToken,
       user: {
-        id: user._id,
+        _id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -80,8 +81,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const accessToken = generateAccessToken(user._id.toString(), user.role);
   const refreshToken = generateRefreshToken(user._id.toString());
 
-  user.refreshToken = refreshToken;
-  await user.save();
+  await User.findByIdAndUpdate(user._id, { refreshToken });
 
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
@@ -100,8 +100,9 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     message: 'Login successful',
     data: {
+      accessToken,
       user: {
-        id: user._id,
+        _id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -114,8 +115,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
   if (req.user) {
-    req.user.refreshToken = undefined;
-    await req.user.save();
+    await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: 1 } });
   }
 
   res.clearCookie('accessToken');
@@ -143,8 +143,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
   const newAccessToken = generateAccessToken(user._id.toString(), user.role);
   const newRefreshToken = generateRefreshToken(user._id.toString());
 
-  user.refreshToken = newRefreshToken;
-  await user.save();
+  await User.findByIdAndUpdate(user._id, { refreshToken: newRefreshToken });
 
   res.cookie('accessToken', newAccessToken, {
     httpOnly: true,
@@ -159,7 +158,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.json({ success: true, message: 'Token refreshed' });
+  res.json({ success: true, message: 'Token refreshed', data: { accessToken: newAccessToken } });
 });
 
 export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
@@ -179,7 +178,8 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   user.emailVerificationExpires = undefined;
   await user.save();
 
-  await emailService.sendWelcomeEmail(user.email, user.firstName);
+  emailService.sendWelcomeEmail(user.email, user.firstName)
+    .catch(err => console.error('Failed to send welcome email:', err));
 
   res.json({ success: true, message: 'Email verified successfully' });
 });
@@ -201,7 +201,8 @@ export const resendVerification = asyncHandler(async (req: Request, res: Respons
   user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
   await user.save();
 
-  await emailService.sendEmailVerification(email, verificationToken, user.firstName);
+  emailService.sendEmailVerification(email, verificationToken, user.firstName)
+    .catch(err => console.error('Failed to send verification email:', err));
 
   res.json({ success: true, message: 'Verification email sent' });
 });
@@ -219,7 +220,8 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
   user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
   await user.save();
 
-  await emailService.sendPasswordResetEmail(email, resetToken, user.firstName);
+  emailService.sendPasswordResetEmail(email, resetToken, user.firstName)
+    .catch(err => console.error('Failed to send password reset email:', err));
 
   res.json({ success: true, message: 'If email exists, reset link sent' });
 });
@@ -270,7 +272,7 @@ export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
     success: true,
     data: {
       user: {
-        id: user._id,
+        _id: user._id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,

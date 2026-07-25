@@ -125,7 +125,7 @@ const homepageSettingsSchema = new Schema<IHomepageSettings>({
     description: { type: String, maxlength: 160 },
     ogImage: String,
   },
-  updatedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, {
   timestamps: true,
 });

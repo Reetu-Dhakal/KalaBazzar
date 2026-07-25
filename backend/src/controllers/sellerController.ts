@@ -9,7 +9,7 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { AuthRequest } from '../middleware/auth';
 import { generateSlug, generateUniqueSlug } from '../utils/helpers';
 import { getPaginationParams, getSortObject } from '../utils/pagination';
-import { SellerStatus, UserRole } from '../config/constants';
+import { SellerStatus, UserRole, ProductStatus } from '../config/constants';
 import { emailService } from '../services/emailService';
 
 export const applyAsSeller = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -104,9 +104,8 @@ export const applyAsSeller = asyncHandler(async (req: AuthRequest, res: Response
     profile = await SellerProfile.create(profileData);
   }
 
-  await User.findByIdAndUpdate(userId, { role: UserRole.SELLER });
-
-  await emailService.sendSellerApplicationReceived(req.user.email, req.user.firstName);
+  emailService.sendSellerApplicationReceived(req.user.email, req.user.firstName)
+    .catch(err => console.error('Failed to send seller application email:', err));
 
   res.status(201).json(
     ApiResponse.created(profile, 'Seller application submitted successfully')
@@ -159,8 +158,11 @@ export const updateSellerProfile = asyncHandler(async (req: AuthRequest, res: Re
     profile.storeName = storeName;
   }
 
-  if (storeDescription !== undefined) profile.description = storeDescription;
-  if (bio !== undefined) profile.description = bio;
+  if (bio !== undefined) {
+    profile.description = bio;
+  } else if (storeDescription !== undefined) {
+    profile.description = storeDescription;
+  }
   if (craftType) profile.crafts = Array.isArray(craftType) ? craftType : [craftType];
   if (specialization) {
     if (profile.verificationDocuments) {
@@ -224,7 +226,7 @@ export const getSellerDashboardStats = asyncHandler(async (req: AuthRequest, res
 
   const [totalProducts, publishedProducts, orderStats, recentOrders, lowStockProducts] = await Promise.all([
     Product.countDocuments({ seller: userId }),
-    Product.countDocuments({ seller: userId, status: 'approved' }),
+    Product.countDocuments({ seller: userId, status: ProductStatus.APPROVED }),
     Order.aggregate([
       { $unwind: '$items' },
       { $match: { 'items.seller': new mongoose.Types.ObjectId(userId) } },
@@ -250,10 +252,10 @@ export const getSellerDashboardStats = asyncHandler(async (req: AuthRequest, res
       .lean(),
     Product.find({
       seller: userId,
-      status: 'approved',
+      status: ProductStatus.APPROVED,
       'variants.inventory': { $lte: 5 },
     })
-      .select('name slug variants inventory analytics.views')
+      .select('name slug variants basePrice analytics.views')
       .limit(10)
       .lean(),
   ]);
@@ -281,7 +283,7 @@ export const getSellerProducts = asyncHandler(async (req: AuthRequest, res: Resp
   const filter: any = { seller: userId };
 
   if (status) filter.status = status;
-  if (category) filter.category = category;
+  if (category && mongoose.Types.ObjectId.isValid(category as string)) filter.category = category;
   if (search) {
     filter.$or = [
       { name: { $regex: search, $options: 'i' } },
@@ -317,7 +319,7 @@ export const getSellerPublicProfile = asyncHandler(async (req: Request, res: Res
 
   let profile;
   if (mongoose.Types.ObjectId.isValid(idOrSlug)) {
-    profile = await SellerProfile.findById(idOrSlug)
+    profile = await SellerProfile.findOne({ _id: idOrSlug, status: SellerStatus.APPROVED })
       .populate('user', 'firstName lastName avatar')
       .populate('region', 'name')
       .populate('crafts', 'name slug');
@@ -336,7 +338,7 @@ export const getSellerPublicProfile = asyncHandler(async (req: Request, res: Res
     throw ApiError.notFound('Seller not found');
   }
 
-  const products = await Product.find({ seller: profile.user._id, status: 'approved' })
+  const products = await Product.find({ seller: profile.user._id, status: ProductStatus.APPROVED })
     .sort({ createdAt: -1 })
     .limit(20)
     .lean();
@@ -405,11 +407,11 @@ export const approveSeller = asyncHandler(async (req: AuthRequest, res: Response
   });
 
   const user = profile.user as any;
-  await emailService.sendSellerApprovalEmail(
+  emailService.sendSellerApprovalEmail(
     user.email,
     user.firstName,
     'approved'
-  );
+  ).catch(err => console.error('Failed to send seller approval email:', err));
 
   res.json(ApiResponse.success(profile, 'Seller approved successfully'));
 });
@@ -439,12 +441,12 @@ export const rejectSeller = asyncHandler(async (req: AuthRequest, res: Response)
   await profile.save();
 
   const user = profile.user as any;
-  await emailService.sendSellerApprovalEmail(
+  emailService.sendSellerApprovalEmail(
     user.email,
     user.firstName,
     'rejected',
     reason
-  );
+  ).catch(err => console.error('Failed to send seller rejection email:', err));
 
   res.json(ApiResponse.success(profile, 'Seller rejected'));
 });

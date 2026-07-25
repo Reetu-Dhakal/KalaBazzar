@@ -177,8 +177,6 @@ const sellerProfileSchema = new Schema<ISellerProfile>({
   toObject: { virtuals: true },
 });
 
-sellerProfileSchema.index({ user: 1 });
-sellerProfileSchema.index({ slug: 1 });
 sellerProfileSchema.index({ status: 1 });
 sellerProfileSchema.index({ region: 1, status: 1 });
 sellerProfileSchema.index({ crafts: 1 });

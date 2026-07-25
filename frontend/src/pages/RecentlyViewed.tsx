@@ -91,7 +91,7 @@ export default function RecentlyViewed() {
                         <div className="relative overflow-hidden rounded-xl bg-card border border-border">
                           <div className="aspect-square overflow-hidden">
                             <img
-                              src={item.images[0] || '/placeholder.jpg'}
+                              src={item.images?.[0] || '/placeholder.jpg'}
                               alt={item.name}
                               loading="lazy"
                               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"

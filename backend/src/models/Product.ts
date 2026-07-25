@@ -205,7 +205,6 @@ const productSchema = new Schema<IProduct>({
 
 productSchema.index({ seller: 1, status: 1 });
 productSchema.index({ category: 1, status: 1 });
-productSchema.index({ slug: 1 });
 productSchema.index({ tags: 1 });
 productSchema.index({ isFeatured: 1, status: 1 });
 productSchema.index({ 'analytics.averageRating': -1 });

@@ -22,15 +22,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    if (!error.response) {
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const { data } = await axios.get('/api/auth/refresh', {
+        const { data } = await axios.post('/api/auth/refresh', {}, {
           withCredentials: true,
         });
 
@@ -43,7 +47,6 @@ api.interceptors.response.use(
         }
       } catch {
         localStorage.removeItem('token');
-        window.location.href = '/login';
       }
     }
 

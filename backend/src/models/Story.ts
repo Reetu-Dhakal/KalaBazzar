@@ -59,7 +59,6 @@ const storySchema = new Schema<IStory>({
 });
 
 storySchema.index({ isPublished: 1, publishedAt: -1 });
-storySchema.index({ slug: 1 });
 storySchema.index({ artisan: 1 });
 storySchema.index({ tags: 1 });
 

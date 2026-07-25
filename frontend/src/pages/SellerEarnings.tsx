@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatCurrency, formatDate, getStatusColor } from '@/lib/utils';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 import type { Order, PaginationMeta } from '@/types';
 
 interface EarningsData {
@@ -79,7 +80,7 @@ export default function SellerEarnings() {
           pagination: res.data.pagination || { page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
         });
       } catch {
-        // handled
+        toast.error('Failed to load earnings data');
       } finally {
         setIsLoading(false);
       }

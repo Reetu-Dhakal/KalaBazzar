@@ -76,7 +76,7 @@ export default function OrderDetail() {
 
   const cancelMutation = useMutation({
     mutationFn: async (reason: string) => {
-      await api.patch(`/orders/${id}/cancel`, { cancellationReason: reason });
+      await api.put(`/orders/${id}/cancel`, { cancellationReason: reason });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['order', id] });
@@ -235,14 +235,14 @@ export default function OrderDetail() {
         </Card>
       )}
 
-      {order.status === 'shipped' && order.notes && (
+      {order.status === 'shipped' && order.trackingNumber && (
         <Card className="mb-6">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Truck className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm font-medium text-foreground">Tracking Number</p>
-                <p className="text-sm text-muted-foreground font-mono">{order.notes}</p>
+                <p className="text-sm text-muted-foreground font-mono">{order.trackingNumber}</p>
               </div>
             </div>
           </CardContent>

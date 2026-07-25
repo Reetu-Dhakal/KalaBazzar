@@ -33,7 +33,7 @@ export function ProductCard({ product }: ProductCardProps) {
       )
     : 0;
 
-  const isOutOfStock = product.status === 'out_of_stock' || product.variants.every(v => v.inventory <= 0);
+  const isOutOfStock = product.status === 'out_of_stock' || ((product.variants?.length ?? 0) > 0 && product.variants?.every(v => v.inventory <= 0));
 
   const isNew =
     product.publishedAt &&
@@ -178,12 +178,12 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {product.analytics.averageRating > 0 && (
+          {product.analytics?.averageRating > 0 && (
             <div className="mt-1 flex items-center gap-1">
               <Star className="h-3 w-3 fill-secondary text-secondary" />
               <span className="text-xs text-muted-foreground">
-                {product.analytics.averageRating.toFixed(1)}{' '}
-                ({product.analytics.reviewCount})
+                {product.analytics?.averageRating.toFixed(1)}{' '}
+                ({product.analytics?.reviewCount})
               </span>
             </div>
           )}

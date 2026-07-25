@@ -83,8 +83,10 @@ export const getProductBySlug = asyncHandler(async (req: Request, res: Response)
     throw ApiError.notFound('Product not found');
   }
 
-  product.analytics.views += 1;
-  await product.save();
+  await Product.findByIdAndUpdate(
+    product._id,
+    { $inc: { 'analytics.views': 1 } }
+  );
 
   const relatedProducts = await Product.find({
     category: product.category._id,

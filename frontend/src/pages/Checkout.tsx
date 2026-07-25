@@ -63,7 +63,7 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string; description: strin
 export default function Checkout() {
   usePageTitle('Checkout');
   const navigate = useNavigate();
-  const { items, subtotal, appliedCoupon, total, clearCart } = useCart();
+  const { items, subtotal, appliedCoupon, clearCart } = useCart();
   const { user } = useAuth();
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
@@ -100,13 +100,13 @@ export default function Checkout() {
 
   const shippingCost = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const discountAmount = activeCoupon?.discountAmount || 0;
-  const grandTotal = Math.max(0, total + shippingCost);
+  const grandTotal = Math.max(0, subtotal + shippingCost - discountAmount);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     try {
-      const { data } = await api.post('/cart/coupon', { code: couponCode.trim() });
-      setLocalCoupon(data.data.coupon);
+      const { data } = await api.get(`/coupons/validate/${couponCode.trim()}`);
+      setLocalCoupon(data.data);
       setCouponCode('');
       toast.success('Coupon applied!');
     } catch {

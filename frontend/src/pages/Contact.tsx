@@ -15,6 +15,7 @@ import {
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
@@ -294,18 +295,4 @@ export default function Contact() {
   );
 }
 
-function Badge({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full bg-secondary/20 px-3 py-1 text-sm font-medium text-primary-foreground ${className || ''}`}
-    >
-      {children}
-    </span>
-  );
-}
+

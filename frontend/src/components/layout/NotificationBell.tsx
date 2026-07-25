@@ -81,7 +81,7 @@ export function NotificationBell() {
                     if (!notification.isRead) markAsRead(notification._id);
                   }}
                 >
-                  <span className="text-lg flex-shrink-0 mt-0.5">
+                  <span className="text-lg shrink-0 mt-0.5">
                     {getNotificationIcon(notification.type)}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -95,7 +95,7 @@ export function NotificationBell() {
                       {new Date(notification.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     {!notification.isRead && (
                       <button
                         onClick={(e) => {

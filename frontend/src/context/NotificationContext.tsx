@@ -26,7 +26,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated } = useAuth();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -35,11 +35,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) return;
 
+    setIsLoading(true);
     try {
       const { data } = await api.get('/notifications', { params: { limit: 50 } });
-      setNotifications(data.data.notifications || []);
+      setNotifications(data.data || []);
     } catch {
       // Silently fail for polling
+    } finally {
+      setIsLoading(false);
     }
   }, [isAuthenticated]);
 

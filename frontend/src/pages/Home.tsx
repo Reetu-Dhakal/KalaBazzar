@@ -151,11 +151,11 @@ function ProductCard({ product }: { product: Product }) {
             </span>
           )}
         </div>
-        {product.analytics.averageRating > 0 && (
+        {product.analytics?.averageRating > 0 && (
           <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
             <Star className="h-3.5 w-3.5 fill-secondary text-secondary" />
-            <span>{product.analytics.averageRating.toFixed(1)}</span>
-            <span>({product.analytics.reviewCount})</span>
+            <span>{product.analytics?.averageRating.toFixed(1)}</span>
+            <span>({product.analytics?.reviewCount})</span>
           </div>
         )}
       </div>
@@ -183,15 +183,15 @@ export default function Home() {
         ]);
 
         if (productsRes.status === 'fulfilled') {
-          setFeaturedProducts(productsRes.value.data.data.products || []);
+          setFeaturedProducts(productsRes.value.data.data || []);
         }
         if (categoriesRes.status === 'fulfilled') {
           setCategories(
-            (categoriesRes.value.data.data.categories || []).slice(0, 8),
+            (categoriesRes.value.data.data || []).slice(0, 8),
           );
         }
         if (reviewsRes.status === 'fulfilled') {
-          setTopReviews(reviewsRes.value.data.data.reviews || []);
+          setTopReviews(reviewsRes.value.data.data || []);
         }
       } catch {
         // handled by individual checks

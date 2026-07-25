@@ -9,6 +9,7 @@ export interface IUser extends Document {
   lastName: string;
   phone?: string;
   role: UserRoleType;
+  isActive: boolean;
   isEmailVerified: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
@@ -79,6 +80,10 @@ const userSchema = new Schema<IUser>({
     type: String,
     enum: Object.values(UserRole),
     default: UserRole.CUSTOMER,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   },
   isEmailVerified: {
     type: Boolean,

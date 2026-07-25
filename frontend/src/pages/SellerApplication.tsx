@@ -111,8 +111,8 @@ export default function SellerApplication() {
           api.get('/crafts'),
           api.get('/sellers/application/status'),
         ]);
-        if (regionsRes.status === 'fulfilled') setRegions(regionsRes.value.data.data.regions || []);
-        if (craftsRes.status === 'fulfilled') setCrafts(craftsRes.value.data.data.crafts || []);
+        if (regionsRes.status === 'fulfilled') setRegions(regionsRes.value.data.data || []);
+        if (craftsRes.status === 'fulfilled') setCrafts(craftsRes.value.data.data || []);
         if (statusRes.status === 'fulfilled') setApplicationStatus(statusRes.value.data.data);
       } catch {
         // handled by individual checks
@@ -187,37 +187,40 @@ export default function SellerApplication() {
   const onSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const formData = new URLSearchParams();
       const values = watch();
-      formData.append('storeName', values.storeName);
-      if (values.description) formData.append('description', values.description);
-      formData.append('region', values.region);
-      formData.append('crafts', JSON.stringify(values.crafts));
-      formData.append('verificationPath', values.verificationPath);
+      const payload: Record<string, unknown> = {
+        storeName: values.storeName,
+        region: values.region,
+        crafts: values.crafts,
+        verificationPath: values.verificationPath,
+      };
+      if (values.description) payload.description = values.description;
 
       if (values.verificationPath === 'social' && values.socialLinks) {
+        const socialLinks: Record<string, string> = {};
         Object.entries(values.socialLinks).forEach(([key, val]) => {
-          if (val) formData.append(`socialLinks[${key}]`, val);
+          if (val) socialLinks[key] = val;
         });
+        if (Object.keys(socialLinks).length > 0) payload.socialLinks = socialLinks;
       }
 
-      if (values.verificationPath === 'marketplace' && values.marketplaceLinks) {
-        if (values.marketplaceLinks.website) {
-          formData.append('socialLinks[website]', values.marketplaceLinks.website);
-        }
+      if (values.verificationPath === 'marketplace' && values.marketplaceLinks?.website) {
+        payload.socialLinks = { website: values.marketplaceLinks.website };
       }
 
       if (values.verificationDocuments) {
         const docs = values.verificationDocuments;
-        formData.append('verificationDocuments[district]', docs.district);
-        formData.append('verificationDocuments[yearsOfExperience]', String(docs.yearsOfExperience));
-        formData.append('verificationDocuments[specialization]', JSON.stringify(docs.specialization));
-        if (docs.craftStory) formData.append('verificationDocuments[craftStory]', docs.craftStory);
+        payload.verificationDocuments = {
+          district: docs.district,
+          yearsOfExperience: docs.yearsOfExperience,
+          specialization: docs.specialization,
+        };
+        if (docs.craftStory) {
+          (payload.verificationDocuments as Record<string, unknown>).craftStory = docs.craftStory;
+        }
       }
 
-      await api.post('/sellers/apply', Object.fromEntries(formData), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      await api.post('/sellers/apply', payload);
 
       toast.success('Application submitted successfully!');
       navigate('/seller/dashboard');

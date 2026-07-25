@@ -171,7 +171,6 @@ const orderSchema = new Schema<IOrder>({
 orderSchema.index({ customer: 1, createdAt: -1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ paymentStatus: 1 });
-orderSchema.index({ orderNumber: 1 });
 orderSchema.index({ 'items.seller': 1, status: 1 });
 
 orderSchema.virtual('isPaid').get(function(this: IOrder) {

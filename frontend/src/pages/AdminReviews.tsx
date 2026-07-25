@@ -56,9 +56,10 @@ export default function AdminReviews() {
       if (search.trim()) params.search = search.trim();
       if (ratingFilter !== '') params.rating = ratingFilter;
       const { data } = await api.get('/reviews/admin', { params });
-      setReviews(data.data.reviews || data.data || []);
-      setPagination(data.pagination);
+      setReviews(data.data || []);
+      setPagination(data.meta?.pagination);
     } catch {
+      toast.error('Failed to load reviews');
       setReviews([]);
     } finally {
       setIsLoading(false);

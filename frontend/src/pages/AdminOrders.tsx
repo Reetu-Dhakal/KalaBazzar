@@ -54,9 +54,10 @@ export default function AdminOrders() {
       if (statusFilter) params.status = statusFilter;
       if (search.trim()) params.search = search.trim();
       const { data } = await api.get('/admin/orders', { params });
-      setOrders(data.data.orders || data.data || []);
-      setPagination(data.pagination);
+      setOrders(data.data || []);
+      setPagination(data.meta?.pagination);
     } catch {
+      toast.error('Failed to load orders');
       setOrders([]);
     } finally {
       setIsLoading(false);

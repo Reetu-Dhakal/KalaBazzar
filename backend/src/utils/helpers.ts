@@ -86,9 +86,9 @@ export function parseQueryFilters(query: any) {
   if (query.isActive !== undefined) filters.isActive = query.isActive === 'true';
 
   if (query.minPrice || query.maxPrice) {
-    filters.price = {};
-    if (query.minPrice) filters.price.$gte = parseFloat(query.minPrice);
-    if (query.maxPrice) filters.price.$lte = parseFloat(query.maxPrice);
+    filters.basePrice = {};
+    if (query.minPrice) filters.basePrice.$gte = parseFloat(query.minPrice);
+    if (query.maxPrice) filters.basePrice.$lte = parseFloat(query.maxPrice);
   }
 
   if (query.minRating) {

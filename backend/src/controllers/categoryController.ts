@@ -6,6 +6,7 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../utils/ApiError';
 import { generateSlug } from '../utils/helpers';
 import { paginate, getPaginationParams } from '../utils/pagination';
+import { ProductStatus } from '../config/constants';
 
 export const getCategories = asyncHandler(async (req: Request, res: Response) => {
   const { includeProductCount, isActive } = req.query;
@@ -25,7 +26,7 @@ export const getCategories = asyncHandler(async (req: Request, res: Response) =>
       .lean();
 
     const productCounts = await Product.aggregate([
-      { $match: { status: 'published', isDeleted: { $ne: true } } },
+      { $match: { status: ProductStatus.APPROVED, isActive: true } },
       { $group: { _id: '$category', count: { $sum: 1 } } },
     ]);
 
@@ -76,8 +77,8 @@ export const getCategoryById = asyncHandler(async (req: Request, res: Response) 
 
   const productCount = await Product.countDocuments({
     category: id,
-    status: 'published',
-    isDeleted: { $ne: true },
+    status: ProductStatus.APPROVED,
+    isActive: true,
   });
 
   res.json(
@@ -98,8 +99,8 @@ export const getCategoryBySlug = asyncHandler(async (req: Request, res: Response
 
   const productCount = await Product.countDocuments({
     category: category._id,
-    status: 'published',
-    isDeleted: { $ne: true },
+    status: ProductStatus.APPROVED,
+    isActive: true,
   });
 
   const children = await Category.find({

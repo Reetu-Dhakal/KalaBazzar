@@ -82,6 +82,7 @@ export default function SellerProductForm() {
   const [regions, setRegions] = useState<Region[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const blobUrlToFileRef = useRef<Map<string, File>>(new Map());
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -142,9 +143,9 @@ export default function SellerProductForm() {
           api.get('/crafts'),
           api.get('/regions'),
         ]);
-        if (catRes.status === 'fulfilled') setCategories(catRes.value.data.data.categories || []);
-        if (craftRes.status === 'fulfilled') setCrafts(craftRes.value.data.data.crafts || []);
-        if (regionRes.status === 'fulfilled') setRegions(regionRes.value.data.data.regions || []);
+        if (catRes.status === 'fulfilled') setCategories(catRes.value.data.data || []);
+        if (craftRes.status === 'fulfilled') setCrafts(craftRes.value.data.data || []);
+        if (regionRes.status === 'fulfilled') setRegions(regionRes.value.data.data || []);
       } catch {
         // handled
       } finally {
@@ -237,14 +238,23 @@ export default function SellerProductForm() {
       toast.error('Maximum 5 images allowed');
       return;
     }
-    const newImages = files.map((file) => URL.createObjectURL(file));
+    const newImages = files.map((file) => {
+      const url = URL.createObjectURL(file);
+      blobUrlToFileRef.current.set(url, file);
+      return url;
+    });
     setImages((prev) => [...prev, ...newImages]);
     setImageFiles((prev) => [...prev, ...files]);
   };
 
   const removeImage = (index: number) => {
+    const removedImage = images[index];
+    if (removedImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(removedImage);
+      blobUrlToFileRef.current.delete(removedImage);
+    }
     setImages((prev) => prev.filter((_, i) => i !== index));
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles(Array.from(blobUrlToFileRef.current.values()));
   };
 
   const uploadImages = async (): Promise<string[]> => {

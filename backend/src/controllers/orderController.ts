@@ -4,6 +4,7 @@ import Cart from '../models/Cart';
 import Product from '../models/Product';
 import User from '../models/User';
 import SellerProfile from '../models/SellerProfile';
+import Coupon from '../models/Coupon';
 import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../utils/ApiError';
@@ -19,7 +20,7 @@ const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
   [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
   [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
   [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
-  [OrderStatus.DELIVERED]: [],
+  [OrderStatus.DELIVERED]: [OrderStatus.REFUNDED],
   [OrderStatus.CANCELLED]: [],
   [OrderStatus.REFUNDED]: [],
 };
@@ -89,7 +90,35 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 
   const shippingCost = subtotal >= 5000 ? 0 : 150;
   const taxAmount = Math.round(subtotal * 0.13);
-  const totalAmount = subtotal + shippingCost + taxAmount;
+
+  let discountAmount = 0;
+  let couponDoc: any = null;
+  if (couponCode) {
+    couponDoc = await Coupon.findOne({ code: couponCode.toUpperCase() });
+    if (!couponDoc || !couponDoc.isActive) {
+      throw ApiError.badRequest('Invalid coupon code');
+    }
+    if (couponDoc.expiresAt && couponDoc.expiresAt < new Date()) {
+      throw ApiError.badRequest('This coupon has expired');
+    }
+    if (couponDoc.usageLimit !== undefined && couponDoc.usedCount >= couponDoc.usageLimit) {
+      throw ApiError.badRequest('This coupon has reached its usage limit');
+    }
+    if (couponDoc.minPurchase > 0 && subtotal < couponDoc.minPurchase) {
+      throw ApiError.badRequest(`Minimum purchase amount of Rs. ${couponDoc.minPurchase} required`);
+    }
+
+    if (couponDoc.discountType === 'percentage') {
+      discountAmount = Math.round((subtotal * couponDoc.discountValue) / 100);
+      if (couponDoc.maxDiscount !== undefined && discountAmount > couponDoc.maxDiscount) {
+        discountAmount = couponDoc.maxDiscount;
+      }
+    } else {
+      discountAmount = Math.min(couponDoc.discountValue, subtotal);
+    }
+  }
+
+  const totalAmount = subtotal + shippingCost + taxAmount - discountAmount;
 
   let orderNumber = generateOrderNumber();
   let exists = await Order.findOne({ orderNumber });
@@ -109,7 +138,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       subtotal,
       shippingCost,
       taxAmount,
-      discountAmount: 0,
+      discountAmount,
       totalAmount,
       status: OrderStatus.PENDING,
       paymentMethod,
@@ -125,10 +154,14 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     }], { session });
 
     for (const cartItem of cart.items) {
-      const product = productMap.get(cartItem.product.toString());
+      const product = await Product.findById(cartItem.product).session(session);
       if (!product) continue;
 
       if (product.variants.length > 0) {
+        const totalInventory = product.variants.reduce((sum, v) => sum + v.inventory, 0);
+        if (totalInventory < cartItem.quantity) {
+          throw new Error(`Insufficient stock for "${product.name}"`);
+        }
         let remaining = cartItem.quantity;
         for (const variant of product.variants) {
           if (remaining <= 0) break;
@@ -144,6 +177,11 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     }
 
     await Cart.deleteOne({ customer: userId }, { session });
+
+    if (couponDoc) {
+      couponDoc.usedCount += 1;
+      await couponDoc.save({ session });
+    }
 
     await session.commitTransaction();
 
@@ -205,7 +243,8 @@ export const getOrderById = asyncHandler(async (req: AuthRequest, res: Response)
   }
 
   if (user.role === UserRole.CUSTOMER) {
-    if (order.customer._id.toString() !== user._id.toString()) {
+    const customerId = (order.customer as any)?._id?.toString() || order.customer.toString();
+    if (customerId !== user._id.toString()) {
       throw ApiError.forbidden('You can only view your own orders');
     }
   }
@@ -298,12 +337,7 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       if (!product) continue;
 
       if (product.variants.length > 0) {
-        let remaining = item.quantity;
-        for (const variant of product.variants) {
-          if (remaining <= 0) break;
-          variant.inventory += remaining;
-          remaining = 0;
-        }
+        product.variants[0].inventory += item.quantity;
         product.markModified('variants');
       }
 
@@ -311,11 +345,14 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       await product.save({ session });
     }
 
-    await order.addStatusHistory(
-      OrderStatus.CANCELLED,
-      reason || 'Cancelled by customer',
-      userId
-    );
+    order.statusHistory.push({
+      status: OrderStatus.CANCELLED,
+      timestamp: new Date(),
+      note: reason || 'Cancelled by customer',
+      updatedBy: userId,
+    } as any);
+    order.status = OrderStatus.CANCELLED;
+    order.cancelledAt = new Date();
     order.cancellationReason = reason;
     await order.save({ session });
 
@@ -408,6 +445,43 @@ export const getAllOrders = asyncHandler(async (req: Request, res: Response) => 
 
   res.json(
     ApiResponse.paginated(orders, 'Orders retrieved successfully', page, limit, total)
+  );
+});
+
+export const getSellerOrders = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user._id;
+  const { page, limit, skip, sortBy, sortOrder } = getPaginationParams(req);
+
+  const sellerProfile = await SellerProfile.findOne({ user: userId });
+  if (!sellerProfile) {
+    throw ApiError.notFound('Seller profile not found');
+  }
+
+  const filter: any = { 'items.seller': userId };
+
+  if (req.query.status) {
+    filter.status = req.query.status;
+  }
+
+  if (req.query.search) {
+    const search = req.query.search as string;
+    filter.$or = [
+      { orderNumber: { $regex: search, $options: 'i' } },
+    ];
+  }
+
+  const [orders, total] = await Promise.all([
+    Order.find(filter)
+      .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('customer', 'firstName lastName email')
+      .lean(),
+    Order.countDocuments(filter),
+  ]);
+
+  res.json(
+    ApiResponse.paginated(orders, 'Seller orders retrieved successfully', page, limit, total)
   );
 });
 

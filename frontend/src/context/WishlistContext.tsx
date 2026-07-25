@@ -8,6 +8,7 @@ import {
 } from 'react';
 import api from '@/lib/api';
 import type { Product } from '@/types';
+import { useAuth } from './AuthContext';
 
 interface WishlistItemWithProduct {
   product: Product;
@@ -31,33 +32,36 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItemWithProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const totalItems = items.length;
 
   const fetchWishlist = useCallback(async () => {
+    if (!isAuthenticated) return;
     setIsLoading(true);
     try {
       const { data } = await api.get('/wishlist');
-      setItems(data.data.items || []);
+      const wishlist = data.data?.wishlist;
+      setItems(wishlist?.items || []);
     } catch {
       setItems([]);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchWishlist();
   }, [fetchWishlist]);
 
   const addToWishlist = async (productId: string) => {
-    const { data } = await api.post('/wishlist/items', { productId });
-    setItems(data.data.items);
+    await api.post('/wishlist', { productId });
+    await fetchWishlist();
   };
 
   const removeFromWishlist = async (productId: string) => {
-    const { data } = await api.delete(`/wishlist/items/${productId}`);
-    setItems(data.data.items);
+    await api.delete(`/wishlist/${productId}`);
+    await fetchWishlist();
   };
 
   const isInWishlist = (productId: string) => {
@@ -74,12 +78,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const moveToCart = async (productId: string) => {
     await api.post('/wishlist/move-to-cart', { productId });
-    setItems((prev) =>
-      prev.filter((item) => {
-        const pid = typeof item.product === 'string' ? item.product : item.product._id;
-        return pid !== productId;
-      }),
-    );
+    await fetchWishlist();
   };
 
   return (
@@ -101,7 +100,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useWishlist(): WishlistContextType {
+export function useWishlist() {
   const context = useContext(WishlistContext);
   if (context === undefined) {
     throw new Error('useWishlist must be used within a WishlistProvider');

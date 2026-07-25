@@ -18,6 +18,7 @@ export const getHomepageSettings = asyncHandler(async (req: Request, res: Respon
     .lean();
 
   if (!settings) {
+    const userId = (req as AuthRequest).user?._id;
     const created = await HomepageSettings.create({
       hero: {
         headline: 'Welcome to KalaBazzar',
@@ -48,7 +49,7 @@ export const getHomepageSettings = asyncHandler(async (req: Request, res: Respon
         policies: [],
       },
       seo: { title: 'KalaBazzar', description: 'Nepali Handicraft Marketplace' },
-      updatedBy: (req as AuthRequest).user?._id || null,
+      ...(userId ? { updatedBy: userId } : {}),
     });
     settings = JSON.parse(JSON.stringify(created));
   }

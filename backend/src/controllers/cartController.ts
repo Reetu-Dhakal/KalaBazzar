@@ -111,8 +111,6 @@ export const addToCart = asyncHandler(async (req: AuthRequest, res: Response) =>
     throw ApiError.internal('Failed to update cart');
   }
 
-  await updatedCart.save();
-
   res.json(
     ApiResponse.success(
       { cart: updatedCart },

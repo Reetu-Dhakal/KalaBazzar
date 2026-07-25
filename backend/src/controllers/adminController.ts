@@ -13,6 +13,16 @@ import { UserRole, SellerStatus, OrderStatus, PaymentStatus } from '../config/co
 import { emailService } from '../services/emailService';
 import { generateSlug, generateUniqueSlug } from '../utils/helpers';
 
+const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
+  [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+  [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+  [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+  [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
+  [OrderStatus.DELIVERED]: [OrderStatus.REFUNDED],
+  [OrderStatus.CANCELLED]: [],
+  [OrderStatus.REFUNDED]: [],
+};
+
 export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Response) => {
   const [
     totalUsers,
@@ -161,7 +171,7 @@ export const updateUserStatus = asyncHandler(async (req: AuthRequest, res: Respo
     throw ApiError.forbidden('Cannot modify admin user status');
   }
 
-  (user as any).isActive = isActive;
+  user.isActive = isActive;
   await user.save();
 
   res.json(
@@ -235,11 +245,11 @@ export const approveSellerApplication = asyncHandler(async (req: AuthRequest, re
   });
 
   const user = profile.user as any;
-  await emailService.sendSellerApprovalEmail(
+  emailService.sendSellerApprovalEmail(
     user.email,
     user.firstName,
     'approved'
-  );
+  ).catch(err => console.error('Failed to send seller approval email:', err));
 
   res.json(ApiResponse.success(profile, 'Seller approved successfully'));
 });
@@ -269,12 +279,12 @@ export const rejectSellerApplication = asyncHandler(async (req: AuthRequest, res
   await profile.save();
 
   const user = profile.user as any;
-  await emailService.sendSellerApprovalEmail(
+  emailService.sendSellerApprovalEmail(
     user.email,
     user.firstName,
     'rejected',
     reason
-  );
+  ).catch(err => console.error('Failed to send seller rejection email:', err));
 
   res.json(ApiResponse.success(profile, 'Seller application rejected'));
 });
@@ -335,6 +345,13 @@ export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Resp
   const order = await Order.findById(id).populate('customer', 'firstName lastName email');
   if (!order) {
     throw ApiError.notFound('Order not found');
+  }
+
+  const allowedTransitions = VALID_STATUS_TRANSITIONS[order.status];
+  if (!allowedTransitions || !allowedTransitions.includes(status as OrderStatus)) {
+    throw ApiError.badRequest(
+      `Cannot transition from "${order.status}" to "${status}"`
+    );
   }
 
   await (order as any).addStatusHistory(status as OrderStatus, note, req.user._id);

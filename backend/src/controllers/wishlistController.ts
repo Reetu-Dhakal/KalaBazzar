@@ -41,6 +41,11 @@ export const addToWishlist = asyncHandler(async (req: AuthRequest, res: Response
     throw ApiError.notFound('Product not found');
   }
 
+  const existingWishlist = await Wishlist.findOne({ customer: userId });
+  const alreadyInWishlist = existingWishlist?.items.some(
+    (item) => item.product.toString() === productId
+  );
+
   const wishlist = await Wishlist.findOneAndUpdate(
     { customer: userId },
     {
@@ -51,9 +56,11 @@ export const addToWishlist = asyncHandler(async (req: AuthRequest, res: Response
     { new: true, upsert: true }
   ).populate(POPULATE_OPTIONS);
 
-  await Product.findByIdAndUpdate(productId, {
-    $inc: { 'analytics.wishlistCount': 1 },
-  });
+  if (!alreadyInWishlist) {
+    await Product.findByIdAndUpdate(productId, {
+      $inc: { 'analytics.wishlistCount': 1 },
+    });
+  }
 
   res.json(
     ApiResponse.success(

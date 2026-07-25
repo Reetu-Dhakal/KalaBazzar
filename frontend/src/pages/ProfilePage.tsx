@@ -124,8 +124,8 @@ export default function ProfilePage() {
 
     const fetchData = async () => {
       try {
-        const { data } = await api.get('/orders', { params: { limit: 5 } });
-        setOrders(data.data.orders || []);
+        const { data } = await api.get('/orders/my-orders', { params: { limit: 5 } });
+        setOrders(data.data || []);
       } catch {
         // handled silently
       } finally {

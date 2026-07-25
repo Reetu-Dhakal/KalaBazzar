@@ -76,9 +76,10 @@ export default function AdminCoupons() {
       const params: Record<string, string | number> = { page, limit: 10 };
       if (search.trim()) params.search = search.trim();
       const { data } = await api.get('/admin/coupons', { params });
-      setCoupons(data.data.coupons || data.data || []);
-      setPagination(data.pagination);
+      setCoupons(data.data || []);
+      setPagination(data.meta?.pagination);
     } catch {
+      toast.error('Failed to load coupons');
       setCoupons([]);
     } finally {
       setIsLoading(false);

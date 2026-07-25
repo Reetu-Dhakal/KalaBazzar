@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ChevronRight,
@@ -176,6 +176,8 @@ function ReviewForm({
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -219,8 +221,8 @@ export default function ProductDetail() {
         params: { page: reviewPage, limit: 5 },
       });
       return {
-        reviews: data.data.reviews as Review[],
-        pagination: data.data.pagination,
+        reviews: data.data as Review[],
+        pagination: data.meta?.pagination,
       };
     },
     enabled: !!productData?._id,
@@ -278,6 +280,11 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     if (!product || isOutOfStock) return;
+    if (!isAuthenticated) {
+      toast.error('Please login to add items to cart');
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
     try {
       await addToCart(product._id, quantity);
       toast.success('Added to cart');
@@ -288,6 +295,11 @@ export default function ProductDetail() {
 
   const handleWishlistToggle = async () => {
     if (!product) return;
+    if (!isAuthenticated) {
+      toast.error('Please login to manage your wishlist');
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
     try {
       if (inWishlist) {
         await removeFromWishlist(product._id);
@@ -407,19 +419,19 @@ export default function ProductDetail() {
                   <Star
                     key={star}
                     className={`h-4 w-4 ${
-                      star <= Math.round(product.analytics.averageRating)
+                      star <= Math.round(product.analytics?.averageRating ?? 0)
                         ? 'fill-secondary text-secondary'
                         : 'text-muted-foreground'
                     }`}
                   />
                 ))}
                 <span className="text-sm text-muted-foreground ml-1">
-                  ({product.analytics.reviewCount} reviews)
+                  ({product.analytics?.reviewCount} reviews)
                 </span>
               </div>
               <span className="text-sm text-muted-foreground flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
-                {product.analytics.views} views
+                {product.analytics?.views} views
               </span>
             </div>
 
@@ -673,14 +685,14 @@ export default function ProductDetail() {
           <div className="grid md:grid-cols-[200px_1fr] gap-8">
             <div className="text-center p-6 bg-muted/50 rounded-xl h-fit">
               <div className="text-5xl font-bold text-foreground">
-                {product.analytics.averageRating.toFixed(1)}
+                {(product.analytics?.averageRating ?? 0).toFixed(1)}
               </div>
               <div className="flex items-center justify-center gap-1 mt-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
                     key={star}
                     className={`h-5 w-5 ${
-                      star <= Math.round(product.analytics.averageRating)
+                      star <= Math.round(product.analytics?.averageRating ?? 0)
                         ? 'fill-secondary text-secondary'
                         : 'text-muted-foreground'
                     }`}
@@ -688,7 +700,7 @@ export default function ProductDetail() {
                 ))}
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                {product.analytics.reviewCount} review{product.analytics.reviewCount !== 1 ? 's' : ''}
+                {product.analytics?.reviewCount} review{product.analytics?.reviewCount !== 1 ? 's' : ''}
               </p>
             </div>
 

@@ -5,6 +5,7 @@ import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../utils/ApiError';
 import { generateSlug } from '../utils/helpers';
+import { ProductStatus } from '../config/constants';
 
 export const getRegions = asyncHandler(async (req: Request, res: Response) => {
   const { includeProductCount, isActive } = req.query;
@@ -24,7 +25,7 @@ export const getRegions = asyncHandler(async (req: Request, res: Response) => {
       .lean();
 
     const productCounts = await Product.aggregate([
-      { $match: { status: 'published', isDeleted: { $ne: true } } },
+      { $match: { status: ProductStatus.APPROVED, isActive: true } },
       { $group: { _id: '$region', count: { $sum: 1 } } },
     ]);
 

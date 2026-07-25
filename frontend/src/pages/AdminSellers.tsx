@@ -55,9 +55,10 @@ export default function AdminSellers() {
       if (statusFilter) params.status = statusFilter;
       if (search.trim()) params.search = search.trim();
       const { data } = await api.get('/admin/sellers', { params });
-      setSellers(data.data.sellers || data.data || []);
-      setPagination(data.pagination);
+      setSellers(data.data || []);
+      setPagination(data.meta?.pagination);
     } catch {
+      toast.error('Failed to load sellers');
       setSellers([]);
     } finally {
       setIsLoading(false);

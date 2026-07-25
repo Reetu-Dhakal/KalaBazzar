@@ -65,7 +65,7 @@ export function AdminLayout() {
                 )}
                 title={collapsed ? item.label : undefined}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
+                <item.icon className="h-5 w-5 shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
             );
@@ -112,7 +112,7 @@ export function AdminLayout() {
                     : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                 )}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
+                <item.icon className="h-5 w-5 shrink-0" />
                 <span>{item.label}</span>
               </Link>
             );

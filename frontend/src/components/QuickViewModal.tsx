@@ -34,7 +34,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       )
     : 0;
 
-  const isOutOfStock = product.variants.every(v => v.inventory <= 0);
+  const isOutOfStock = product.variants?.every(v => v.inventory <= 0) ?? true;
 
   const handleClose = () => {
     setQuantity(1);
@@ -176,12 +176,12 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                     )}
                   </div>
 
-                  {product.analytics.averageRating > 0 && (
+                  {product.analytics?.averageRating > 0 && (
                     <div className="mt-2 flex items-center gap-1">
                       <Star className="h-4 w-4 fill-secondary text-secondary" />
                       <span className="text-sm text-muted-foreground">
-                        {product.analytics.averageRating.toFixed(1)}{' '}
-                        ({product.analytics.reviewCount} reviews)
+                        {product.analytics?.averageRating.toFixed(1)}{' '}
+                        ({product.analytics?.reviewCount} reviews)
                       </span>
                     </div>
                   )}

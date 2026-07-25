@@ -50,7 +50,7 @@ export default function CategoryPage() {
       const { data } = await api.get('/products', {
         params: { category: slug, limit: 24, sort: 'newest' },
       });
-      return (data.data.products || []) as Product[];
+      return (data.data || []) as Product[];
     },
     enabled: !!slug,
   });

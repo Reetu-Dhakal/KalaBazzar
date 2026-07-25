@@ -4,7 +4,7 @@ import crypto from 'crypto';
 export const generateAccessToken = (userId: string, role: string): string => {
   return jwt.sign(
     { id: userId, role },
-    process.env.JWT_SECRET!,
+    process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET!,
     { expiresIn: '15m' }
   );
 };
@@ -19,7 +19,7 @@ export const generateRefreshToken = (userId: string): string => {
 
 export const verifyAccessToken = (token: string): { id: string; role: string } | null => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET!) as { id: string; role: string };
+    return jwt.verify(token, process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET!) as { id: string; role: string };
   } catch {
     return null;
   }
@@ -38,11 +38,11 @@ export const generateToken = (): string => {
 };
 
 export const generateEmailVerificationToken = (): string => {
-  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+  return crypto.randomBytes(32).toString('hex');
 };
 
 export const generatePasswordResetToken = (): string => {
-  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+  return crypto.randomBytes(32).toString('hex');
 };
 
 export const generateOrderNumber = (): string => {

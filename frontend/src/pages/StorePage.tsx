@@ -58,13 +58,13 @@ export default function StorePage() {
         ]);
 
         if (storeRes.status === 'fulfilled') {
-          setStore(storeRes.value.data.data.seller || storeRes.value.data.data);
+          setStore(storeRes.value.data?.data?.seller || storeRes.value.data?.data || null);
         }
         if (productsRes.status === 'fulfilled') {
-          setProducts(productsRes.value.data.data.products || []);
+          setProducts(productsRes.value.data?.data?.products || []);
         }
         if (reviewsRes.status === 'fulfilled') {
-          setReviews(reviewsRes.value.data.data.reviews || []);
+          setReviews(reviewsRes.value.data?.data?.reviews || []);
         }
       } catch {
         // handled

@@ -17,34 +17,24 @@ export const orderValidation = [
   body('shippingAddress')
     .isObject()
     .withMessage('Shipping address required'),
-  body('shippingAddress.fullName')
+  body('shippingAddress.label')
+    .optional()
+    .trim()
+    .isIn(['home', 'work', 'other'])
+    .withMessage('Label must be home, work, or other'),
+  body('shippingAddress.street')
     .trim()
     .notEmpty()
-    .withMessage('Full name required'),
-  body('shippingAddress.phone')
-    .matches(/^(\+977|0)?[1-9]\d{9}$/)
-    .withMessage('Valid Nepali phone required'),
-  body('shippingAddress.email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Valid email required'),
-  body('shippingAddress.addressLine1')
-    .trim()
-    .notEmpty()
-    .withMessage('Address line 1 required'),
+    .withMessage('Street address required'),
   body('shippingAddress.city')
     .trim()
     .notEmpty()
     .withMessage('City required'),
-  body('shippingAddress.district')
+  body('shippingAddress.state')
     .trim()
     .notEmpty()
-    .withMessage('District required'),
-  body('shippingAddress.province')
-    .trim()
-    .notEmpty()
-    .withMessage('Province required'),
-  body('shippingAddress.postalCode')
+    .withMessage('State/Province required'),
+  body('shippingAddress.zipCode')
     .trim()
     .notEmpty()
     .withMessage('Postal code required'),
@@ -52,9 +42,13 @@ export const orderValidation = [
     .optional()
     .trim()
     .default('Nepal'),
+  body('shippingAddress.phone')
+    .matches(/^(\+977|0)?[1-9]\d{9}$/)
+    .withMessage('Valid Nepali phone required'),
   body('shippingAddress.recipientName')
-    .optional()
-    .trim(),
+    .trim()
+    .notEmpty()
+    .withMessage('Recipient name required'),
   body('billingAddress')
     .optional()
     .isObject(),

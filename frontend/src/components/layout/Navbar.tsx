@@ -76,7 +76,7 @@ export function Navbar() {
           const { data } = await api.get('/products', {
             params: { search: query, limit: 5, status: 'approved' },
           });
-          setSearchResults(data.data.products || []);
+          setSearchResults(data.data || []);
           setIsSearchOpen(true);
         } catch {
           setSearchResults([]);
@@ -119,7 +119,7 @@ export function Navbar() {
         <nav className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 gap-4">
             <div className="flex items-center gap-8">
-              <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+              <Link to="/" className="flex items-center gap-2 shrink-0">
                 <div className="flex items-center">
                   <span className="w-2.5 h-6 rounded-sm bg-blue-600" />
                   <span className="w-2.5 h-6 rounded-sm bg-red-600 -ml-1" />
@@ -169,7 +169,7 @@ export function Navbar() {
                       }}
                       className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors border-b border-border/50 last:border-0"
                     >
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent flex-shrink-0">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent shrink-0">
                         {product.variants?.[0]?.images?.[0] ? (
                           <img
                             src={product.variants[0].images[0]}

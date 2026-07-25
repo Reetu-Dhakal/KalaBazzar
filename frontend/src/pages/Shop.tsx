@@ -88,8 +88,8 @@ export default function Shop() {
   const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const { data } = await api.get('/categories');
-      return data.data.categories || [];
+      const { data } = await api.get('/categories?includeProductCount=true');
+      return data.data || [];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -98,7 +98,7 @@ export default function Shop() {
     queryKey: ['crafts'],
     queryFn: async () => {
       const { data } = await api.get('/crafts');
-      return data.data.crafts || [];
+      return data.data || [];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -107,7 +107,7 @@ export default function Shop() {
     queryKey: ['regions'],
     queryFn: async () => {
       const { data } = await api.get('/regions');
-      return data.data.regions || [];
+      return data.data || [];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -129,8 +129,8 @@ export default function Shop() {
 
       const { data } = await api.get('/products', { params });
       return {
-        products: data.data.products || [],
-        pagination: data.data.pagination as PaginationMeta,
+        products: data.data || [],
+        pagination: data.meta?.pagination as PaginationMeta,
       };
     },
     placeholderData: (prev) => prev,

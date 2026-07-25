@@ -28,7 +28,7 @@ export interface INotification extends Document {
 }
 
 const notificationSchema = new Schema<INotification>({
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   type: { type: String, required: true, enum: [
     'order_placed', 'order_confirmed', 'order_processing', 'order_shipped', 'order_delivered', 'order_cancelled',
     'payment_received', 'payment_failed', 'refund_initiated', 'refund_completed',

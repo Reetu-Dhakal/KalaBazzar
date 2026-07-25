@@ -58,7 +58,6 @@ const categorySchema = new Schema<ICategory>({
 });
 
 categorySchema.index({ parent: 1 });
-categorySchema.index({ slug: 1 });
 categorySchema.index({ isActive: 1, sortOrder: 1 });
 
 categorySchema.virtual('children', {

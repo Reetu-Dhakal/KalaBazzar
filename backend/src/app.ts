@@ -36,6 +36,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(mongoSanitize());
+app.use('/api', apiLimiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -56,7 +57,6 @@ app.use('/api/collections', collectionRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/homepage', homepageRoutes);
 
-app.use('/api', apiLimiter);
 app.use('/api', notFoundHandler);
 app.use(errorHandler);
 

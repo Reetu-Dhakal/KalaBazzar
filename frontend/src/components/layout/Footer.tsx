@@ -16,7 +16,7 @@ const categoryLinks = [
   { to: '/shop?category=woodwork', label: 'Woodwork' },
   { to: '/shop?category=textiles', label: 'Textiles' },
   { to: '/shop?category=metalwork', label: 'Metalwork' },
-  { to: '/shop?category= paintings', label: 'Paintings' },
+  { to: '/shop?category=paintings', label: 'Paintings' },
 ];
 
 const socialLinks = [
@@ -68,17 +68,17 @@ export function Footer() {
                 className="flex items-center gap-3 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                hello@kalabazaar.com
+                kalabazaar@gmail.com
               </a>
               <a
                 href="tel:+977-1-4567890"
                 className="flex items-center gap-3 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
               >
                 <Phone className="h-4 w-4" />
-                +977-1-4567890
+                +977-******
               </a>
               <div className="flex items-start gap-3 text-sm text-primary-foreground/80">
-                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>Kathmandu, Nepal</span>
               </div>
             </div>

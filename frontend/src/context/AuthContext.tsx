@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshToken = async () => {
     try {
-      const { data } = await api.get('/auth/refresh');
+      const { data } = await api.post('/auth/refresh');
       const newToken = data.data.accessToken;
       setToken(newToken);
       setUser(data.data.user);
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProfile = async (profileData: Partial<User>) => {
-    const { data } = await api.put('/auth/profile', profileData);
+    const { data } = await api.put('/auth/me', profileData);
     setUser(data.data.user);
   };
 
