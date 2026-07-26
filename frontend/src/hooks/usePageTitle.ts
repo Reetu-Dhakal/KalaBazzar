@@ -12,31 +12,6 @@ const routeMeta: Record<string, { title: string; description: string }> = {
     description:
       'Browse our curated collection of handcrafted products from verified artisans.',
   },
-  '/about': {
-    title: 'About Us — KalaBazzar',
-    description:
-      'Learn about KalaBazzar and our mission to connect artisans with conscious consumers.',
-  },
-  '/contact': {
-    title: 'Contact Us — KalaBazzar',
-    description:
-      'Get in touch with the KalaBazzar team for support or inquiries.',
-  },
-  '/faq': {
-    title: 'FAQ — KalaBazzar',
-    description:
-      'Frequently asked questions about shopping, shipping, returns, and more.',
-  },
-  '/privacy': {
-    title: 'Privacy Policy — KalaBazzar',
-    description:
-      'Our privacy policy explains how we collect and protect your data.',
-  },
-  '/terms': {
-    title: 'Terms of Service — KalaBazzar',
-    description:
-      'Read our terms of service for using the KalaBazzar platform.',
-  },
   '/login': {
     title: 'Login — KalaBazzar',
     description: 'Sign in to your KalaBazzar account.',

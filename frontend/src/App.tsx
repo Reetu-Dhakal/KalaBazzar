@@ -34,11 +34,6 @@ const AdminUsers = lazy(() => import('@/pages/AdminUsers'));
 const AdminOrders = lazy(() => import('@/pages/AdminOrders'));
 const AdminReviews = lazy(() => import('@/pages/AdminReviews'));
 const AdminCoupons = lazy(() => import('@/pages/AdminCoupons'));
-const About = lazy(() => import('@/pages/About'));
-const Contact = lazy(() => import('@/pages/Contact'));
-const FAQ = lazy(() => import('@/pages/FAQ'));
-const Privacy = lazy(() => import('@/pages/Privacy'));
-const Terms = lazy(() => import('@/pages/Terms'));
 const CategoryPage = lazy(() => import('@/pages/CategoryPage'));
 const WishlistPage = lazy(() => import('@/pages/WishlistPage'));
 const RecentlyViewed = lazy(() => import('@/pages/RecentlyViewed'));
@@ -60,11 +55,6 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/shop/:slug" element={<ProductDetail />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
           <Route path="/store/:slug" element={<StorePage />} />
           <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/recently-viewed" element={<RecentlyViewed />} />

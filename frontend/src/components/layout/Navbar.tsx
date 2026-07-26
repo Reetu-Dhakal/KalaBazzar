@@ -104,8 +104,9 @@ export function Navbar() {
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/shop', label: 'Shop' },
-    { to: '/about', label: 'About' },
-    { to: '/contact', label: 'Contact' },
+    { to: '/#about', label: 'About' },
+    { to: '/#faq', label: 'FAQ' },
+    { to: '/#contact', label: 'Contact' },
   ];
 
   return (

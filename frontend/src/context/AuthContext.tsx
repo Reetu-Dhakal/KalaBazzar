@@ -10,8 +10,8 @@ import api from '@/lib/api';
 import type { User, AuthState, LoginFormData, RegisterFormData } from '@/types';
 
 interface AuthContextType extends AuthState {
-  login: (data: LoginFormData) => Promise<void>;
-  register: (data: RegisterFormData) => Promise<void>;
+  login: (data: LoginFormData) => Promise<User>;
+  register: (data: RegisterFormData) => Promise<User>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newToken = data.data.accessToken;
     setToken(newToken);
     setUser(data.data.user);
+    return data.data.user;
   };
 
   const register = async (formData: RegisterFormData) => {
@@ -70,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newToken = data.data.accessToken;
     setToken(newToken);
     setUser(data.data.user);
+    return data.data.user;
   };
 
   const logout = async () => {

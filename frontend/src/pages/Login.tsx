@@ -27,10 +27,10 @@ export default function Login() {
   const { login, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const from = (location.state as { from?: string })?.from || '/';
+  const from = (location.state as { from?: string })?.from;
 
   if (isAuthenticated) {
-    navigate(from, { replace: true });
+    navigate(from || '/', { replace: true });
     return null;
   }
 
@@ -45,9 +45,15 @@ export default function Login() {
   const onSubmit = async (data: LoginSchema) => {
     setIsLoading(true);
     try {
-      await login(data as LoginFormData);
+      const user = await login(data as LoginFormData);
       toast.success('Welcome back!');
-      navigate(from, { replace: true });
+      if (user?.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (user?.role === 'seller') {
+        navigate('/seller/dashboard', { replace: true });
+      } else {
+        navigate(from || '/shop', { replace: true });
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Login failed. Please try again.';

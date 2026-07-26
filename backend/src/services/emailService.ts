@@ -26,6 +26,10 @@ class EmailService {
   }
 
   async sendEmail(options: EmailOptions): Promise<void> {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.log(`[Email skipped — no SMTP credentials] To: ${options.to}, Subject: ${options.subject}`);
+      return;
+    }
     try {
       await this.transporter.sendMail({
         from: process.env.EMAIL_FROM || 'Kala Bazaar <noreply@kalabazaar.com>',
@@ -37,7 +41,6 @@ class EmailService {
       });
     } catch (error) {
       console.error('Email send error:', error);
-      throw new Error('Failed to send email');
     }
   }
 

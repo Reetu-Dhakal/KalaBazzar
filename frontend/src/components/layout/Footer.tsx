@@ -6,9 +6,9 @@ import toast from 'react-hot-toast';
 const quickLinks = [
   { to: '/', label: 'Home' },
   { to: '/shop', label: 'Shop' },
-  { to: '/about', label: 'About' },
-  { to: '/contact', label: 'Contact' },
-  { to: '/faq', label: 'FAQ' },
+  { to: '/#about', label: 'About' },
+  { to: '/#contact', label: 'Contact' },
+  { to: '/#faq', label: 'FAQ' },
 ];
 
 const categoryLinks = [
@@ -161,14 +161,6 @@ export function Footer() {
           <p className="text-sm text-primary-foreground/70">
             &copy; {new Date().getFullYear()} Kala Bazaar. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-sm text-primary-foreground/70">
-            <Link to="/privacy" className="hover:text-primary-foreground transition-colors">
-              Privacy Policy
-            </Link>
-            <Link to="/terms" className="hover:text-primary-foreground transition-colors">
-              Terms of Service
-            </Link>
-          </div>
         </div>
       </div>
     </footer>

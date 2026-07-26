@@ -23,8 +23,8 @@ const staggerContainer = {
 const popularLinks = [
   { label: 'Home', href: '/', icon: Home },
   { label: 'Shop', href: '/shop', icon: ShoppingBag },
-  { label: 'About', href: '/about', icon: Info },
-  { label: 'Contact', href: '/contact', icon: Mail },
+  { label: 'About', href: '/#about', icon: Info },
+  { label: 'Contact', href: '/#contact', icon: Mail },
 ];
 
 export default function NotFound() {

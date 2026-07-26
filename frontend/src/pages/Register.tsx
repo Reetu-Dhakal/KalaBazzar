@@ -85,9 +85,15 @@ export default function Register() {
     setIsLoading(true);
     try {
       const { acceptTerms: _, ...formData } = data;
-      await registerUser(formData as RegisterFormData);
+      const user = await registerUser(formData as RegisterFormData);
       toast.success('Account created successfully!');
-      navigate('/', { replace: true });
+      if (user?.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (user?.role === 'seller') {
+        navigate('/seller/dashboard', { replace: true });
+      } else {
+        navigate('/shop', { replace: true });
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -248,13 +254,9 @@ export default function Register() {
                 />
                 <span className="text-muted-foreground">
                   I agree to the{' '}
-                  <Link to="/terms" className="text-primary hover:underline">
-                    Terms of Service
-                  </Link>{' '}
-                  and{' '}
-                  <Link to="/privacy" className="text-primary hover:underline">
-                    Privacy Policy
-                  </Link>
+                  <span className="text-primary">Terms of Service</span>
+                  {' '}and{' '}
+                  <span className="text-primary">Privacy Policy</span>
                 </span>
               </label>
               {errors.acceptTerms && (
