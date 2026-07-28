@@ -33,7 +33,7 @@ export const createRateLimiter = (options: {
 
 export const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: process.env.NODE_ENV === 'production' ? 10 : 100,
   message: 'Too many authentication attempts, please try again later.',
 });
 

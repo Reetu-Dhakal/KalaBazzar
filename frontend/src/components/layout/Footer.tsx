@@ -50,12 +50,13 @@ export function Footer() {
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="flex items-center">
-                <span className="w-2.5 h-6 rounded-sm bg-blue-500" />
-                <span className="w-2.5 h-6 rounded-sm bg-red-500 -ml-1" />
-                <span className="w-2.5 h-6 rounded-sm bg-white border border-white/30 -ml-1" />
-              </div>
+            <Link to="/" className="flex items-center gap-2.5 mb-4">
+              <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                <rect width="32" height="32" rx="8" fill="#FBEED3" />
+                <path d="M16 7C14.5 7 13 8 13 10C13 11.5 14 12.5 15 13C13.5 14 12 16 12 18C12 20.5 14 22 16 22C18 22 20 20.5 20 18C20 16 18.5 14 17 13C18 12.5 19 11.5 19 10C19 8 17.5 7 16 7Z" fill="#6E1E1E" />
+                <circle cx="16" cy="10" r="2" fill="#C89B3C" />
+                <path d="M10 24C10 21.5 12.5 19.5 16 19.5C19.5 19.5 22 21.5 22 24" stroke="#C89B3C" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+              </svg>
               <span className="font-heading text-2xl font-bold">Kala Bazaar</span>
             </Link>
             <p className="text-sm text-primary-foreground/80 leading-relaxed max-w-sm mb-6">
