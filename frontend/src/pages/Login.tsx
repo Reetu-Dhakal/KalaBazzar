@@ -24,13 +24,14 @@ export default function Login() {
   usePageTitle();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const from = (location.state as { from?: string })?.from;
 
   if (isAuthenticated) {
-    navigate(from || '/', { replace: true });
+    const target = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'seller' ? '/seller/dashboard' : from || '/shop';
+    navigate(target, { replace: true });
     return null;
   }
 
