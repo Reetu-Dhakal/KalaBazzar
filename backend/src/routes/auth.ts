@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { register, login, logout, refresh, verifyEmail, resendVerification, forgotPassword, resetPassword, changePassword, getMe, updateProfile } from '../controllers/authController';
+import { register, login, logout, refresh, verifyEmail, resendVerification, forgotPassword, resetPassword, changePassword, getMe, updateProfile, uploadUserAvatar } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 import { registerValidation, loginValidation, forgotPasswordValidation, resetPasswordValidation, changePasswordValidation, updateProfileValidation } from '../validators/authValidator';
 import { authLimiter } from '../middleware/rateLimiter';
 import { addAddress, updateAddress, deleteAddress, setDefaultAddress } from '../services/authService';
+import { upload, handleUploadError } from '../middleware/upload';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.post('/reset-password', authLimiter, validate(resetPasswordValidation), r
 router.put('/password', authenticate, validate(changePasswordValidation), changePassword);
 router.get('/me', authenticate, getMe);
 router.put('/me', authenticate, validate(updateProfileValidation), updateProfile);
+router.post('/avatar', authenticate, upload.single('avatar'), handleUploadError, uploadUserAvatar);
 
 router.post('/addresses', authenticate, validate([
   body('label').isIn(['home', 'work', 'other']).withMessage('Invalid label'),

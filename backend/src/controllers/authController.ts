@@ -5,6 +5,7 @@ import { ApiError } from '../utils/ApiError';
 import { asyncHandler } from '../utils/ApiError';
 import { emailService } from '../services/emailService';
 import { AuthRequest } from '../middleware/auth';
+import cloudinary from '../config/cloudinary';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { email, password, firstName, lastName, phone, role } = req.body;
@@ -303,5 +304,34 @@ export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response
     success: true,
     message: 'Profile updated',
     data: { user },
+  });
+});
+
+export const uploadUserAvatar = asyncHandler(async (req: AuthRequest, res: Response) => {
+  if (!req.file) {
+    throw ApiError.badRequest('No file uploaded');
+  }
+
+  const result = await new Promise<{ url: string; publicId: string }>((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'kalabazzar/avatars', resource_type: 'image', transformation: [{ width: 256, height: 256, crop: 'fill' }] },
+      (error, result) => {
+        if (error || !result) return reject(error || new Error('Upload failed'));
+        resolve({ url: result.secure_url, publicId: result.public_id });
+      }
+    );
+    stream.end(req.file!.buffer);
+  });
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { avatar: result.url },
+    { new: true }
+  );
+
+  res.json({
+    success: true,
+    message: 'Avatar uploaded successfully',
+    data: { avatar: result.url, user },
   });
 });

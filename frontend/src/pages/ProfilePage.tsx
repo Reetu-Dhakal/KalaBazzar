@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +15,8 @@ import {
   Trash2,
   Star,
   Heart,
+  Camera,
+  Loader2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -75,13 +77,15 @@ type AddressSchema = z.infer<typeof addressSchema>;
 export default function ProfilePage() {
   usePageTitle();
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading: authLoading, updateProfile } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, updateProfile, uploadAvatar } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'addresses'>('profile');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isEditingAddress, setIsEditingAddress] = useState<number | null>(null);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const profileForm = useForm<ProfileSchema>({
     resolver: zodResolver(profileSchema),
@@ -227,6 +231,26 @@ export default function ProfilePage() {
     setIsAddingAddress(true);
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+    setIsUploadingAvatar(true);
+    try {
+      await uploadAvatar(file);
+      toast.success('Avatar updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to upload avatar';
+      toast.error(message);
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -262,9 +286,38 @@ export default function ProfilePage() {
             <Card variant="elevated">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
-                  <div className="mx-auto mb-3 h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-10 w-10 text-primary" />
-                  </div>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                  />
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="relative mx-auto mb-3 group"
+                    disabled={isUploadingAvatar}
+                  >
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.firstName}
+                        className="h-20 w-20 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-10 w-10 text-primary" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      {isUploadingAvatar ? (
+                        <Loader2 className="h-6 w-6 text-white animate-spin" />
+                      ) : (
+                        <Camera className="h-6 w-6 text-white" />
+                      )}
+                    </div>
+                  </button>
+                  <p className="text-xs text-muted-foreground">Click to change photo</p>
                   <h2 className="font-heading text-lg font-semibold text-foreground">
                     {user.firstName} {user.lastName}
                   </h2>
