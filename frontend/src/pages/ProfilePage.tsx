@@ -330,10 +330,10 @@ export default function ProfilePage() {
                 <nav className="space-y-1">
                   {(
                     [
-                      { key: 'profile', label: 'Profile', icon: User },
-                      { key: 'password', label: 'Password', icon: Lock },
-                      { key: 'addresses', label: 'Addresses', icon: MapPin },
-                    ] as const
+                      { key: 'profile' as const, label: 'Profile', icon: User },
+                      { key: 'password' as const, label: 'Password', icon: Lock },
+                      ...(user.role !== 'admin' ? [{ key: 'addresses' as const, label: 'Addresses', icon: MapPin }] : []),
+                    ]
                   ).map((tab) => (
                     <button
                       key={tab.key}
@@ -350,22 +350,26 @@ export default function ProfilePage() {
                   ))}
                 </nav>
 
-                <div className="mt-6 pt-6 border-t border-border space-y-3">
-                  <Link
-                    to="/orders"
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                  >
-                    <Star className="h-4 w-4" />
-                    Order History
-                  </Link>
-                  <Link
-                    to="/wishlist"
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                  >
-                    <Heart className="h-4 w-4" />
-                    Wishlist
-                  </Link>
-                </div>
+                {user.role !== 'admin' && (
+                  <div className="mt-6 pt-6 border-t border-border space-y-3">
+                    <Link
+                      to="/orders"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    >
+                      <Star className="h-4 w-4" />
+                      Order History
+                    </Link>
+                    {user.role === 'customer' && (
+                      <Link
+                        to="/wishlist"
+                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        <Heart className="h-4 w-4" />
+                        Wishlist
+                      </Link>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
