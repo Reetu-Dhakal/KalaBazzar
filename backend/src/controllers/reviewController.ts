@@ -62,6 +62,23 @@ export const createReview = asyncHandler(async (req: AuthRequest, res: Response)
   );
 });
 
+export const getPublicReviews = asyncHandler(async (req: Request, res: Response) => {
+  const sort = req.query.sort as string || '-createdAt';
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  const sortField = sort.startsWith('-') ? sort.slice(1) : sort;
+  const sortOrder = sort.startsWith('-') ? -1 : 1;
+
+  const reviews = await Review.find({ isApproved: true })
+    .sort({ [sortField]: sortOrder })
+    .limit(limit)
+    .populate('customer', 'firstName lastName')
+    .populate('product', 'name slug')
+    .lean();
+
+  res.json(ApiResponse.success(reviews, 'Reviews retrieved successfully'));
+});
+
 export const getProductReviews = asyncHandler(async (req: Request, res: Response) => {
   const { productId } = req.params;
   const { page, limit, skip, sortBy, sortOrder } = getPaginationParams(req);
