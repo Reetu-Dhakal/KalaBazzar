@@ -41,6 +41,8 @@ export function Navbar() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
+  const role = user?.role;
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
@@ -101,13 +103,37 @@ export function Navbar() {
     navigate('/');
   };
 
-  const navLinks = [
-    { to: '/', label: 'Home' },
+  const guestLinks = [
     { to: '/shop', label: 'Shop' },
     { to: '/#about', label: 'About' },
     { to: '/#faq', label: 'FAQ' },
     { to: '/#contact', label: 'Contact' },
   ];
+
+  const customerLinks = [
+    { to: '/shop', label: 'Shop' },
+  ];
+
+  const sellerLinks = [
+    { to: '/shop', label: 'Shop' },
+    { to: '/seller/dashboard', label: 'Dashboard' },
+  ];
+
+  const adminLinks = [
+    { to: '/admin/dashboard', label: 'Dashboard' },
+  ];
+
+  const navLinks = !isAuthenticated
+    ? guestLinks
+    : role === 'admin'
+      ? adminLinks
+      : role === 'seller'
+        ? sellerLinks
+        : customerLinks;
+
+  const showSearch = !role || role === 'customer';
+  const showWishlist = !role || role === 'customer';
+  const showCart = !role || role === 'customer' || role === 'seller';
 
   return (
     <>
@@ -120,7 +146,7 @@ export function Navbar() {
         <nav className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 gap-4">
             <div className="flex items-center gap-8">
-              <Link to="/" className="flex items-center gap-2 shrink-0">
+              <Link to={isAuthenticated && role === 'admin' ? '/admin/dashboard' : isAuthenticated && role === 'seller' ? '/seller/dashboard' : '/'} className="flex items-center gap-2 shrink-0">
                 <div className="flex items-center">
                   <span className="w-2.5 h-6 rounded-sm bg-blue-600" />
                   <span className="w-2.5 h-6 rounded-sm bg-red-600 -ml-1" />
@@ -144,95 +170,101 @@ export function Navbar() {
               </div>
             </div>
 
-            <div ref={searchRef} className="relative flex-1 max-w-md hidden sm:block">
-              <form onSubmit={handleSearchSubmit}>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    placeholder="Search handmade crafts..."
-                    className="w-full h-10 pl-10 pr-4 rounded-lg border border-border bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-colors"
-                  />
-                </div>
-              </form>
+            {showSearch && (
+              <div ref={searchRef} className="relative flex-1 max-w-md hidden sm:block">
+                <form onSubmit={handleSearchSubmit}>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      placeholder="Search handmade crafts..."
+                      className="w-full h-10 pl-10 pr-4 rounded-lg border border-border bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-colors"
+                    />
+                  </div>
+                </form>
 
-              {isSearchOpen && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50">
-                  {searchResults.map((product) => (
+                {isSearchOpen && searchResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50">
+                    {searchResults.map((product) => (
+                      <Link
+                        key={product._id}
+                        to={`/shop/${product.slug}`}
+                        onClick={() => {
+                          setIsSearchOpen(false);
+                          setSearchQuery('');
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors border-b border-border/50 last:border-0"
+                      >
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent shrink-0">
+                          {product.variants?.[0]?.images?.[0] ? (
+                            <img
+                              src={product.variants[0].images[0]}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {product.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            NPR {product.basePrice}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
                     <Link
-                      key={product._id}
-                      to={`/shop/${product.slug}`}
+                      to={`/shop?search=${encodeURIComponent(searchQuery)}`}
                       onClick={() => {
                         setIsSearchOpen(false);
                         setSearchQuery('');
                       }}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors border-b border-border/50 last:border-0"
+                      className="block px-4 py-2.5 text-xs font-medium text-primary hover:bg-accent transition-colors text-center"
                     >
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent shrink-0">
-                        {product.variants?.[0]?.images?.[0] ? (
-                          <img
-                            src={product.variants[0].images[0]}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {product.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          NPR {product.basePrice}
-                        </p>
-                      </div>
+                      View all results
                     </Link>
-                  ))}
-                  <Link
-                    to={`/shop?search=${encodeURIComponent(searchQuery)}`}
-                    onClick={() => {
-                      setIsSearchOpen(false);
-                      setSearchQuery('');
-                    }}
-                    className="block px-4 py-2.5 text-xs font-medium text-primary hover:bg-accent transition-colors text-center"
-                  >
-                    View all results
-                  </Link>
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex items-center gap-1">
               <NotificationBell />
 
-              <button
-                onClick={() => navigate('/wishlist')}
-                className="relative p-2 rounded-lg text-foreground hover:bg-accent transition-colors hidden sm:flex"
-                aria-label="Wishlist"
-              >
-                <Heart className="h-5 w-5" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {wishlistCount}
-                  </span>
-                )}
-              </button>
+              {showWishlist && (
+                <button
+                  onClick={() => navigate('/wishlist')}
+                  className="relative p-2 rounded-lg text-foreground hover:bg-accent transition-colors hidden sm:flex"
+                  aria-label="Wishlist"
+                >
+                  <Heart className="h-5 w-5" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </button>
+              )}
 
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative p-2 rounded-lg text-foreground hover:bg-accent transition-colors"
-                aria-label="Cart"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
-                    {totalItems}
-                  </span>
-                )}
-              </button>
+              {showCart && (
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2 rounded-lg text-foreground hover:bg-accent transition-colors"
+                  aria-label="Cart"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
+                      {totalItems}
+                    </span>
+                  )}
+                </button>
+              )}
 
               {isAuthenticated ? (
                 <div ref={userMenuRef} className="relative hidden md:block">
@@ -274,15 +306,17 @@ export function Navbar() {
                           <User className="h-4 w-4 text-muted-foreground" />
                           Profile
                         </Link>
-                        <Link
-                          to="/orders"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
-                        >
-                          <Package className="h-4 w-4 text-muted-foreground" />
-                          My Orders
-                        </Link>
-                        {(user?.role === 'seller' || user?.role === 'admin') && (
+                        {role === 'customer' && (
+                          <Link
+                            to="/orders"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                          >
+                            <Package className="h-4 w-4 text-muted-foreground" />
+                            My Orders
+                          </Link>
+                        )}
+                        {role === 'seller' && (
                           <>
                             <Link
                               to="/seller/dashboard"
@@ -291,6 +325,22 @@ export function Navbar() {
                             >
                               <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
                               Seller Dashboard
+                            </Link>
+                            <Link
+                              to="/seller/products"
+                              onClick={() => setIsUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                            >
+                              <Package className="h-4 w-4 text-muted-foreground" />
+                              My Products
+                            </Link>
+                            <Link
+                              to="/seller/orders"
+                              onClick={() => setIsUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                            >
+                              <Package className="h-4 w-4 text-muted-foreground" />
+                              My Orders
                             </Link>
                             <Link
                               to="/seller/settings"
@@ -302,15 +352,33 @@ export function Navbar() {
                             </Link>
                           </>
                         )}
-                        {user?.role === 'admin' && (
-                          <Link
-                            to="/admin/dashboard"
-                            onClick={() => setIsUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
-                          >
-                            <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-                            Admin Panel
-                          </Link>
+                        {role === 'admin' && (
+                          <>
+                            <Link
+                              to="/admin/dashboard"
+                              onClick={() => setIsUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                            >
+                              <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
+                              Admin Dashboard
+                            </Link>
+                            <Link
+                              to="/admin/sellers"
+                              onClick={() => setIsUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                            >
+                              <Store className="h-4 w-4 text-muted-foreground" />
+                              Manage Sellers
+                            </Link>
+                            <Link
+                              to="/admin/orders"
+                              onClick={() => setIsUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                            >
+                              <Package className="h-4 w-4 text-muted-foreground" />
+                              Manage Orders
+                            </Link>
+                          </>
                         )}
                       </div>
                       <div className="border-t border-border py-1">
@@ -356,20 +424,22 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="sm:hidden pb-3">
-            <form onSubmit={handleSearchSubmit}>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search handmade crafts..."
-                  className="w-full h-10 pl-10 pr-4 rounded-lg border border-border bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
-                />
-              </div>
-            </form>
-          </div>
+          {showSearch && (
+            <div className="sm:hidden pb-3">
+              <form onSubmit={handleSearchSubmit}>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    placeholder="Search handmade crafts..."
+                    className="w-full h-10 pl-10 pr-4 rounded-lg border border-border bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  />
+                </div>
+              </form>
+            </div>
+          )}
         </nav>
 
         {isMobileMenuOpen && (
@@ -386,19 +456,21 @@ export function Navbar() {
                 </Link>
               ))}
 
-              <Link
-                to="/wishlist"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
-              >
-                <Heart className="h-4 w-4" />
-                Wishlist
-                {wishlistCount > 0 && (
-                  <span className="ml-auto text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                    {wishlistCount}
-                  </span>
-                )}
-              </Link>
+              {showWishlist && (
+                <Link
+                  to="/wishlist"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
+                >
+                  <Heart className="h-4 w-4" />
+                  Wishlist
+                  {wishlistCount > 0 && (
+                    <span className="ml-auto text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               {isAuthenticated ? (
                 <>
@@ -418,33 +490,79 @@ export function Navbar() {
                     <User className="h-4 w-4" />
                     Profile
                   </Link>
-                  <Link
-                    to="/orders"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
-                  >
-                    <Package className="h-4 w-4" />
-                    My Orders
-                  </Link>
-                  {(user?.role === 'seller' || user?.role === 'admin') && (
+                  {role === 'customer' && (
                     <Link
-                      to="/seller/dashboard"
+                      to="/orders"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
                     >
-                      <Store className="h-4 w-4" />
-                      Seller Dashboard
+                      <Package className="h-4 w-4" />
+                      My Orders
                     </Link>
                   )}
-                  {user?.role === 'admin' && (
-                    <Link
-                      to="/admin/dashboard"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
-                    >
-                      <LayoutDashboard className="h-4 w-4" />
-                      Admin Panel
-                    </Link>
+                  {role === 'seller' && (
+                    <>
+                      <Link
+                        to="/seller/dashboard"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                      >
+                        <Store className="h-4 w-4" />
+                        Seller Dashboard
+                      </Link>
+                      <Link
+                        to="/seller/products"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                      >
+                        <Package className="h-4 w-4" />
+                        My Products
+                      </Link>
+                      <Link
+                        to="/seller/orders"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                      >
+                        <Package className="h-4 w-4" />
+                        My Orders
+                      </Link>
+                      <Link
+                        to="/seller/settings"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Store Settings
+                      </Link>
+                    </>
+                  )}
+                  {role === 'admin' && (
+                    <>
+                      <Link
+                        to="/admin/dashboard"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                        Admin Dashboard
+                      </Link>
+                      <Link
+                        to="/admin/sellers"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                      >
+                        <Store className="h-4 w-4" />
+                        Manage Sellers
+                      </Link>
+                      <Link
+                        to="/admin/orders"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                      >
+                        <Package className="h-4 w-4" />
+                        Manage Orders
+                      </Link>
+                    </>
                   )}
                   <button
                     onClick={() => {
