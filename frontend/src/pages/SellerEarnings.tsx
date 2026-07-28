@@ -163,7 +163,7 @@ export default function SellerEarnings() {
                     formatter={(value: number) => [formatCurrency(value), 'Earnings']}
                     labelFormatter={(label: string) => new Date(label).toLocaleDateString()}
                   />
-                  <Bar dataKey="earnings" fill="#C89B3C" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="earnings" fill="#D4A843" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

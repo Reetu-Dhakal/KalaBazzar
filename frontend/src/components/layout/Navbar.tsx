@@ -148,10 +148,9 @@ export function Navbar() {
             <div className="flex items-center gap-8">
               <Link to={isAuthenticated && role === 'admin' ? '/admin/dashboard' : isAuthenticated && role === 'seller' ? '/seller/dashboard' : '/'} className="flex items-center gap-2.5 shrink-0">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                  <rect width="32" height="32" rx="8" fill="#6E1E1E" />
-                  <path d="M16 7C14.5 7 13 8 13 10C13 11.5 14 12.5 15 13C13.5 14 12 16 12 18C12 20.5 14 22 16 22C18 22 20 20.5 20 18C20 16 18.5 14 17 13C18 12.5 19 11.5 19 10C19 8 17.5 7 16 7Z" fill="#C89B3C" />
-                  <circle cx="16" cy="10" r="2" fill="#FBEED3" />
-                  <path d="M10 24C10 21.5 12.5 19.5 16 19.5C19.5 19.5 22 21.5 22 24" stroke="#C89B3C" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                  <rect width="32" height="32" rx="8" fill="#7C2D12" />
+                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#D4A843">K</text>
+                  <circle cx="24" cy="9" r="2.5" fill="#D4A843" />
                 </svg>
                 <span className="font-heading text-xl font-bold text-primary hidden sm:block">
                   Kala Bazaar
