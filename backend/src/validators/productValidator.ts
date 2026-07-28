@@ -6,14 +6,16 @@ export const productValidation = [
     .isLength({ min: 3, max: 200 })
     .withMessage('Product name must be 3-200 characters'),
   body('slug')
+    .optional()
     .trim()
     .isLength({ min: 3, max: 200 })
     .matches(/^[a-z0-9-]+$/)
     .withMessage('Slug: lowercase letters, numbers, hyphens only'),
   body('description')
+    .optional()
     .trim()
-    .isLength({ min: 50, max: 5000 })
-    .withMessage('Description must be 50-5000 characters'),
+    .isLength({ min: 10, max: 5000 })
+    .withMessage('Description must be 10-5000 characters'),
   body('shortDescription')
     .optional()
     .trim()
@@ -25,12 +27,15 @@ export const productValidation = [
     .isLength({ max: 3000 })
     .withMessage('Story max 3000 characters'),
   body('category')
+    .optional()
     .isMongoId()
     .withMessage('Valid category required'),
   body('craft')
+    .optional()
     .isMongoId()
     .withMessage('Valid craft required'),
   body('region')
+    .optional()
     .isMongoId()
     .withMessage('Valid region required'),
   body('collections')

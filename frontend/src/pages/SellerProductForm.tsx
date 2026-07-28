@@ -264,7 +264,7 @@ export default function SellerProductForm() {
     const { data } = await api.post('/upload/product-images', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    const uploadedUrls = data.data.images || [];
+    const uploadedUrls = data.data.urls || data.data.images || [];
     const existingImages = images.filter((img) => !img.startsWith('blob:'));
     return [...existingImages, ...uploadedUrls];
   };
