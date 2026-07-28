@@ -13,8 +13,8 @@ router.post('/', authenticate, authorize('admin'), validate([
   body('title').notEmpty().withMessage('Banner title required'),
   body('image').notEmpty().withMessage('Banner image required'),
 ]), createBanner);
+router.put('/reorder', authenticate, authorize('admin'), reorderBanners);
 router.put('/:id', authenticate, authorize('admin'), updateBanner);
 router.delete('/:id', authenticate, authorize('admin'), deleteBanner);
-router.put('/reorder', authenticate, authorize('admin'), reorderBanners);
 
 export default router;

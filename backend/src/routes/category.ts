@@ -13,8 +13,8 @@ router.get('/:id', getCategoryById);
 router.post('/', authenticate, authorize('admin'), validate([
   body('name').notEmpty().withMessage('Category name required'),
 ]), createCategory);
+router.put('/reorder', authenticate, authorize('admin'), reorderCategories);
 router.put('/:id', authenticate, authorize('admin'), updateCategory);
 router.delete('/:id', authenticate, authorize('admin'), deleteCategory);
-router.put('/reorder', authenticate, authorize('admin'), reorderCategories);
 
 export default router;

@@ -191,33 +191,30 @@ export default function SellerApplication() {
       const payload: Record<string, unknown> = {
         storeName: values.storeName,
         region: values.region,
-        crafts: values.crafts,
-        verificationPath: values.verificationPath,
+        craftType: values.crafts,
+        verificationPath: values.verificationPath === 'social' ? 'social-media' : values.verificationPath === 'offline' ? 'offline-artisan' : values.verificationPath,
       };
       if (values.description) payload.description = values.description;
 
       if (values.verificationPath === 'social' && values.socialLinks) {
-        const socialLinks: Record<string, string> = {};
+        const socialMediaLinks: Record<string, string> = {};
         Object.entries(values.socialLinks).forEach(([key, val]) => {
-          if (val) socialLinks[key] = val;
+          if (val) socialMediaLinks[key] = val;
         });
-        if (Object.keys(socialLinks).length > 0) payload.socialLinks = socialLinks;
+        if (Object.keys(socialMediaLinks).length > 0) payload.socialMediaLinks = socialMediaLinks;
       }
 
       if (values.verificationPath === 'marketplace' && values.marketplaceLinks?.website) {
-        payload.socialLinks = { website: values.marketplaceLinks.website };
+        payload.socialMediaLinks = { website: values.marketplaceLinks.website };
       }
 
       if (values.verificationDocuments) {
         const docs = values.verificationDocuments;
-        payload.verificationDocuments = {
-          district: docs.district,
-          yearsOfExperience: docs.yearsOfExperience,
-          specialization: docs.specialization,
-        };
-        if (docs.craftStory) {
-          (payload.verificationDocuments as Record<string, unknown>).craftStory = docs.craftStory;
-        }
+        payload.district = docs.district;
+        payload.yearsOfExperience = docs.yearsOfExperience;
+        payload.specialization = docs.specialization;
+        if (docs.craftStory) payload.craftStory = docs.craftStory;
+        if (docs.workshopPhotos) payload.workshopPhotos = docs.workshopPhotos;
       }
 
       await api.post('/sellers/apply', payload);

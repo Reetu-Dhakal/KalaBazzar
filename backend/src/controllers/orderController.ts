@@ -300,6 +300,11 @@ export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Resp
 
   await order.addStatusHistory(status as OrderStatus, note, user._id);
 
+  const updatedOrder = await Order.findById(id)
+    .populate('customer', 'firstName lastName email')
+    .populate('items.product', 'name slug images')
+    .populate('items.seller', 'firstName lastName');
+
   emailService.sendOrderStatusUpdate(
     (order.customer as any).email,
     order.orderNumber,
@@ -307,7 +312,7 @@ export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Resp
     (order.customer as any).firstName
   ).catch(err => console.error('Failed to send status update email:', err));
 
-  res.json(ApiResponse.success(order, `Order status updated to "${status}"`));
+  res.json(ApiResponse.success(updatedOrder, `Order status updated to "${status}"`));
 });
 
 export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -336,7 +341,17 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       const product = await Product.findById(item.product).session(session);
       if (!product) continue;
 
-      if (product.variants.length > 0) {
+      if (product.variants.length > 0 && item.selectedVariants) {
+        const variantIndex = product.variants.findIndex(
+          (v) => v.name === item.selectedVariants?.name || v.sku === item.selectedVariants?.sku
+        );
+        if (variantIndex >= 0) {
+          product.variants[variantIndex].inventory += item.quantity;
+        } else {
+          product.variants[0].inventory += item.quantity;
+        }
+        product.markModified('variants');
+      } else if (product.variants.length > 0) {
         product.variants[0].inventory += item.quantity;
         product.markModified('variants');
       }

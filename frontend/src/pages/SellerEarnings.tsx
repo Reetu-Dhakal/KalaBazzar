@@ -70,14 +70,15 @@ export default function SellerEarnings() {
     const fetchEarnings = async () => {
       try {
         const { data: res } = await api.get('/sellers/dashboard/stats');
+        const stats = res.data;
         setData({
-          totalEarnings: res.data.totalRevenue || 0,
-          averageOrderValue: res.data.averageOrderValue || 0,
-          totalOrders: res.data.totalOrders || 0,
-          pendingPayout: res.data.pendingPayout || 0,
-          earningsData: res.data.revenueData || [],
-          recentOrders: res.data.recentOrders || [],
-          pagination: res.data.pagination || { page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
+          totalEarnings: stats.totalRevenue || 0,
+          averageOrderValue: stats.totalOrders > 0 ? Math.round(stats.totalRevenue / stats.totalOrders) : 0,
+          totalOrders: stats.totalOrders || 0,
+          pendingPayout: stats.totalRevenue || 0,
+          earningsData: stats.revenueData || [],
+          recentOrders: stats.recentOrders || [],
+          pagination: stats.pagination || { page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
         });
       } catch {
         toast.error('Failed to load earnings data');

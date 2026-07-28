@@ -140,7 +140,7 @@ export default function Checkout() {
       };
 
       const { data } = await api.post('/orders', payload);
-      const orderId = data.data.order._id;
+      const orderId = data.data._id || data.data.order?._id || data.data.orderId;
 
       if (paymentMethod === 'khalti' || paymentMethod === 'esewa') {
         const paymentData = await api.post('/payment/initiate', {

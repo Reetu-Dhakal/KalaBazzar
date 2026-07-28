@@ -160,7 +160,8 @@ export const toggleCouponStatus = asyncHandler(async (req: AuthRequest, res: Res
 });
 
 export const validateCoupon = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { code, subtotal } = req.body;
+  const code = req.params.code || (req.body as any).code;
+  const subtotal = parseFloat(req.query.subtotal as string) || (req.body as any).subtotal;
 
   if (!code) {
     throw ApiError.badRequest('Coupon code is required');

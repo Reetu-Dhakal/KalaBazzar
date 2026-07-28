@@ -69,14 +69,14 @@ export default function OrderDetail() {
     queryKey: ['order', id],
     queryFn: async () => {
       const { data } = await api.get(`/orders/${id}`);
-      return data.data.order as Order;
+      return (data.data.order || data.data) as Order;
     },
     enabled: !!id,
   });
 
   const cancelMutation = useMutation({
     mutationFn: async (reason: string) => {
-      await api.put(`/orders/${id}/cancel`, { cancellationReason: reason });
+      await api.put(`/orders/${id}/cancel`, { reason });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['order', id] });
