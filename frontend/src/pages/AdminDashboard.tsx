@@ -8,8 +8,7 @@ import {
   DollarSign,
   TrendingUp,
   Clock,
-  Eye,
-  ChevronRight,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   BarChart,
@@ -19,10 +18,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
 } from 'recharts';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -45,14 +40,24 @@ interface DashboardStats {
   revenueByMonth: { year: number; month: number; revenue: number; orders: number }[];
 }
 
-const PIE_COLORS: Record<string, string> = {
-  pending: '#EAB308',
-  confirmed: '#3B82F6',
-  processing: '#6366F1',
-  shipped: '#A855F7',
-  delivered: '#22C55E',
-  cancelled: '#EF4444',
-  refunded: '#6B7280',
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+  refunded: 'Refunded',
+};
+
+const STATUS_DOT: Record<string, string> = {
+  pending: 'bg-yellow-500',
+  confirmed: 'bg-blue-500',
+  processing: 'bg-indigo-500',
+  shipped: 'bg-purple-500',
+  delivered: 'bg-green-500',
+  cancelled: 'bg-red-500',
+  refunded: 'bg-gray-500',
 };
 
 function StatCard({
@@ -78,7 +83,6 @@ function StatCard({
           <p className="text-sm text-muted-foreground truncate">{label}</p>
           <p className="text-2xl font-bold text-foreground">{value}</p>
         </div>
-        {href && <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
       </div>
     </CardContent>
   );
@@ -97,8 +101,8 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-6">
       <Skeleton className="h-8 w-64" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-28 rounded-xl" />
         ))}
       </div>
@@ -110,13 +114,6 @@ function DashboardSkeleton() {
     </div>
   );
 }
-
-const quickActions = [
-  { to: '/admin/sellers', label: 'Manage Sellers', icon: Shield, description: 'Review applications' },
-  { to: '/admin/orders', label: 'Manage Orders', icon: ShoppingCart, description: 'View all orders' },
-  { to: '/admin/users', label: 'Manage Users', icon: Users, description: 'User administration' },
-  { to: '/admin/coupons', label: 'Manage Coupons', icon: Package, description: 'Create & edit coupons' },
-];
 
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -142,26 +139,34 @@ export default function AdminDashboard() {
   if (isLoading) return <DashboardSkeleton />;
 
   const revenueData = (stats?.revenueByMonth || []).map((item) => ({
-    name: `${monthNames[item.month - 1]} ${item.year}`,
+    name: `${monthNames[item.month - 1]}`,
     revenue: item.revenue,
     orders: item.orders,
   }));
 
-  const pieData = Object.entries(stats?.ordersByStatus || {}).map(([status, count]) => ({
-    name: status.charAt(0).toUpperCase() + status.slice(1),
-    value: count,
-    status,
-  }));
+  const statusEntries = Object.entries(stats?.ordersByStatus || {}).filter(([, count]) => count > 0);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-heading text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Overview of your marketplace.</p>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-heading text-foreground">Admin Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Welcome back! Here's your marketplace overview.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {(stats?.pendingSellers ?? 0) > 0 && (
+            <Button asChild variant="outline" size="sm" className="border-amber-300 text-amber-700 hover:bg-amber-50">
+              <Link to="/admin/sellers">
+                <Clock className="h-4 w-4" />
+                {stats?.pendingSellers} Pending
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           icon={Users}
           label="Total Users"
@@ -181,12 +186,6 @@ export default function AdminDashboard() {
           label="Total Products"
           value={stats?.totalProducts ?? 0}
           color="bg-indigo-100 text-indigo-700"
-        />
-        <StatCard
-          icon={ShoppingCart}
-          label="Total Orders"
-          value={stats?.totalOrders ?? 0}
-          color="bg-amber-100 text-amber-700"
           href="/admin/orders"
         />
         <StatCard
@@ -197,9 +196,75 @@ export default function AdminDashboard() {
         />
       </div>
 
-      {/* Pending Sellers */}
+      {/* Charts Row */}
+      <div className="grid lg:grid-cols-3 gap-6 mb-8">
+        {/* Revenue Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Revenue (Last 12 Months)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {revenueData.length > 0 ? (
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => `Rs ${v}`} />
+                    <Tooltip
+                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                    />
+                    <Bar dataKey="revenue" fill="#7C2D12" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">
+                No revenue data yet
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Orders by Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Orders by Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {statusEntries.length > 0 ? (
+              <div className="space-y-3">
+                {statusEntries.map(([status, count]) => (
+                  <div
+                    key={status}
+                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${STATUS_DOT[status] || 'bg-gray-400'}`} />
+                      <p className="text-sm font-medium truncate">{STATUS_LABELS[status] || status}</p>
+                    </div>
+                    <Badge variant="outline">{count}</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
+                No orders yet
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Pending Sellers Alert */}
       {(stats?.pendingSellers ?? 0) > 0 && (
-        <Card className="border-amber-200 bg-amber-50">
+        <Card className="border-amber-200 bg-amber-50 mb-8">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -218,85 +283,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       )}
-
-      {/* Charts */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Revenue Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Revenue (Last 12 Months)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {revenueData.length > 0 ? (
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `Rs ${v}`} />
-                    <Tooltip
-                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                    />
-                    <Bar dataKey="revenue" fill="#7C2D12" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">
-                No revenue data yet
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Orders by Status Pie Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-primary" />
-              Orders by Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pieData.length > 0 ? (
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry) => (
-                        <Cell
-                          key={entry.status}
-                          fill={PIE_COLORS[entry.status] || '#6B7280'}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend
-                      formatter={(value: string) => value}
-                      wrapperStyle={{ fontSize: '12px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">
-                No orders yet
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Recent Orders */}
       <Card>
@@ -317,7 +303,6 @@ export default function AdminDashboard() {
                     <th className="text-left text-xs font-medium text-muted-foreground pb-3">Total</th>
                     <th className="text-left text-xs font-medium text-muted-foreground pb-3">Status</th>
                     <th className="text-left text-xs font-medium text-muted-foreground pb-3">Date</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground pb-3">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -340,13 +325,6 @@ export default function AdminDashboard() {
                       <td className="py-3 text-sm text-muted-foreground">
                         {formatDate(order.createdAt)}
                       </td>
-                      <td className="py-3">
-                        <Button asChild variant="ghost" size="sm">
-                          <Link to={`/admin/orders`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -360,26 +338,6 @@ export default function AdminDashboard() {
           )}
         </CardContent>
       </Card>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {quickActions.map((action) => (
-          <Button
-            key={action.to}
-            asChild
-            variant="outline"
-            className="h-auto py-4 justify-start gap-3"
-          >
-            <Link to={action.to}>
-              <action.icon className="h-5 w-5 text-primary flex-shrink-0" />
-              <div className="text-left">
-                <p className="font-medium">{action.label}</p>
-                <p className="text-xs text-muted-foreground">{action.description}</p>
-              </div>
-            </Link>
-          </Button>
-        ))}
-      </div>
     </div>
   );
 }
