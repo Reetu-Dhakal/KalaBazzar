@@ -194,8 +194,14 @@ export default function Home() {
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'customer') {
-      navigate('/shop', { replace: true });
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (user.role === 'seller') {
+        navigate('/seller/dashboard', { replace: true });
+      } else {
+        navigate('/shop', { replace: true });
+      }
     }
   }, [isAuthenticated, user, navigate]);
 
