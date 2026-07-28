@@ -115,7 +115,6 @@ export function Navbar() {
   ];
 
   const sellerLinks = [
-    { to: '/shop', label: 'Shop' },
     { to: '/seller/dashboard', label: 'Dashboard' },
   ];
 
@@ -133,7 +132,7 @@ export function Navbar() {
 
   const showSearch = !role || role === 'customer';
   const showWishlist = !role || role === 'customer';
-  const showCart = !role || role === 'customer' || role === 'seller';
+  const showCart = role === 'customer';
 
   return (
     <>
