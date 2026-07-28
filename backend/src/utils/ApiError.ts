@@ -49,15 +49,18 @@ export class ApiError extends Error {
 export class AppError extends ApiError {}
 
 export const errorHandler = (err: any, req: any, res: any, next: any) => {
-  console.error('Error:', err);
-
   if (err instanceof ApiError) {
+    if (err.statusCode >= 500) {
+      console.error('Server Error:', err);
+    }
     return res.status(err.statusCode).json({
       success: false,
       message: err.message,
       errors: err.errors,
     });
   }
+
+  console.error('Unexpected Error:', err);
 
   if (err.name === 'ValidationError') {
     const errors = Object.values(err.errors || {}).map((e: any) => ({

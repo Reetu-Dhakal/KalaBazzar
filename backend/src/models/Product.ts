@@ -212,17 +212,21 @@ productSchema.index({ createdAt: -1 });
 productSchema.index({ name: 'text', description: 'text', tags: 'text' });
 
 productSchema.virtual('isInStock').get(function(this: IProduct) {
-  return this.variants.some(v => v.inventory > 0) || this.variants.length === 0;
+  const v = this.variants;
+  if (!v || v.length === 0) return true;
+  return v.some(variant => variant.inventory > 0);
 });
 
 productSchema.virtual('lowestPrice').get(function(this: IProduct) {
-  if (this.variants.length === 0) return this.basePrice;
-  return Math.min(...this.variants.map(v => v.price));
+  const v = this.variants;
+  if (!v || v.length === 0) return this.basePrice;
+  return Math.min(...v.map(variant => variant.price));
 });
 
 productSchema.virtual('highestPrice').get(function(this: IProduct) {
-  if (this.variants.length === 0) return this.basePrice;
-  return Math.max(...this.variants.map(v => v.price));
+  const v = this.variants;
+  if (!v || v.length === 0) return this.basePrice;
+  return Math.max(...v.map(variant => variant.price));
 });
 
 productSchema.pre('save', function(next) {
