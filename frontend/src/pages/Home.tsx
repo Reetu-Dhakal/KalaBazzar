@@ -626,28 +626,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* ─── FINAL CTA ─── */}
-      <section className="py-16 md:py-20 bg-primary">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.h2 variants={fadeInUp} className="text-3xl md:text-4xl font-heading text-primary-foreground">
-              Discover Authentic Nepali Crafts
-            </motion.h2>
-            <motion.p variants={fadeInUp} className="mt-4 text-primary-foreground/80 max-w-lg mx-auto">
-              Browse our curated collection of handcrafted products and bring home a piece of Nepal's rich cultural heritage.
-            </motion.p>
-            <motion.div variants={fadeInUp} className="mt-8 flex justify-center gap-4">
-              <Button asChild size="lg" variant="secondary">
-                <Link to="/shop">Shop Now <ArrowRight className="h-4 w-4" /></Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                <a href="#contact">Contact Us</a>
-              </Button>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
     </div>
   );
 }
