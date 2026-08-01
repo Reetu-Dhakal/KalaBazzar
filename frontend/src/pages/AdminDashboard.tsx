@@ -217,7 +217,7 @@ export default function AdminDashboard() {
                     <Tooltip
                       formatter={(value: number) => [formatCurrency(value), 'Revenue']}
                     />
-                    <Bar dataKey="revenue" fill="#0F766E" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="revenue" fill="#8B4513" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

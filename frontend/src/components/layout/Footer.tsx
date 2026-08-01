@@ -71,8 +71,8 @@ export function Footer() {
               <Link to="/" className="flex items-center gap-2.5 mb-4">
                 <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
                   <rect width="32" height="32" rx="8" fill="#FAFAF9" />
-                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#0F766E">K</text>
-                  <circle cx="24" cy="9" r="2.5" fill="#D4A843" />
+<text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFDF8">K</text>
+                <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
                 </svg>
                 <span className="font-heading text-2xl font-bold">Kala Bazaar</span>
               </Link>

@@ -42,9 +42,9 @@ export function AdminLayout() {
           {!collapsed && (
             <div className="flex items-center gap-2">
               <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                <rect width="32" height="32" rx="8" fill="#0F766E" />
-                <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#D4A843">K</text>
-                <circle cx="24" cy="9" r="2.5" fill="#D4A843" />
+                <rect width="32" height="32" rx="8" fill="#8B4513" />
+                <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFDF8">K</text>
+                <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
               </svg>
               <span className="font-heading text-lg font-bold text-primary">Admin Panel</span>
             </div>
