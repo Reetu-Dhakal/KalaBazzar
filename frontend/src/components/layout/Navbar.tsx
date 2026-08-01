@@ -31,6 +31,8 @@ export function Navbar() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const lastScrollY = useRef(0);
 
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
@@ -44,8 +46,22 @@ export function Navbar() {
   const role = user?.role;
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setIsScrolled(currentY > 10);
+
+      if (currentY < 10) {
+        setIsHidden(false);
+      } else if (currentY > lastScrollY.current + 5) {
+        setIsHidden(true);
+        setIsUserMenuOpen(false);
+        setIsSearchOpen(false);
+      } else if (currentY < lastScrollY.current - 5) {
+        setIsHidden(false);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -138,8 +154,9 @@ export function Navbar() {
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border transition-shadow',
-          isScrolled && 'shadow-sm',
+          'sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border transition-all duration-300 ease-in-out',
+          isScrolled && !isHidden && 'shadow-sm',
+          isHidden && '-translate-y-full',
         )}
       >
         <nav className="container mx-auto px-4">

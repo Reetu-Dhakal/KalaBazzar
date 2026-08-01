@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0F766E;
+  --color-primary: #827148;
   --color-primary-foreground: #FFFFFF;
-  --color-secondary: #D4A843;
-  --color-secondary-foreground: #1C1917;
-  --color-background: #FAFAF9;
-  --color-foreground: #1C1917;
-  --color-muted: #F0FDFA;
-  --color-muted-foreground: #57534E;
-  --color-border: #D1D5DB;
-  --color-input: #D1D5DB;
-  --color-ring: #14B8A6;
-  --color-accent: #CCFBF1;
-  --color-accent-foreground: #1C1917;
+  --color-secondary: #E8A07C;
+  --color-secondary-foreground: #3D3225;
+  --color-background: #FFEE6;
+  --color-foreground: #3D3225;
+  --color-muted: #F5EDD8;
+  --color-muted-foreground: #6B5E4F;
+  --color-border: #D4C9B5;
+  --color-input: #D4C9B5;
+  --color-ring: #A5AF79;
+  --color-accent: #A5AF79;
+  --color-accent-foreground: #FFFFFF;
   --color-destructive: #DC2626;
   --color-destructive-foreground: #FFFFFF;
   --color-card: #FFFFFF;
   --color-card-foreground: #1C1917;
   --color-popover: #FFFFFF;
   --color-popover-foreground: #1C1917;
-  --color-success: #16A34A;
+  --color-success: #16A34B;
   --color-warning: #F59E0B;
 
   --font-heading: 'Cormorant Garamond', Georgia, serif;
