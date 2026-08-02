@@ -207,7 +207,7 @@ export default function Shop() {
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-left ${
                     category === cat.slug
                       ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                      : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                   }`}
                 >
                   <span className="truncate">{cat.name}</span>
@@ -235,7 +235,7 @@ export default function Shop() {
                   className={`w-full flex items-center px-3 py-2 rounded-lg text-sm transition-colors text-left ${
                     craft === c.slug
                       ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                      : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                   }`}
                 >
                   <span className="truncate">{c.name}</span>
@@ -258,7 +258,7 @@ export default function Shop() {
                   className={`w-full flex items-center px-3 py-2 rounded-lg text-sm transition-colors text-left ${
                     region === r.slug
                       ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                      : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
                   }`}
                 >
                   <span className="truncate">{r.name}</span>
@@ -321,7 +321,7 @@ export default function Shop() {
                 placeholder="Search products..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 rounded-lg border border-border bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                className="w-full h-10 pl-10 pr-4 rounded-lg border border-border/60 bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
               {searchInput && (
                 <button
@@ -339,7 +339,7 @@ export default function Shop() {
             <select
               value={sort}
               onChange={(e) => updateParams('sort', e.target.value)}
-              className="h-10 px-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 appearance-none cursor-pointer min-w-[140px]"
+              className="h-10 px-3 rounded-lg border border-border/60 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none cursor-pointer min-w-[140px]"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>

@@ -1,35 +1,40 @@
 @import "tailwindcss";
 
-:root {
-  --color-primary: #8B4513;
-  --color-primary-foreground: #FFFDF8;
+@theme base {
+  --color-primary: #2D1810;
+  --color-primary-foreground: #FFFCF5;
   --color-secondary: #C0392B;
   --color-secondary-foreground: #FFFDF8;
-  --color-background: #FDF6E3;
-  --color-foreground: #3C2415;
-  --color-muted: #F0E6D3;
-  --color-muted-foreground: #7A6855;
-  --color-border: #D4C5A9;
-  --color-input: #D4C5A9;
-  --color-ring: #C0392B;
-  --color-accent: #D4A574;
-  --color-accent-foreground: #3C2415;
-  --color-destructive: #922B21;
-  --color-destructive-foreground: #FFFDF8;
-  --color-card: #FFFDF8;
-  --color-card-foreground: #3C2415;
-  --color-popover: #FFFDF8;
-  --color-popover-foreground: #3C2415;
-  --color-success: #4A7C59;
-  --color-warning: #D4A017;
+  --color-background: #FAF7F2;
+  --color-foreground: #1C1917;
+  --color-muted: #F5F0EB;
+  --color-muted-foreground: #78716C;
+  --color-border: #E7E5E4;
+  --color-input: #E7E5E4;
+  --color-ring: #2D1810;
+  --color-accent: #F5F0EB;
+  --color-accent-foreground: #1C1917;
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FFFCF5;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1C1917;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #1C1917;
+  --color-success: #16A34A;
+  --color-warning: #EA580C;
+
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #FAF7F2;
+  --color-surface-hover: #F5F0EB;
+  --color-border-subtle: #F0EBE6;
 
   --font-heading: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'Poppins', system-ui, sans-serif;
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -83,6 +88,10 @@
   100% { transform: scale(1); }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   border-color: var(--color-border);
 }
@@ -127,6 +136,10 @@ h1, h2, h3, h4, h5, h6 {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
     line-clamp: 3;
+  }
+
+  .scroll-mt-20 {
+    scroll-margin-top: 5rem;
   }
 }
 

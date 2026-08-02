@@ -52,20 +52,20 @@ export function generateOrderNumber(): string {
 
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
-    processing: 'bg-indigo-100 text-indigo-800',
-    shipped: 'bg-purple-100 text-purple-800',
-    delivered: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
-    refunded: 'bg-gray-100 text-gray-800',
-    paid: 'bg-green-100 text-green-800',
-    failed: 'bg-red-100 text-red-800',
-    approved: 'bg-green-100 text-green-800',
-    rejected: 'bg-red-100 text-red-800',
-    suspended: 'bg-orange-100 text-orange-800',
-    draft: 'bg-gray-100 text-gray-800',
-    out_of_stock: 'bg-red-100 text-red-800',
+    pending: 'bg-amber-50 text-amber-700 border border-amber-200/60',
+    confirmed: 'bg-blue-50 text-blue-700 border border-blue-200/60',
+    processing: 'bg-indigo-50 text-indigo-700 border border-indigo-200/60',
+    shipped: 'bg-purple-50 text-purple-700 border border-purple-200/60',
+    delivered: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+    cancelled: 'bg-red-50 text-red-700 border border-red-200/60',
+    refunded: 'bg-gray-50 text-gray-700 border border-gray-200/60',
+    paid: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+    failed: 'bg-red-50 text-red-700 border border-red-200/60',
+    approved: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+    rejected: 'bg-red-50 text-red-700 border border-red-200/60',
+    suspended: 'bg-orange-50 text-orange-700 border border-orange-200/60',
+    draft: 'bg-gray-50 text-gray-700 border border-gray-200/60',
+    out_of_stock: 'bg-red-50 text-red-700 border border-red-200/60',
   };
-  return colors[status] || 'bg-gray-100 text-gray-800';
+  return colors[status] || 'bg-gray-50 text-gray-700 border border-gray-200/60';
 }

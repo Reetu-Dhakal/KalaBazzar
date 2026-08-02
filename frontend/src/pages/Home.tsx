@@ -127,9 +127,9 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <Link to={`/shop/${product.slug}`} className="group block min-w-65">
-      <div className="relative overflow-hidden rounded-xl bg-card border border-border">
+      <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-shadow duration-300 group-hover:shadow-lg">
         <div className="aspect-square overflow-hidden">
-          <img src={firstImage} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <img src={firstImage} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
         </div>
         {product.compareAtPrice && product.compareAtPrice > product.basePrice && (
           <Badge variant="destructive" className="absolute top-2 left-2">
@@ -166,16 +166,16 @@ function ProductCard({ product }: { product: Product }) {
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors">
+    <div className="border border-border rounded-xl overflow-hidden transition-shadow hover:shadow-sm">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-hover transition-colors">
         <span className="font-medium text-foreground">{question}</span>
-        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
+      <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed">
           {answer}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -237,8 +237,9 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* ─── HERO ─── */}
-      <section className="relative bg-primary overflow-hidden">
+      <section className="relative bg-primary overflow-hidden scroll-mt-20" id="hero">
         <div className="absolute inset-0 bg-linear-to-br from-primary/90 to-primary" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNGRkZDRjUiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMC0zMHY2aDZ2LTZoLTZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         <div className="relative container mx-auto px-4 py-20 md:py-32">
           <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-2xl">
             <motion.div variants={fadeInUp}>
@@ -248,7 +249,7 @@ export default function Home() {
               Discover Authentic Nepali Crafts
             </motion.h1>
             <motion.p variants={fadeInUp} className="mt-6 text-lg text-primary-foreground/80 max-w-lg">
-              Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal's rich cultural heritage.
+              Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal&apos;s rich cultural heritage.
             </motion.p>
             <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap gap-4">
               <Button asChild size="lg" variant="secondary">
@@ -263,15 +264,15 @@ export default function Home() {
       </section>
 
       {/* ─── FEATURES ─── */}
-      <section className="py-16 md:py-20">
+      <section className="py-16 md:py-20 scroll-mt-20" id="features">
         <div className="container mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {features.map((f) => (
               <motion.div key={f.title} variants={fadeInUp}>
-                <Card variant="elevated" className="text-center p-6 h-full">
+                <Card variant="elevated" className="text-center p-6 h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                   <CardContent className="p-0">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                      <f.icon className="h-6 w-6 text-primary" />
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+                      <f.icon className="h-7 w-7 text-primary" />
                     </div>
                     <h3 className="font-heading text-lg font-semibold text-foreground">{f.title}</h3>
                     <p className="mt-2 text-sm text-muted-foreground">{f.description}</p>
@@ -306,13 +307,13 @@ export default function Home() {
                   <motion.div key={cat._id} variants={fadeInUp}>
                     <Link to={`/shop?category=${cat.slug}`} className="group block relative overflow-hidden rounded-xl aspect-square">
                       {cat.image ? (
-                        <img src={cat.image} alt={cat.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <img src={cat.image} alt={cat.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                       ) : (
                         <div className="h-full w-full bg-linear-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
                           <span className="text-4xl font-heading text-primary">{cat.name.charAt(0)}</span>
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <h3 className="font-heading text-lg font-semibold text-white">{cat.name}</h3>
                         {cat.productCount > 0 && <p className="text-sm text-white/80">{cat.productCount} products</p>}
@@ -368,9 +369,9 @@ export default function Home() {
                 <div className="flex gap-6 pb-4">
                   {recentItems.map((item) => (
                     <Link key={item._id} to={`/shop/${item.slug}`} className="group block min-w-50">
-                      <div className="relative overflow-hidden rounded-xl bg-card border border-border">
+                      <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-shadow duration-300 group-hover:shadow-lg">
                         <div className="aspect-square overflow-hidden">
-                          <img src={item.images[0] || '/placeholder.jpg'} alt={item.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                          <img src={item.images[0] || '/placeholder.jpg'} alt={item.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                         </div>
                       </div>
                       <div className="mt-3">
@@ -387,20 +388,20 @@ export default function Home() {
       )}
 
       {/* ─── ABOUT / OUR STORY ─── */}
-      <section className="py-16 md:py-20" id="about">
+      <section className="py-16 md:py-20 scroll-mt-20" id="about">
         <div className="container mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.div variants={fadeInUp} className="max-w-3xl mx-auto text-center mb-12">
               <Badge variant="secondary" className="mb-4">Our Mission</Badge>
               <h2 className="text-3xl md:text-4xl font-heading text-foreground">Empowering Artisans, Preserving Heritage</h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                KalaBazzar was born from a simple observation: Nepal's talented artisans — weavers, potters, woodworkers, and craftspeople — possess extraordinary skills passed down through generations, yet many struggled to reach the customers who would treasure their work. Today, KalaBazzar is home to over 500 verified artisans from all seven provinces of Nepal.
+                KalaBazzar was born from a simple observation: Nepal&apos;s talented artisans — weavers, potters, woodworkers, and craftspeople — possess extraordinary skills passed down through generations, yet many struggled to reach the customers who would treasure their work. Today, KalaBazzar is home to over 500 verified artisans from all seven provinces of Nepal.
               </p>
             </motion.div>
             <div className="grid md:grid-cols-4 gap-6">
               {stats.map((s) => (
                 <motion.div key={s.label} variants={fadeInUp}>
-                  <Card variant="elevated" className="text-center p-6">
+                  <Card variant="elevated" className="text-center p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                     <CardContent className="p-0">
                       <p className="text-3xl font-heading font-bold text-primary">{s.value}</p>
                       <p className="mt-2 text-sm text-muted-foreground">{s.label}</p>
@@ -424,10 +425,10 @@ export default function Home() {
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
               {values.map((v) => (
                 <motion.div key={v.title} variants={fadeInUp}>
-                  <Card variant="elevated" className="h-full p-6">
+                  <Card variant="elevated" className="h-full p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                     <CardContent className="p-0">
-                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                        <v.icon className="h-6 w-6 text-primary" />
+                      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+                        <v.icon className="h-7 w-7 text-primary" />
                       </div>
                       <h3 className="font-heading text-lg font-semibold text-foreground">{v.title}</h3>
                       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{v.description}</p>
@@ -460,7 +461,7 @@ export default function Home() {
                 const authorSub = isReview ? 'Verified Purchase' : t.location;
                 return (
                   <motion.div key={key} variants={fadeInUp}>
-                    <Card variant="elevated" className="h-full">
+                    <Card variant="elevated" className="h-full transition-all duration-300 hover:shadow-lg">
                       <CardContent className="p-6">
                         <Quote className="h-8 w-8 text-secondary/40 mb-4" />
                         <p className="text-foreground leading-relaxed">{comment}</p>
@@ -484,11 +485,11 @@ export default function Home() {
       </section>
 
       {/* ─── ARTISAN CTA ─── */}
-      <section className="py-16 md:py-20 bg-secondary/10">
+      <section className="py-16 md:py-20 bg-primary/5 scroll-mt-20">
         <div className="container mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.div variants={fadeInUp}>
-              <Card variant="elevated" className="overflow-hidden">
+              <Card variant="elevated" className="overflow-hidden border-0 shadow-xl">
                 <div className="grid md:grid-cols-2 gap-0">
                   <div className="p-8 md:p-12 flex flex-col justify-center">
                     <Badge variant="secondary" className="w-fit mb-4">For Artisans</Badge>
@@ -526,7 +527,7 @@ export default function Home() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section className="py-16 md:py-20" id="faq">
+      <section className="py-16 md:py-20 scroll-mt-20" id="faq">
         <div className="container mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.div variants={fadeInUp} className="text-center mb-12">
@@ -561,7 +562,7 @@ export default function Home() {
       </section>
 
       {/* ─── CONTACT ─── */}
-      <section className="py-16 md:py-20 bg-muted/50" id="contact">
+      <section className="py-16 md:py-20 bg-muted/50 scroll-mt-20" id="contact">
         <div className="container mx-auto px-4">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.div variants={fadeInUp} className="text-center mb-12">
@@ -576,11 +577,11 @@ export default function Home() {
                     <h3 className="font-heading text-lg font-semibold text-foreground mb-6">Send us a Message</h3>
                     <form onSubmit={handleContactSubmit} className="space-y-4">
                       <div className="grid sm:grid-cols-2 gap-4">
-                        <input type="text" placeholder="Your name" required value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-                        <input type="email" placeholder="your@email.com" required value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })} className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="text" placeholder="Your name" required value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} className="w-full rounded-lg border border-border/60 bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+                        <input type="email" placeholder="your@email.com" required value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })} className="w-full rounded-lg border border-border/60 bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
                       </div>
-                      <input type="text" placeholder="How can we help?" required value={contactForm.subject} onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })} className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-                      <textarea placeholder="Tell us more about your inquiry..." required rows={5} value={contactForm.message} onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })} className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                      <input type="text" placeholder="How can we help?" required value={contactForm.subject} onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })} className="w-full rounded-lg border border-border/60 bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
+                      <textarea placeholder="Tell us more about your inquiry..." required rows={5} value={contactForm.message} onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })} className="w-full rounded-lg border border-border/60 bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none" />
                       <Button type="submit" size="lg" isLoading={isSubmittingContact}>
                         <Send className="h-4 w-4" /> Send Message
                       </Button>

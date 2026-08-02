@@ -47,31 +47,14 @@ export function Footer() {
 
   return (
     <footer>
-      {/* CTA Banner */}
-      <div className="bg-primary text-primary-foreground py-16 text-center">
-        <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">Discover Authentic Nepali Crafts</h2>
-        <p className="text-primary-foreground/80 text-lg max-w-2xl mx-auto mb-8">
-          Browse our curated collection of handcrafted products and bring home a piece of Nepal&apos;s rich cultural heritage.
-        </p>
-        <div className="flex items-center justify-center gap-4">
-          <a href="/shop" className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-lg font-medium hover:bg-secondary/90 transition-colors">
-            Shop Now &rarr;
-          </a>
-          <a href="/#contact" className="inline-flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary-foreground/10 transition-colors">
-            Contact Us
-          </a>
-        </div>
-      </div>
-
-      {/* Footer Links */}
-      <div className="bg-[#3C2415] text-white">
+      <div className="bg-[#1C1917] text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
             <div className="lg:col-span-2">
               <Link to="/" className="flex items-center gap-2.5 mb-4">
                 <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                  <rect width="32" height="32" rx="8" fill="#FFFDF8" />
-                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#8B4513">K</text>
+                  <rect width="32" height="32" rx="8" fill="#FFFCF5" />
+                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#2D1810">K</text>
                   <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
                 </svg>
                 <span className="font-heading text-2xl font-bold">Kala Bazaar</span>

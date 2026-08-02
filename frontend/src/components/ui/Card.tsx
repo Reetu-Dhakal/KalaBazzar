@@ -10,7 +10,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 const variantStyles: Record<CardVariant, string> = {
   default: 'bg-card border border-border shadow-sm',
   outlined: 'bg-card border border-border',
-  elevated: 'bg-card shadow-md',
+  elevated: 'bg-card shadow-md border border-border/50',
 };
 
 const Card = forwardRef<HTMLDivElement, CardProps>(

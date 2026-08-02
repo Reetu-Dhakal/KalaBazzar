@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Search,
   ShoppingCart,
@@ -17,11 +17,15 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useScrollSpy } from '@/hooks/useScrollSpy';
 import { NotificationBell } from './NotificationBell';
 import { CartDrawer } from './CartDrawer';
 import { cn } from '@/lib/utils';
+import { navigateAndScroll } from '@/lib/scrollTo';
 import api from '@/lib/api';
 import type { Product } from '@/types';
+
+const guestNavSections = ['features', 'about', 'faq', 'contact'];
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,12 +42,35 @@ export function Navbar() {
   const { totalItems } = useCart();
   const { totalItems: wishlistCount } = useWishlist();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const searchRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const role = user?.role;
+  const activeSection = useScrollSpy(guestNavSections, 100);
+
+  const guestLinks = [
+    { label: 'Home', section: 'hero' },
+    { label: 'Features', section: 'features' },
+    { label: 'About', section: 'about' },
+    { label: 'FAQ', section: 'faq' },
+    { label: 'Contact', section: 'contact' },
+  ];
+
+  const handleGuestNav = (section: string) => {
+    setIsMobileMenuOpen(false);
+    if (section === 'hero') {
+      if (location.pathname === '/') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        navigate('/');
+      }
+    } else {
+      navigateAndScroll(section, navigate, location.pathname);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -119,13 +146,6 @@ export function Navbar() {
     navigate('/');
   };
 
-  const guestLinks = [
-    { to: '/shop', label: 'Shop' },
-    { to: '/#about', label: 'About' },
-    { to: '/#faq', label: 'FAQ' },
-    { to: '/#contact', label: 'Contact' },
-  ];
-
   const customerLinks = [
     { to: '/shop', label: 'Shop' },
   ];
@@ -139,7 +159,7 @@ export function Navbar() {
   ];
 
   const navLinks = !isAuthenticated
-    ? guestLinks
+    ? []
     : role === 'admin'
       ? adminLinks
       : role === 'seller'
@@ -154,7 +174,7 @@ export function Navbar() {
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border transition-all duration-300 ease-in-out',
+          'sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-border/50 transition-all duration-300 ease-in-out',
           isScrolled && !isHidden && 'shadow-sm',
           isHidden && '-translate-y-full',
         )}
@@ -164,9 +184,9 @@ export function Navbar() {
             <div className="flex items-center gap-8">
               <Link to={isAuthenticated && role === 'admin' ? '/admin/dashboard' : isAuthenticated && role === 'seller' ? '/seller/dashboard' : '/'} className="flex items-center gap-2.5 shrink-0">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-<rect width="32" height="32" rx="8" fill="#8B4513" />
-                    <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFDF8">K</text>
-                    <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
+                  <rect width="32" height="32" rx="8" fill="#2D1810" />
+                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFCF5">K</text>
+                  <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
                 </svg>
                 <span className="font-heading text-xl font-bold text-primary hidden sm:block">
                   Kala Bazaar
@@ -174,6 +194,20 @@ export function Navbar() {
               </Link>
 
               <div className="hidden md:flex items-center gap-1">
+                {!isAuthenticated && guestLinks.map((link) => (
+                  <button
+                    key={link.section}
+                    onClick={() => handleGuestNav(link.section)}
+                    className={cn(
+                      'px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                      activeSection === link.section
+                        ? 'text-primary bg-primary/10'
+                        : 'text-foreground hover:text-primary hover:bg-accent',
+                    )}
+                  >
+                    {link.label}
+                  </button>
+                ))}
                 {navLinks.map((link) => (
                   <Link
                     key={link.to}
@@ -196,7 +230,7 @@ export function Navbar() {
                       value={searchQuery}
                       onChange={(e) => handleSearch(e.target.value)}
                       placeholder="Search handmade crafts..."
-                      className="w-full h-10 pl-10 pr-4 rounded-lg border border-border bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-colors"
+                      className="w-full h-10 pl-10 pr-4 rounded-lg border border-border/60 bg-surface text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                     />
                   </div>
                 </form>
@@ -211,7 +245,7 @@ export function Navbar() {
                           setIsSearchOpen(false);
                           setSearchQuery('');
                         }}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors border-b border-border/50 last:border-0"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-surface-hover transition-colors border-b border-border/50 last:border-0"
                       >
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-accent shrink-0">
                           {product.variants?.[0]?.images?.[0] ? (
@@ -240,7 +274,7 @@ export function Navbar() {
                         setIsSearchOpen(false);
                         setSearchQuery('');
                       }}
-                      className="block px-4 py-2.5 text-xs font-medium text-primary hover:bg-accent transition-colors text-center"
+                      className="block px-4 py-2.5 text-xs font-medium text-primary hover:bg-surface-hover transition-colors text-center"
                     >
                       View all results
                     </Link>
@@ -317,7 +351,7 @@ export function Navbar() {
                         <Link
                           to="/profile"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                         >
                           <User className="h-4 w-4 text-muted-foreground" />
                           Profile
@@ -326,7 +360,7 @@ export function Navbar() {
                           <Link
                             to="/orders"
                             onClick={() => setIsUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                           >
                             <Package className="h-4 w-4 text-muted-foreground" />
                             My Orders
@@ -337,7 +371,7 @@ export function Navbar() {
                             <Link
                               to="/seller/dashboard"
                               onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                             >
                               <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
                               Seller Dashboard
@@ -345,7 +379,7 @@ export function Navbar() {
                             <Link
                               to="/seller/products"
                               onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                             >
                               <Package className="h-4 w-4 text-muted-foreground" />
                               My Products
@@ -353,7 +387,7 @@ export function Navbar() {
                             <Link
                               to="/seller/orders"
                               onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                             >
                               <Package className="h-4 w-4 text-muted-foreground" />
                               My Orders
@@ -361,7 +395,7 @@ export function Navbar() {
                             <Link
                               to="/seller/settings"
                               onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                             >
                               <Settings className="h-4 w-4 text-muted-foreground" />
                               Store Settings
@@ -373,7 +407,7 @@ export function Navbar() {
                             <Link
                               to="/admin/dashboard"
                               onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                             >
                               <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
                               Admin Dashboard
@@ -381,7 +415,7 @@ export function Navbar() {
                             <Link
                               to="/admin/sellers"
                               onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                             >
                               <Store className="h-4 w-4 text-muted-foreground" />
                               Manage Sellers
@@ -389,7 +423,7 @@ export function Navbar() {
                             <Link
                               to="/admin/orders"
                               onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                             >
                               <Package className="h-4 w-4 text-muted-foreground" />
                               Manage Orders
@@ -450,7 +484,7 @@ export function Navbar() {
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                     placeholder="Search handmade crafts..."
-                    className="w-full h-10 pl-10 pr-4 rounded-lg border border-border bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                    className="w-full h-10 pl-10 pr-4 rounded-lg border border-border/60 bg-surface text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               </form>
@@ -461,6 +495,20 @@ export function Navbar() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-card">
             <div className="container mx-auto px-4 py-4 space-y-2">
+              {!isAuthenticated && guestLinks.map((link) => (
+                <button
+                  key={link.section}
+                  onClick={() => handleGuestNav(link.section)}
+                  className={cn(
+                    'block w-full text-left px-4 py-2.5 text-sm font-medium rounded-lg transition-colors',
+                    activeSection === link.section
+                      ? 'text-primary bg-primary/10'
+                      : 'text-foreground hover:text-primary hover:bg-accent',
+                  )}
+                >
+                  {link.label}
+                </button>
+              ))}
               {navLinks.map((link) => (
                 <Link
                   key={link.to}
@@ -501,7 +549,7 @@ export function Navbar() {
                   <Link
                     to="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                   >
                     <User className="h-4 w-4" />
                     Profile
@@ -510,7 +558,7 @@ export function Navbar() {
                     <Link
                       to="/orders"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                     >
                       <Package className="h-4 w-4" />
                       My Orders
@@ -521,7 +569,7 @@ export function Navbar() {
                       <Link
                         to="/seller/dashboard"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                       >
                         <Store className="h-4 w-4" />
                         Seller Dashboard
@@ -529,7 +577,7 @@ export function Navbar() {
                       <Link
                         to="/seller/products"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                       >
                         <Package className="h-4 w-4" />
                         My Products
@@ -537,7 +585,7 @@ export function Navbar() {
                       <Link
                         to="/seller/orders"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                       >
                         <Package className="h-4 w-4" />
                         My Orders
@@ -545,7 +593,7 @@ export function Navbar() {
                       <Link
                         to="/seller/settings"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                       >
                         <Settings className="h-4 w-4" />
                         Store Settings
@@ -557,7 +605,7 @@ export function Navbar() {
                       <Link
                         to="/admin/dashboard"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                       >
                         <LayoutDashboard className="h-4 w-4" />
                         Admin Dashboard
@@ -565,7 +613,7 @@ export function Navbar() {
                       <Link
                         to="/admin/sellers"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                       >
                         <Store className="h-4 w-4" />
                         Manage Sellers
@@ -573,7 +621,7 @@ export function Navbar() {
                       <Link
                         to="/admin/orders"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
                       >
                         <Package className="h-4 w-4" />
                         Manage Orders

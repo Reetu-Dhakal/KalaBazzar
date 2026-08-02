@@ -12,10 +12,10 @@ export default function OrderSuccess() {
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-lg mx-auto text-center">
         <div className="relative inline-block mb-6">
-          <div className="h-24 w-24 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-            <CheckCircle className="h-14 w-14 text-green-600" />
+          <div className="h-24 w-24 rounded-full bg-emerald-50 flex items-center justify-center mx-auto">
+            <CheckCircle className="h-14 w-14 text-emerald-600" />
           </div>
-          <div className="absolute inset-0 h-24 w-24 rounded-full bg-green-100 animate-ping opacity-20 mx-auto" />
+          <div className="absolute inset-0 h-24 w-24 rounded-full bg-emerald-50 animate-ping opacity-20 mx-auto" />
         </div>
 
         <h1 className="text-3xl font-heading text-foreground mb-3">

@@ -84,7 +84,7 @@ export function ProductCard({ product }: ProductCardProps) {
         to={`/shop/${product.slug}`}
         className="group block"
       >
-        <div className="relative overflow-hidden rounded-xl bg-card border border-border transition-shadow hover:shadow-md">
+        <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
           <div className="aspect-square overflow-hidden bg-accent/50">
             {images[0] ? (
               <img

@@ -34,7 +34,7 @@ export function AdminLayout() {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col border-r border-border bg-card transition-all duration-300 sticky top-0 h-screen',
+          'hidden lg:flex flex-col border-r border-border bg-white transition-all duration-300 sticky top-0 h-screen',
           collapsed ? 'w-16' : 'w-60',
         )}
       >
@@ -66,7 +66,7 @@ export function AdminLayout() {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-primary/10 text-primary border-l-2 border-primary'
                     : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                   collapsed && 'justify-center px-2',
                 )}

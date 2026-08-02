@@ -115,25 +115,25 @@ export default function SellerEarnings() {
           icon={DollarSign}
           label="Total Earnings"
           value={formatCurrency(data?.totalEarnings ?? 0)}
-          color="bg-green-100 text-green-700"
+          color="bg-emerald-50 text-emerald-600"
         />
         <StatCard
           icon={TrendingUp}
           label="Avg. Order Value"
           value={formatCurrency(data?.averageOrderValue ?? 0)}
-          color="bg-blue-100 text-blue-700"
+          color="bg-blue-50 text-blue-600"
         />
         <StatCard
           icon={ShoppingCart}
           label="Total Orders"
           value={data?.totalOrders ?? 0}
-          color="bg-purple-100 text-purple-700"
+          color="bg-purple-50 text-purple-600"
         />
         <StatCard
           icon={CreditCard}
           label="Pending Payout"
           value={formatCurrency(data?.pendingPayout ?? 0)}
-          color="bg-amber-100 text-amber-700"
+          color="bg-amber-50 text-amber-600"
         />
       </div>
 
@@ -150,7 +150,7 @@ export default function SellerEarnings() {
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.earningsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#D4C5A9" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E7E5E4" />
                   <XAxis
                     dataKey="date"
                     tick={{ fontSize: 12 }}

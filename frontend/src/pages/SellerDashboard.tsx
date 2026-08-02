@@ -127,25 +127,25 @@ export default function SellerDashboard() {
           icon={Package}
           label="Total Products"
           value={stats?.totalProducts ?? 0}
-          color="bg-blue-100 text-blue-700"
+          color="bg-blue-50 text-blue-600"
         />
         <StatCard
           icon={ShoppingCart}
           label="Total Orders"
           value={stats?.totalOrders ?? 0}
-          color="bg-purple-100 text-purple-700"
+          color="bg-purple-50 text-purple-600"
         />
         <StatCard
           icon={DollarSign}
           label="Total Revenue"
           value={formatCurrency(stats?.totalRevenue ?? 0)}
-          color="bg-green-100 text-green-700"
+          color="bg-emerald-50 text-emerald-600"
         />
         <StatCard
           icon={Star}
           label="Average Rating"
           value={stats?.averageRating?.toFixed(1) ?? '0.0'}
-          color="bg-amber-100 text-amber-700"
+          color="bg-amber-50 text-amber-600"
         />
       </div>
 
@@ -163,7 +163,7 @@ export default function SellerDashboard() {
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#D4C5A9" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E7E5E4" />
                     <XAxis
                       dataKey="date"
                       tick={{ fontSize: 12 }}
