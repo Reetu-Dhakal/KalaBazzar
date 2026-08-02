@@ -499,7 +499,6 @@ export default function Home() {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.div variants={fadeInUp}>
               <Card variant="elevated" className="overflow-hidden border-0 shadow-xl">
-                <div className="grid md:grid-cols-2 gap-0">
                   <div className="p-8 md:p-12 flex flex-col justify-center">
                     <Badge variant="secondary" className="w-fit mb-4">For Artisans</Badge>
                     <h2 className="text-3xl font-heading text-foreground mb-4">Turn Your Craft Into a Business</h2>
@@ -521,14 +520,6 @@ export default function Home() {
                       </Button>
                     </div>
                   </div>
-                  <div className="relative h-64 md:h-auto bg-linear-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <HandMetal className="h-16 w-16 text-primary/60 mx-auto mb-4" />
-                      <p className="font-heading text-2xl text-foreground">500+ Artisans</p>
-                      <p className="text-muted-foreground mt-1">Already selling on KalaBazzar</p>
-                    </div>
-                  </div>
-                </div>
               </Card>
             </motion.div>
           </motion.div>
