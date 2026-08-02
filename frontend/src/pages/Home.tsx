@@ -234,25 +234,108 @@ export default function Home() {
         <div className="absolute inset-0 bg-linear-to-br from-primary/90 to-primary" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNGRkZDRjUiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMC0zMHY2aDZ2LTZoLTZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         <div className="relative container mx-auto px-4 py-20 md:py-32">
-          <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-2xl">
-            <motion.div variants={fadeInUp}>
-              <Badge variant="secondary" className="mb-4">Handcrafted in Nepal</Badge>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-xl">
+              <motion.div variants={fadeInUp}>
+                <Badge variant="secondary" className="mb-4">Handcrafted in Nepal</Badge>
+              </motion.div>
+              <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-heading text-primary-foreground leading-tight">
+                Discover Authentic Nepali Crafts
+              </motion.h1>
+              <motion.p variants={fadeInUp} className="mt-6 text-lg text-primary-foreground/80 max-w-lg">
+                Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal&apos;s rich cultural heritage.
+              </motion.p>
+              <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap gap-4">
+                <Button asChild size="lg" variant="secondary">
+                  <Link to="/shop">Shop Now <ArrowRight className="h-4 w-4" /></Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                  <Link to="/seller/apply">Become an Artisan</Link>
+                </Button>
+              </motion.div>
             </motion.div>
-            <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-heading text-primary-foreground leading-tight">
-              Discover Authentic Nepali Crafts
-            </motion.h1>
-            <motion.p variants={fadeInUp} className="mt-6 text-lg text-primary-foreground/80 max-w-lg">
-              Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal&apos;s rich cultural heritage.
-            </motion.p>
-            <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap gap-4">
-              <Button asChild size="lg" variant="secondary">
-                <Link to="/shop">Shop Now <ArrowRight className="h-4 w-4" /></Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                <Link to="/seller/apply">Become an Artisan</Link>
-              </Button>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="hidden md:block relative"
+            >
+              {/* Main craft image container */}
+              <div className="relative w-full aspect-square max-w-md mx-auto">
+                {/* Decorative ring */}
+                <div className="absolute inset-0 rounded-full border-2 border-primary-foreground/10 animate-[spin_30s_linear_infinite]" />
+
+                {/* Center pottery SVG */}
+                <div className="absolute inset-8 rounded-3xl bg-gradient-to-br from-primary-foreground/10 to-primary-foreground/5 backdrop-blur-sm border border-primary-foreground/10 flex items-center justify-center overflow-hidden">
+                  <svg viewBox="0 0 200 200" className="w-3/4 h-3/4 text-primary-foreground/60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Pottery vase */}
+                    <path d="M100 30 C100 30 85 50 80 70 C75 90 70 110 65 130 C60 150 70 170 100 175 C130 170 140 150 135 130 C130 110 125 90 120 70 C115 50 100 30 100 30Z" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.1"/>
+                    <ellipse cx="100" cy="30" rx="20" ry="8" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.05"/>
+                    {/* Decorative pattern on vase */}
+                    <path d="M75 80 Q100 70 125 80" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M72 95 Q100 85 128 95" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M70 110 Q100 100 130 110" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <circle cx="85" cy="87" r="3" fill="currentColor" fillOpacity="0.3"/>
+                    <circle cx="100" cy="83" r="3" fill="currentColor" fillOpacity="0.3"/>
+                    <circle cx="115" cy="87" r="3" fill="currentColor" fillOpacity="0.3"/>
+                    {/* Steam/aroma lines */}
+                    <path d="M90 20 Q88 10 92 0" stroke="currentColor" strokeWidth="1" opacity="0.4" fill="none"/>
+                    <path d="M100 18 Q98 8 102 -2" stroke="currentColor" strokeWidth="1" opacity="0.4" fill="none"/>
+                    <path d="M110 20 Q108 10 112 0" stroke="currentColor" strokeWidth="1" opacity="0.4" fill="none"/>
+                  </svg>
+                </div>
+
+                {/* Floating product card 1 */}
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
+                >
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+                    <svg viewBox="0 0 40 40" className="w-10 h-10 text-amber-700" fill="none">
+                      <circle cx="20" cy="20" r="15" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M15 15 Q20 10 25 15 Q30 20 25 25 Q20 30 15 25 Q10 20 15 15Z" stroke="currentColor" strokeWidth="1" fill="currentColor" fillOpacity="0.2"/>
+                    </svg>
+                  </div>
+                  <p className="text-[10px] font-medium text-foreground mt-1">Nepali Pottery</p>
+                </motion.div>
+
+                {/* Floating product card 2 */}
+                <motion.div
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
+                >
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
+                    <svg viewBox="0 0 40 40" className="w-10 h-10 text-red-700" fill="none">
+                      <rect x="8" y="12" width="24" height="18" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M8 18 L20 24 L32 18" stroke="currentColor" strokeWidth="1" fill="currentColor" fillOpacity="0.1"/>
+                      <path d="M14 8 L14 12 M26 8 L26 12" stroke="currentColor" strokeWidth="1.5"/>
+                    </svg>
+                  </div>
+                  <p className="text-[10px] font-medium text-foreground mt-1">Dhaka Textile</p>
+                </motion.div>
+
+                {/* Floating product card 3 */}
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                  className="absolute top-1/2 -right-8 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
+                >
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
+                    <svg viewBox="0 0 40 40" className="w-10 h-10 text-emerald-700" fill="none">
+                      <path d="M10 30 Q10 15 20 10 Q30 15 30 30" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.1"/>
+                      <line x1="20" y1="10" x2="20" y2="30" stroke="currentColor" strokeWidth="1"/>
+                      <path d="M15 20 Q20 18 25 20" stroke="currentColor" strokeWidth="1" fill="none"/>
+                      <path d="M13 25 Q20 22 27 25" stroke="currentColor" strokeWidth="1" fill="none"/>
+                    </svg>
+                  </div>
+                  <p className="text-[10px] font-medium text-foreground mt-1">Wood Carving</p>
+                </motion.div>
+              </div>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
