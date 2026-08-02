@@ -230,67 +230,38 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* ─── HERO ─── */}
-      <section className="relative bg-primary overflow-hidden scroll-mt-20" id="hero">
-        <div className="absolute inset-0 bg-linear-to-br from-primary/90 to-primary" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNGRkZDRjUiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMC0zMHY2aDZ2LTZoLTZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+      <section className="relative min-h-[85vh] flex items-center overflow-hidden scroll-mt-20" id="hero">
+        {/* Background image */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1546006200-f8c574598b28?w=1920&q=80&auto=format&fit=crop"
+            alt="Nepali handicrafts"
+            className="w-full h-full object-cover"
+          />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1C1917]/90 via-[#1C1917]/70 to-[#1C1917]/40" />
+        </div>
+
         <div className="relative container mx-auto px-4 py-20 md:py-32">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-xl">
-              <motion.div variants={fadeInUp}>
-                <Badge variant="secondary" className="mb-4">Handcrafted in Nepal</Badge>
-              </motion.div>
-              <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-heading text-primary-foreground leading-tight">
-                Discover Authentic Nepali Crafts
-              </motion.h1>
-              <motion.p variants={fadeInUp} className="mt-6 text-lg text-primary-foreground/80 max-w-lg">
-                Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal&apos;s rich cultural heritage.
-              </motion.p>
-              <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap gap-4">
-                <Button asChild size="lg" variant="secondary">
-                  <Link to="/shop">Shop Now <ArrowRight className="h-4 w-4" /></Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                  <Link to="/seller/apply">Become an Artisan</Link>
-                </Button>
-              </motion.div>
+          <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-2xl">
+            <motion.div variants={fadeInUp}>
+              <Badge variant="secondary" className="mb-4">Handcrafted in Nepal</Badge>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="hidden md:block"
-            >
-              <div className="grid grid-cols-2 gap-4 max-w-lg ml-auto">
-                {/* Large image - spans 2 rows */}
-                <div className="row-span-2 rounded-2xl overflow-hidden shadow-xl">
-                  <img
-                    src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80"
-                    alt="Nepali artisan shaping clay on a pottery wheel"
-                    className="w-full h-full object-cover sepia-[.15] brightness-95 hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-
-                {/* Top right image */}
-                <div className="rounded-2xl overflow-hidden shadow-xl">
-                  <img
-                    src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80"
-                    alt="Traditional Dhaka textile weaving"
-                    className="w-full h-full object-cover sepia-[.15] brightness-95 hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-
-                {/* Bottom right image */}
-                <div className="rounded-2xl overflow-hidden shadow-xl">
-                  <img
-                    src="https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80"
-                    alt="Handcrafted wood carving details"
-                    className="w-full h-full object-cover sepia-[.15] brightness-95 hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-              </div>
+            <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-heading text-white leading-tight">
+              Discover Authentic Nepali Crafts
+            </motion.h1>
+            <motion.p variants={fadeInUp} className="mt-6 text-lg text-white/70 max-w-lg">
+              Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal&apos;s rich cultural heritage.
+            </motion.p>
+            <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap gap-4">
+              <Button asChild size="lg" className="bg-secondary text-white hover:bg-secondary/90">
+                <Link to="/shop">Shop Now <ArrowRight className="h-4 w-4" /></Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                <Link to="/seller/apply">Become an Artisan</Link>
+              </Button>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
