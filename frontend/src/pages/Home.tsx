@@ -256,20 +256,37 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="hidden md:block relative"
+              className="hidden md:block"
             >
-              <div className="relative w-full aspect-[4/5] max-w-md mx-auto">
-                <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl">
+              <div className="grid grid-cols-2 gap-4 max-w-lg ml-auto">
+                {/* Large image - spans 2 rows */}
+                <div className="row-span-2 rounded-2xl overflow-hidden shadow-xl">
                   <img
-                    src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=800&q=80"
+                    src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80"
                     alt="Nepali artisan shaping clay on a pottery wheel"
-                    className="w-full h-full object-cover sepia-[.2] brightness-90"
+                    className="w-full h-full object-cover sepia-[.15] brightness-95 hover:scale-105 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#2D1810]/60 via-[#2D1810]/10 to-transparent mix-blend-multiply" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#C0392B]/10 via-transparent to-[#2D1810]/20" />
+                </div>
+
+                {/* Top right image */}
+                <div className="rounded-2xl overflow-hidden shadow-xl">
+                  <img
+                    src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80"
+                    alt="Traditional Dhaka textile weaving"
+                    className="w-full h-full object-cover sepia-[.15] brightness-95 hover:scale-105 transition-transform duration-700"
+                  />
+                </div>
+
+                {/* Bottom right image */}
+                <div className="rounded-2xl overflow-hidden shadow-xl">
+                  <img
+                    src="https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80"
+                    alt="Handcrafted wood carving details"
+                    className="w-full h-full object-cover sepia-[.15] brightness-95 hover:scale-105 transition-transform duration-700"
+                  />
                 </div>
               </div>
             </motion.div>
