@@ -7,6 +7,7 @@ import {
   X,
   ChevronRight,
   PackageSearch,
+  Store,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/Button';
@@ -142,6 +143,22 @@ export default function Shop() {
   const categories: Category[] = categoriesData || [];
   const crafts: Craft[] = craftsData || [];
   const regions: Region[] = regionsData || [];
+
+  const groupedBySeller = useMemo(() => {
+    if (category || search || craft || region || minPrice || maxPrice) {
+      return null;
+    }
+    const map = new Map<string, { sellerName: string; items: Product[] }>();
+    for (const p of products) {
+      const sellerName = typeof p.seller === 'object' && p.seller
+        ? (p.seller as { storeName?: string; firstName?: string }).storeName || (p.seller as { firstName?: string }).firstName || 'Unknown Seller'
+        : 'Unknown Seller';
+      const key = typeof p.seller === 'object' && p.seller ? (p.seller as { _id: string })._id : 'unknown';
+      if (!map.has(key)) map.set(key, { sellerName, items: [] });
+      map.get(key)!.items.push(p);
+    }
+    return Array.from(map.values());
+  }, [products, category, search, craft, region, minPrice, maxPrice]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -455,11 +472,31 @@ export default function Shop() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {products.map((product: Product) => (
-                  <ProductCard key={product._id} product={product} />
-                ))}
-              </div>
+              groupedBySeller ? (
+                <div className="space-y-10">
+                  {groupedBySeller.map((group) => (
+                    <div key={group.sellerName}>
+                      <div className="flex items-center gap-3 mb-4">
+                        <Store className="h-5 w-5 text-primary" />
+                        <h2 className="font-heading text-xl font-semibold text-foreground">{group.sellerName}</h2>
+                        <span className="text-sm text-muted-foreground">({group.items.length})</span>
+                        <div className="flex-1 h-px bg-border" />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {group.items.map((product: Product) => (
+                          <ProductCard key={product._id} product={product} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {products.map((product: Product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              )
             )}
 
             {pagination && pagination.totalPages > 1 && (
