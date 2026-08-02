@@ -119,7 +119,7 @@ export const getProductById = asyncHandler(async (req: Request, res: Response) =
     throw ApiError.notFound('Product not found');
   }
 
-  res.json(ApiResponse.success(product, 'Product retrieved'));
+  res.json(ApiResponse.success({ product }, 'Product retrieved'));
 });
 
 export const createProduct = asyncHandler(async (req: AuthRequest, res: Response) => {
