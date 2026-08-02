@@ -119,7 +119,7 @@ const faqCategories = [
 
 function ProductSkeleton() {
   return (
-    <div className="min-w-65">
+    <div className="min-w-48">
       <Skeleton className="aspect-square rounded-xl" />
       <div className="mt-3 space-y-2">
         <Skeleton className="h-4 w-3/4" />
@@ -167,7 +167,7 @@ function ProductCard({ product }: { product: Product }) {
   const firstImage = images[0] || getHomeFallbackImage(product.name);
 
   return (
-    <Link to={`/shop/${product.slug}`} className="group block min-w-65">
+    <Link to={`/shop/${product.slug}`} className="group block min-w-48">
       <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-shadow duration-300 group-hover:shadow-lg">
         <div className="aspect-square overflow-hidden">
           <img src={firstImage} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -345,16 +345,16 @@ export default function Home() {
             </motion.div>
             {isLoadingCategories ? (
               <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-                <div className="flex gap-4 pb-4">
-                  {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="min-w-40 aspect-square rounded-xl" />)}
+                <div className="flex gap-3 pb-4">
+                  {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="min-w-28 h-28 rounded-xl" />)}
                 </div>
               </div>
             ) : (
               <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-4 px-4">
-                <div className="flex gap-4 pb-4">
+                <div className="flex gap-3 pb-4">
                   {categories.map((cat) => (
-                    <motion.div key={cat._id} variants={fadeInUp} className="snap-start shrink-0 min-w-40">
-                      <Link to={`/shop?category=${cat.slug}`} className="group block relative overflow-hidden rounded-xl aspect-square">
+                    <motion.div key={cat._id} variants={fadeInUp} className="snap-start shrink-0 min-w-28">
+                      <Link to={`/shop?category=${cat.slug}`} className="group block relative overflow-hidden rounded-xl h-28">
                         <img
                           src={cat.image || categoryImages[cat.slug] || fallbackCategoryImage}
                           alt={cat.name}
@@ -362,9 +362,8 @@ export default function Home() {
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <h3 className="font-heading text-lg font-semibold text-white">{cat.name}</h3>
-                          {cat.productCount > 0 && <p className="text-sm text-white/80">{cat.productCount} products</p>}
+                        <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                          <h3 className="font-heading text-sm font-semibold text-white leading-tight">{cat.name}</h3>
                         </div>
                       </Link>
                     </motion.div>
