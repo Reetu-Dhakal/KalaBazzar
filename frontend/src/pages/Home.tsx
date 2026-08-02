@@ -132,39 +132,47 @@ function ProductSkeleton() {
 
 function getHomeFallbackImage(name: string): string {
   const map: Record<string, string> = {
-    singing: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
-    bowl: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
-    earring: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
-    silver: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
-    basket: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
-    bamboo: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
-    painting: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
-    thangka: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
-    mandala: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
-    pendant: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
-    necklace: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
-    clay: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
-    pot: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
-    ceramic: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
-    buddha: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
-    statue: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
-    brass: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
-    ganesh: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
-    topi: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
-    dhaka: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
-    wood: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
-    carved: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+    singing: 'https://images.unsplash.com/photo-1599643477712-dfa476ecf239?w=400&h=400&fit=crop',
+    bowl: 'https://images.unsplash.com/photo-1610701596061-2ecf227e85b2?w=400&h=400&fit=crop',
+    earring: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=400&fit=crop',
+    silver: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop',
+    basket: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&h=400&fit=crop',
+    bamboo: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&h=400&fit=crop',
+    painting: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=400&fit=crop',
+    thangka: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=400&fit=crop',
+    mandala: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=400&fit=crop',
+    pendant: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop',
+    necklace: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop',
+    clay: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=400&fit=crop',
+    pot: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=400&fit=crop',
+    ceramic: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=400&fit=crop',
+    buddha: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=400&h=400&fit=crop',
+    statue: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&h=400&fit=crop',
+    brass: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&h=400&fit=crop',
+    ganesh: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&h=400&fit=crop',
+    topi: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
+    dhaka: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
+    wood: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=400&fit=crop',
+    carved: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=400&fit=crop',
+    door: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=400&fit=crop',
+    frame: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=400&fit=crop',
+    woven: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
+    cap: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
+    scarf: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
+    shawl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
+    mug: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=400&fit=crop',
+    cup: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=400&fit=crop',
   };
   const lower = name.toLowerCase();
   for (const [key, url] of Object.entries(map)) {
     if (lower.includes(key)) return url;
   }
-  return 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80';
+  return 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=400&fit=crop';
 }
 
 function ProductCard({ product }: { product: Product }) {
   const images = product.variants?.[0]?.images || [];
-  const firstImage = images[0] || getHomeFallbackImage(product.name);
+  const firstImage = images[0] && !images[0].startsWith('/uploads/') ? images[0] : getHomeFallbackImage(product.name);
 
   return (
     <Link to={`/shop/${product.slug}`} className="group block min-w-48">

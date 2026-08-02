@@ -66,7 +66,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   const images = product.variants?.[0]?.images || [];
-  const firstImage = images[0] || getFallbackImage(product.name);
+  const firstImage = images[0] && !images[0].startsWith('/uploads/') ? images[0] : getFallbackImage(product.name);
   const inWishlist = isInWishlist(product._id);
   const hasDiscount =
     product.compareAtPrice && product.compareAtPrice > product.basePrice;
