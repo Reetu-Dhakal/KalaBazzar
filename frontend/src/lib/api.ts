@@ -80,6 +80,7 @@ api.interceptors.response.use(
       } catch {
         processQueue(error, null);
         localStorage.removeItem('token');
+        window.location.href = '/login';
       } finally {
         isRefreshing = false;
       }
