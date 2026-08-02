@@ -172,7 +172,7 @@ function getHomeFallbackImage(name: string): string {
 
 function ProductCard({ product }: { product: Product }) {
   const images = product.variants?.[0]?.images || [];
-  const firstImage = images[0] && !images[0].startsWith('/uploads/') ? images[0] : getHomeFallbackImage(product.name);
+  const firstImage = images[0] || getHomeFallbackImage(product.name);
 
   return (
     <Link to={`/shop/${product.slug}`} className="group block min-w-48">
