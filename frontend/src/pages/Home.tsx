@@ -262,63 +262,15 @@ export default function Home() {
               className="hidden md:block relative"
             >
               <div className="relative w-full aspect-[4/5] max-w-md mx-auto">
-                {/* Main image */}
-                <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl border-2 border-primary-foreground/10">
+                <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl">
                   <img
                     src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=800&q=80"
                     alt="Nepali artisan shaping clay on a pottery wheel"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover sepia-[.2] brightness-90"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#2D1810]/60 via-[#2D1810]/10 to-transparent mix-blend-multiply" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#C0392B]/10 via-transparent to-[#2D1810]/20" />
                 </div>
-
-                {/* Floating product card 1 */}
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
-                >
-                  <div className="w-14 h-14 rounded-xl overflow-hidden">
-                    <img
-                      src="https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?w=200&q=80"
-                      alt="Pottery"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <p className="text-[10px] font-medium text-foreground mt-1.5">Nepali Pottery</p>
-                </motion.div>
-
-                {/* Floating product card 2 */}
-                <motion.div
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
-                >
-                  <div className="w-14 h-14 rounded-xl overflow-hidden">
-                    <img
-                      src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=200&q=80"
-                      alt="Dhaka Textile"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <p className="text-[10px] font-medium text-foreground mt-1.5">Dhaka Textile</p>
-                </motion.div>
-
-                {/* Floating product card 3 */}
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                  className="absolute top-1/2 -right-8 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
-                >
-                  <div className="w-14 h-14 rounded-xl overflow-hidden">
-                    <img
-                      src="https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=200&q=80"
-                      alt="Wood Carving"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <p className="text-[10px] font-medium text-foreground mt-1.5">Wood Carving</p>
-                </motion.div>
               </div>
             </motion.div>
           </div>
