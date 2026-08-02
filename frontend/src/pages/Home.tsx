@@ -344,28 +344,32 @@ export default function Home() {
               </Button>
             </motion.div>
             {isLoadingCategories ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
+              <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+                <div className="flex gap-4 pb-4">
+                  {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="min-w-40 aspect-square rounded-xl" />)}
+                </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {categories.map((cat) => (
-                  <motion.div key={cat._id} variants={fadeInUp}>
-                    <Link to={`/shop?category=${cat.slug}`} className="group block relative overflow-hidden rounded-xl aspect-square">
-                      <img
-                        src={cat.image || categoryImages[cat.slug] || fallbackCategoryImage}
-                        alt={cat.name}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <h3 className="font-heading text-lg font-semibold text-white">{cat.name}</h3>
-                        {cat.productCount > 0 && <p className="text-sm text-white/80">{cat.productCount} products</p>}
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
+              <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-4 px-4">
+                <div className="flex gap-4 pb-4">
+                  {categories.map((cat) => (
+                    <motion.div key={cat._id} variants={fadeInUp} className="snap-start shrink-0 min-w-40">
+                      <Link to={`/shop?category=${cat.slug}`} className="group block relative overflow-hidden rounded-xl aspect-square">
+                        <img
+                          src={cat.image || categoryImages[cat.slug] || fallbackCategoryImage}
+                          alt={cat.name}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <h3 className="font-heading text-lg font-semibold text-white">{cat.name}</h3>
+                          {cat.productCount > 0 && <p className="text-sm text-white/80">{cat.productCount} products</p>}
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             )}
           </motion.div>
