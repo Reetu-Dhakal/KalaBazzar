@@ -66,6 +66,19 @@ const testimonials = [
   { id: '3', name: 'Maya Gurung', location: 'Lalitpur', comment: 'Supporting local artisans through KalaBazzar feels wonderful. The products are genuine, well-made, and the customer service is outstanding.', rating: 5 },
 ];
 
+const categoryImages: Record<string, string> = {
+  handicrafts: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80',
+  jewelry: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+  paintings: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+  ceramics: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  pottery: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  woodwork: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+  textiles: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+  metalwork: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+};
+
+const fallbackCategoryImage = 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80';
+
 const faqCategories = [
   {
     title: 'Orders & Shipping',
@@ -305,13 +318,12 @@ export default function Home() {
                 {categories.map((cat) => (
                   <motion.div key={cat._id} variants={fadeInUp}>
                     <Link to={`/shop?category=${cat.slug}`} className="group block relative overflow-hidden rounded-xl aspect-square">
-                      {cat.image ? (
-                        <img src={cat.image} alt={cat.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                      ) : (
-                        <div className="h-full w-full bg-linear-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                          <span className="text-4xl font-heading text-primary">{cat.name.charAt(0)}</span>
-                        </div>
-                      )}
+                      <img
+                        src={cat.image || categoryImages[cat.slug] || fallbackCategoryImage}
+                        alt={cat.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
                       <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <h3 className="font-heading text-lg font-semibold text-white">{cat.name}</h3>
