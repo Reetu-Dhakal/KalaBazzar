@@ -22,7 +22,6 @@ import {
   Send,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -225,7 +224,6 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 export default function Home() {
   usePageTitle();
   const navigate = useNavigate();
-  const { recentItems } = useRecentlyViewed();
   const { user, isAuthenticated } = useAuth();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -397,42 +395,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* ─── RECENTLY VIEWED ─── */}
-      {recentItems.length > 0 && (
-        <section className="py-16 md:py-20 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-              <motion.div variants={fadeInUp} className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-3xl font-heading text-foreground">Recently Viewed</h2>
-                  <p className="mt-2 text-muted-foreground">Continue where you left off</p>
-                </div>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/recently-viewed">View All <ChevronRight className="h-4 w-4" /></Link>
-                </Button>
-              </motion.div>
-              <motion.div variants={fadeInUp} className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-                <div className="flex gap-6 pb-4">
-                  {recentItems.map((item) => (
-                    <Link key={item._id} to={`/shop/${item.slug}`} className="group block min-w-50">
-                      <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-shadow duration-300 group-hover:shadow-lg">
-                        <div className="aspect-square overflow-hidden">
-                          <img src={item.images[0] || '/placeholder.jpg'} alt={item.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                        </div>
-                      </div>
-                      <div className="mt-3">
-                        <h3 className="font-medium text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">{item.name}</h3>
-                        <span className="mt-1 text-sm font-semibold text-primary">{formatCurrency(item.basePrice)}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
-      )}
 
       {/* ─── ABOUT / OUR STORY ─── */}
       <section className="py-16 md:py-20 scroll-mt-20" id="about">
