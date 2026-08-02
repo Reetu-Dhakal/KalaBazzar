@@ -634,10 +634,12 @@ export default function ProductDetail() {
                       <h4 className="font-medium text-sm text-foreground">Shipping</h4>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {product.shippingClass === 'free'
-                        ? 'Free shipping on this item'
-                        : product.shippingClass === 'express'
-                        ? 'Express shipping available'
+                      {product.shippingClass === 'fragile'
+                        ? 'Fragile item — special handling required'
+                        : product.shippingClass === 'oversized'
+                        ? 'Oversized item — additional shipping may apply'
+                        : product.shippingClass === 'custom'
+                        ? 'Custom shipping — contact for details'
                         : 'Standard shipping applies'}
                     </p>
                     <p className="text-xs text-muted-foreground mt-2">

@@ -277,7 +277,7 @@ export default function SellerProductForm() {
       const payload = {
         ...formData,
         images: uploadedImages,
-        status: asDraft ? 'draft' : undefined,
+        status: asDraft ? 'draft' : 'approved',
       };
       if (isEditing && id) {
         await api.put(`/products/${id}`, payload);
@@ -288,8 +288,15 @@ export default function SellerProductForm() {
       }
       navigate('/seller/products');
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to save product';
-      toast.error(message);
+      const axiosError = error as { response?: { data?: { message?: string; errors?: { msg: string; path?: string }[] } } };
+      const serverMessage = axiosError.response?.data?.message;
+      const validationErrors = axiosError.response?.data?.errors;
+      if (validationErrors?.length) {
+        const details = validationErrors.map((e) => e.msg).join(', ');
+        toast.error(details);
+      } else {
+        toast.error(serverMessage || 'Failed to save product');
+      }
     } finally {
       setIsSaving(false);
       setIsPublishing(false);
@@ -819,8 +826,9 @@ export default function SellerProductForm() {
                   {...register('shippingClass')}
                 >
                   <option value="standard">Standard</option>
-                  <option value="express">Express</option>
-                  <option value="free">Free Shipping</option>
+                  <option value="fragile">Fragile</option>
+                  <option value="oversized">Oversized</option>
+                  <option value="custom">Custom</option>
                 </select>
               </div>
               <div>

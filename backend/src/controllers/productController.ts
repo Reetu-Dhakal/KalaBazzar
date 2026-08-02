@@ -211,6 +211,16 @@ export const updateProduct = asyncHandler(async (req: AuthRequest, res: Response
     }
   }
 
+  if (req.body.images && Array.isArray(req.body.images)) {
+    if (updates.variants && updates.variants.length > 0) {
+      updates.variants[0].images = req.body.images;
+    } else if (product.variants.length > 0) {
+      updates.variants = product.variants.map((v, i) =>
+        i === 0 ? { ...v, images: req.body.images } : v
+      );
+    }
+  }
+
   if (updates.name && updates.name !== product.name) {
     const baseSlug = generateSlug(updates.name);
     updates.slug = await generateUniqueSlug(baseSlug, async (s) => {
