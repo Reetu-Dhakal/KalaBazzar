@@ -143,6 +143,19 @@ export default function Shop() {
   const crafts: Craft[] = craftsData || [];
   const regions: Region[] = regionsData || [];
 
+  const groupedProducts = useMemo(() => {
+    if (category || search || craft || region || minPrice || maxPrice) {
+      return null;
+    }
+    const map = new Map<string, Product[]>();
+    for (const p of products) {
+      const catName = typeof p.category === 'object' && p.category ? p.category.name : 'Other';
+      if (!map.has(catName)) map.set(catName, []);
+      map.get(catName)!.push(p);
+    }
+    return map;
+  }, [products, category, search, craft, region, minPrice, maxPrice]);
+
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (search) count++;
@@ -455,11 +468,30 @@ export default function Shop() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {products.map((product: Product) => (
-                  <ProductCard key={product._id} product={product} />
-                ))}
-              </div>
+              groupedProducts ? (
+                <div className="space-y-10">
+                  {Array.from(groupedProducts.entries()).map(([catName, catProducts]) => (
+                    <div key={catName}>
+                      <div className="flex items-center gap-3 mb-4">
+                        <h2 className="font-heading text-xl font-semibold text-foreground">{catName}</h2>
+                        <span className="text-sm text-muted-foreground">({catProducts.length})</span>
+                        <div className="flex-1 h-px bg-border" />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {catProducts.map((product: Product) => (
+                          <ProductCard key={product._id} product={product} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {products.map((product: Product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              )
             )}
 
             {pagination && pagination.totalPages > 1 && (
