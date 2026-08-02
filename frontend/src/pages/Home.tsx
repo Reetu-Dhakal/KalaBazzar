@@ -132,12 +132,12 @@ function ProductSkeleton() {
 
 function getHomeFallbackImage(name: string): string {
   const map: Record<string, string> = {
-    singing: 'https://images.unsplash.com/photo-1599643477712-dfa476ecf239?w=400&h=400&fit=crop',
-    bowl: 'https://images.unsplash.com/photo-1610701596061-2ecf227e85b2?w=400&h=400&fit=crop',
+    singing: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop',
+    bowl: 'https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?w=400&h=400&fit=crop',
     earring: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=400&fit=crop',
     silver: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop',
-    basket: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&h=400&fit=crop',
-    bamboo: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&h=400&fit=crop',
+    basket: 'https://images.unsplash.com/photo-1595231776515-ddffb1f4eb73?w=400&h=400&fit=crop',
+    bamboo: 'https://images.unsplash.com/photo-1595231776515-ddffb1f4eb73?w=400&h=400&fit=crop',
     painting: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=400&fit=crop',
     thangka: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=400&fit=crop',
     mandala: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=400&fit=crop',
@@ -160,8 +160,8 @@ function getHomeFallbackImage(name: string): string {
     cap: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
     scarf: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
     shawl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&h=400&fit=crop',
-    mug: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=400&fit=crop',
-    cup: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&h=400&fit=crop',
+    mug: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&h=400&fit=crop',
+    cup: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&h=400&fit=crop',
   };
   const lower = name.toLowerCase();
   for (const [key, url] of Object.entries(map)) {
