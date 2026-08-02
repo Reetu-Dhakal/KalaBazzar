@@ -127,9 +127,41 @@ function ProductSkeleton() {
   );
 }
 
+function getHomeFallbackImage(name: string): string {
+  const map: Record<string, string> = {
+    singing: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+    bowl: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+    earring: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+    silver: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+    basket: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+    bamboo: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+    painting: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+    thangka: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+    mandala: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+    pendant: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+    necklace: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+    clay: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+    pot: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+    ceramic: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+    buddha: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+    statue: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+    brass: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+    ganesh: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+    topi: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+    dhaka: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+    wood: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+    carved: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+  };
+  const lower = name.toLowerCase();
+  for (const [key, url] of Object.entries(map)) {
+    if (lower.includes(key)) return url;
+  }
+  return 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80';
+}
+
 function ProductCard({ product }: { product: Product }) {
   const images = product.variants?.[0]?.images || [];
-  const firstImage = images[0] || '/placeholder.jpg';
+  const firstImage = images[0] || getHomeFallbackImage(product.name);
 
   return (
     <Link to={`/shop/${product.slug}`} className="group block min-w-65">

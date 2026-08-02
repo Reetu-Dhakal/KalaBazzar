@@ -10,6 +10,51 @@ import { formatCurrency } from '@/lib/utils';
 import type { Product } from '@/types';
 import toast from 'react-hot-toast';
 
+const fallbackImages: Record<string, string> = {
+  singing: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+  bowl: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  earring: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+  silver: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+  basket: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+  bamboo: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+  painting: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+  thangka: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+  mandala: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+  pendant: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+  necklace: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+  clay: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  pot: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  ceramic: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  buddha: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
+  statue: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+  brass: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+  ganesh: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+  topi: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+  dhaka: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+  cap: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+  door: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+  frame: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+  wood: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+  carved: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+  woven: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+  scarf: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+  shawl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
+  mug: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  cup: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  plate: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
+  box: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
+};
+
+const defaultFallback = 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80';
+
+function getFallbackImage(name: string): string {
+  const lower = name.toLowerCase();
+  for (const [key, url] of Object.entries(fallbackImages)) {
+    if (lower.includes(key)) return url;
+  }
+  return defaultFallback;
+}
+
 interface ProductCardProps {
   product: Product;
 }
@@ -21,7 +66,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   const images = product.variants?.[0]?.images || [];
-  const firstImage = images[0] || '/placeholder.jpg';
+  const firstImage = images[0] || getFallbackImage(product.name);
   const inWishlist = isInWishlist(product._id);
   const hasDiscount =
     product.compareAtPrice && product.compareAtPrice > product.basePrice;
@@ -86,22 +131,16 @@ export function ProductCard({ product }: ProductCardProps) {
       >
         <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
           <div className="aspect-square overflow-hidden bg-accent/50">
-            {images[0] ? (
-              <img
-                src={firstImage}
-                alt={product.name}
-                loading="lazy"
-                onLoad={() => setImageLoaded(true)}
-                className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center">
-                <ShoppingBag className="h-12 w-12 text-muted-foreground/30" />
-              </div>
-            )}
-            {!imageLoaded && images[0] && (
+            <img
+              src={firstImage || getFallbackImage(product.name)}
+              alt={product.name}
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+              className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+            {!imageLoaded && (
               <div className="absolute inset-0 bg-accent animate-pulse" />
             )}
           </div>
