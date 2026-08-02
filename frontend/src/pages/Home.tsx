@@ -67,7 +67,7 @@ const testimonials = [
 
 const categoryImages: Record<string, string> = {
   handicrafts: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80',
-  jewelry: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6f5?w=400&q=80',
+  jewelry: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80',
   paintings: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
   ceramics: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
   pottery: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
