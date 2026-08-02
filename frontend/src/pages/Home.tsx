@@ -244,9 +244,6 @@ export default function Home() {
 
         <div className="relative container mx-auto px-4 py-20 md:py-32">
           <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-2xl">
-            <motion.div variants={fadeInUp}>
-              <Badge variant="secondary" className="mb-4">Handcrafted in Nepal</Badge>
-            </motion.div>
             <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-heading text-white leading-tight">
               Discover Authentic Nepali Crafts
             </motion.h1>
