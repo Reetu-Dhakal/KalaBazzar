@@ -212,7 +212,7 @@ export default function Shop() {
                 >
                   <span className="truncate">{cat.name}</span>
                   {cat.productCount > 0 && (
-                    <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                    <span className="text-xs text-muted-foreground ml-2 shrink-0">
                       ({cat.productCount})
                     </span>
                   )}
@@ -339,7 +339,7 @@ export default function Shop() {
             <select
               value={sort}
               onChange={(e) => updateParams('sort', e.target.value)}
-              className="h-10 px-3 rounded-lg border border-border/60 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none cursor-pointer min-w-[140px]"
+              className="h-10 px-3 rounded-lg border border-border/60 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors appearance-none cursor-pointer min-w-35"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -421,7 +421,7 @@ export default function Shop() {
         )}
 
         <div className="flex gap-8">
-          <aside className="hidden lg:block w-64 flex-shrink-0">
+          <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-24">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading text-lg font-semibold text-foreground">Filters</h2>
@@ -482,7 +482,7 @@ export default function Shop() {
                       key={num}
                       variant={num === page ? 'primary' : 'outline'}
                       size="sm"
-                      className="min-w-[36px]"
+                      className="min-w-9"
                       onClick={() => updateParams('page', String(num))}
                     >
                       {num}

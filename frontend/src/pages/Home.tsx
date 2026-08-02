@@ -284,7 +284,7 @@ export default function Home() {
             className="w-full h-full object-cover"
           />
           {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1C1917]/90 via-[#1C1917]/70 to-[#1C1917]/40" />
+          <div className="absolute inset-0 bg-linear-to-r from-[#1C1917]/90 via-[#1C1917]/70 to-[#1C1917]/40" />
         </div>
 
         <div className="relative container mx-auto px-4 py-20 md:py-32">
