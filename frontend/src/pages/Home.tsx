@@ -75,6 +75,10 @@ const categoryImages: Record<string, string> = {
   woodwork: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
   textiles: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
   metalwork: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
+  sculptures: 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=400&q=80',
+  'bags-accessories': 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80',
+  'home-decor': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&q=80',
+  'musical-instruments': 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=400&q=80',
 };
 
 const fallbackCategoryImage = 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80';
@@ -252,7 +256,7 @@ export default function Home() {
           api.get('/reviews', { params: { sort: '-rating', limit: 3 } }),
         ]);
         if (productsRes.status === 'fulfilled') setFeaturedProducts(productsRes.value.data.data || []);
-        if (categoriesRes.status === 'fulfilled') setCategories((categoriesRes.value.data.data || []).slice(0, 8));
+        if (categoriesRes.status === 'fulfilled') setCategories((categoriesRes.value.data.data || []).slice(0, 12));
         if (reviewsRes.status === 'fulfilled') setTopReviews(reviewsRes.value.data.data || []);
       } catch {} finally {
         setIsLoadingProducts(false);
@@ -342,11 +346,11 @@ export default function Home() {
               </Button>
             </motion.div>
             {isLoadingCategories ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {categories.map((cat) => (
                   <motion.div key={cat._id} variants={fadeInUp}>
                     <Link to={`/shop?category=${cat.slug}`} className="group block relative overflow-hidden rounded-xl aspect-square">
@@ -383,11 +387,11 @@ export default function Home() {
                 <Link to="/shop">View All <ChevronRight className="h-4 w-4" /></Link>
               </Button>
             </motion.div>
-            <motion.div variants={fadeInUp} className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+            <motion.div variants={fadeInUp} className="overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-4 px-4">
               <div className="flex gap-6 pb-4">
                 {isLoadingProducts
                   ? Array.from({ length: 6 }).map((_, i) => <ProductSkeleton key={i} />)
-                  : featuredProducts.map((p) => <ProductCard key={p._id} product={p} />)}
+                  : featuredProducts.map((p) => <div key={p._id} className="snap-start"><ProductCard product={p} /></div>)}
               </div>
             </motion.div>
           </motion.div>

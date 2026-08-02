@@ -213,10 +213,51 @@ async function seedCategories() {
   });
   log('Category: Ceramics');
 
+  const sculptures = await Category.create({
+    name: 'Sculptures',
+    slug: 'sculptures',
+    description: 'Handcrafted stone, wood, and metal sculptures',
+    level: 0,
+    sortOrder: 5,
+    seo: { title: 'Sculptures - KalaBazzar', description: 'Authentic Nepali handcrafted sculptures' },
+  });
+  log('Category: Sculptures');
+
+  const bags = await Category.create({
+    name: 'Bags & Accessories',
+    slug: 'bags-accessories',
+    description: 'Handmade bags, purses, and accessories',
+    level: 0,
+    sortOrder: 6,
+    seo: { title: 'Bags & Accessories - KalaBazzar', description: 'Handcrafted Nepali bags and accessories' },
+  });
+  log('Category: Bags & Accessories');
+
+  const homeDecor = await Category.create({
+    name: 'Home Decor',
+    slug: 'home-decor',
+    description: 'Beautiful handcrafted items for your home',
+    level: 0,
+    sortOrder: 7,
+    seo: { title: 'Home Decor - KalaBazzar', description: 'Handcrafted Nepali home decoration items' },
+  });
+  log('Category: Home Decor');
+
+  const musicalInstruments = await Category.create({
+    name: 'Musical Instruments',
+    slug: 'musical-instruments',
+    description: 'Traditional Nepali musical instruments',
+    level: 0,
+    sortOrder: 8,
+    seo: { title: 'Musical Instruments - KalaBazzar', description: 'Traditional Nepali musical instruments' },
+  });
+  log('Category: Musical Instruments');
+
   return {
     handicrafts, woodCarving, metalWork, textiles,
     jewelry, silverJewelry, beadedJewelry,
     paintings, thangka, mandala, ceramics,
+    sculptures, bags, homeDecor, musicalInstruments,
   };
 }
 
