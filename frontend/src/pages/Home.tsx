@@ -60,13 +60,6 @@ const values = [
   { icon: Leaf, title: 'Sustainability', description: 'Handcrafted products are inherently sustainable. We promote eco-friendly materials and ethical production practices.' },
 ];
 
-const stats = [
-  { value: '500+', label: 'Artisans Supported' },
-  { value: '10,000+', label: 'Handcrafted Products' },
-  { value: '25,000+', label: 'Happy Customers' },
-  { value: '7', label: 'Regions Covered' },
-];
-
 const testimonials = [
   { id: '1', name: 'Anita Sharma', location: 'Kathmandu', comment: 'The handwoven shawl I purchased is absolutely stunning. The quality is exceptional and it arrived beautifully packaged. KalaBazzar has become my go-to for authentic Nepali crafts.', rating: 5 },
   { id: '2', name: 'Rajesh Thapa', location: 'Pokhara', comment: 'I bought a traditional Dhaka topi as a gift. The artisan even added a personalized note. This is what real craftsmanship looks like. Highly recommended!', rating: 5 },
@@ -398,18 +391,7 @@ export default function Home() {
                 KalaBazzar was born from a simple observation: Nepal&apos;s talented artisans — weavers, potters, woodworkers, and craftspeople — possess extraordinary skills passed down through generations, yet many struggled to reach the customers who would treasure their work. Today, KalaBazzar is home to over 500 verified artisans from all seven provinces of Nepal.
               </p>
             </motion.div>
-            <div className="grid md:grid-cols-4 gap-6">
-              {stats.map((s) => (
-                <motion.div key={s.label} variants={fadeInUp}>
-                  <Card variant="elevated" className="text-center p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                    <CardContent className="p-0">
-                      <p className="text-3xl font-heading font-bold text-primary">{s.value}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">{s.label}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+
           </motion.div>
         </div>
       </section>
