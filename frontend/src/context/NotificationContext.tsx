@@ -14,7 +14,6 @@ import { useAuth } from './AuthContext';
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  isLoading: boolean;
   fetchNotifications: () => Promise<void>;
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
@@ -26,36 +25,39 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated } = useAuth();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const authFailedRef = useRef(false);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const fetchNotifications = useCallback(async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || authFailedRef.current) return;
 
-    setIsLoading(true);
     try {
       const { data } = await api.get('/notifications', { params: { limit: 50 } });
       setNotifications(data.data || []);
     } catch {
-      // Silently fail for polling
-    } finally {
-      setIsLoading(false);
+      authFailedRef.current = true;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
   }, [isAuthenticated]);
 
   useEffect(() => {
+    authFailedRef.current = false;
+
     if (isAuthenticated) {
       fetchNotifications();
-
       intervalRef.current = setInterval(fetchNotifications, 30000);
     }
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [isAuthenticated, fetchNotifications]);
@@ -96,7 +98,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       value={{
         notifications,
         unreadCount,
-        isLoading,
         fetchNotifications,
         markAsRead,
         markAllAsRead,
