@@ -267,7 +267,7 @@ export default function Home() {
                 <div className="absolute inset-0 rounded-full border-2 border-primary-foreground/10 animate-[spin_30s_linear_infinite]" />
 
                 {/* Center pottery SVG */}
-                <div className="absolute inset-8 rounded-3xl bg-gradient-to-br from-primary-foreground/10 to-primary-foreground/5 backdrop-blur-sm border border-primary-foreground/10 flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-8 rounded-3xl bg-linear-to-br from-primary-foreground/10 to-primary-foreground/5 backdrop-blur-sm border border-primary-foreground/10 flex items-center justify-center overflow-hidden">
                   <svg viewBox="0 0 200 200" className="w-3/4 h-3/4 text-primary-foreground/60" fill="none" xmlns="http://www.w3.org/2000/svg">
                     {/* Pottery vase */}
                     <path d="M100 30 C100 30 85 50 80 70 C75 90 70 110 65 130 C60 150 70 170 100 175 C130 170 140 150 135 130 C130 110 125 90 120 70 C115 50 100 30 100 30Z" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.1"/>
@@ -292,7 +292,7 @@ export default function Home() {
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
                 >
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-xl bg-linear-to-br from-amber-100 to-amber-200 flex items-center justify-center">
                     <svg viewBox="0 0 40 40" className="w-10 h-10 text-amber-700" fill="none">
                       <circle cx="20" cy="20" r="15" stroke="currentColor" strokeWidth="1.5"/>
                       <path d="M15 15 Q20 10 25 15 Q30 20 25 25 Q20 30 15 25 Q10 20 15 15Z" stroke="currentColor" strokeWidth="1" fill="currentColor" fillOpacity="0.2"/>
@@ -307,7 +307,7 @@ export default function Home() {
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                   className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
                 >
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-xl bg-linear-to-br from-red-100 to-red-200 flex items-center justify-center">
                     <svg viewBox="0 0 40 40" className="w-10 h-10 text-red-700" fill="none">
                       <rect x="8" y="12" width="24" height="18" rx="2" stroke="currentColor" strokeWidth="1.5"/>
                       <path d="M8 18 L20 24 L32 18" stroke="currentColor" strokeWidth="1" fill="currentColor" fillOpacity="0.1"/>
@@ -323,7 +323,7 @@ export default function Home() {
                   transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
                   className="absolute top-1/2 -right-8 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
                 >
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-xl bg-linear-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
                     <svg viewBox="0 0 40 40" className="w-10 h-10 text-emerald-700" fill="none">
                       <path d="M10 30 Q10 15 20 10 Q30 15 30 30" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.1"/>
                       <line x1="20" y1="10" x2="20" y2="30" stroke="currentColor" strokeWidth="1"/>
