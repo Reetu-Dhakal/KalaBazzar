@@ -261,29 +261,15 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="hidden md:block relative"
             >
-              {/* Main craft image container */}
-              <div className="relative w-full aspect-square max-w-md mx-auto">
-                {/* Decorative ring */}
-                <div className="absolute inset-0 rounded-full border-2 border-primary-foreground/10 animate-[spin_30s_linear_infinite]" />
-
-                {/* Center pottery SVG */}
-                <div className="absolute inset-8 rounded-3xl bg-linear-to-br from-primary-foreground/10 to-primary-foreground/5 backdrop-blur-sm border border-primary-foreground/10 flex items-center justify-center overflow-hidden">
-                  <svg viewBox="0 0 200 200" className="w-3/4 h-3/4 text-primary-foreground/60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* Pottery vase */}
-                    <path d="M100 30 C100 30 85 50 80 70 C75 90 70 110 65 130 C60 150 70 170 100 175 C130 170 140 150 135 130 C130 110 125 90 120 70 C115 50 100 30 100 30Z" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.1"/>
-                    <ellipse cx="100" cy="30" rx="20" ry="8" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.05"/>
-                    {/* Decorative pattern on vase */}
-                    <path d="M75 80 Q100 70 125 80" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <path d="M72 95 Q100 85 128 95" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <path d="M70 110 Q100 100 130 110" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <circle cx="85" cy="87" r="3" fill="currentColor" fillOpacity="0.3"/>
-                    <circle cx="100" cy="83" r="3" fill="currentColor" fillOpacity="0.3"/>
-                    <circle cx="115" cy="87" r="3" fill="currentColor" fillOpacity="0.3"/>
-                    {/* Steam/aroma lines */}
-                    <path d="M90 20 Q88 10 92 0" stroke="currentColor" strokeWidth="1" opacity="0.4" fill="none"/>
-                    <path d="M100 18 Q98 8 102 -2" stroke="currentColor" strokeWidth="1" opacity="0.4" fill="none"/>
-                    <path d="M110 20 Q108 10 112 0" stroke="currentColor" strokeWidth="1" opacity="0.4" fill="none"/>
-                  </svg>
+              <div className="relative w-full aspect-[4/5] max-w-md mx-auto">
+                {/* Main image */}
+                <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl border-2 border-primary-foreground/10">
+                  <img
+                    src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=800&q=80"
+                    alt="Nepali artisan shaping clay on a pottery wheel"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 </div>
 
                 {/* Floating product card 1 */}
@@ -292,13 +278,14 @@ export default function Home() {
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
                 >
-                  <div className="w-16 h-16 rounded-xl bg-linear-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                    <svg viewBox="0 0 40 40" className="w-10 h-10 text-amber-700" fill="none">
-                      <circle cx="20" cy="20" r="15" stroke="currentColor" strokeWidth="1.5"/>
-                      <path d="M15 15 Q20 10 25 15 Q30 20 25 25 Q20 30 15 25 Q10 20 15 15Z" stroke="currentColor" strokeWidth="1" fill="currentColor" fillOpacity="0.2"/>
-                    </svg>
+                  <div className="w-14 h-14 rounded-xl overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?w=200&q=80"
+                      alt="Pottery"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <p className="text-[10px] font-medium text-foreground mt-1">Nepali Pottery</p>
+                  <p className="text-[10px] font-medium text-foreground mt-1.5">Nepali Pottery</p>
                 </motion.div>
 
                 {/* Floating product card 2 */}
@@ -307,14 +294,14 @@ export default function Home() {
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                   className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
                 >
-                  <div className="w-16 h-16 rounded-xl bg-linear-to-br from-red-100 to-red-200 flex items-center justify-center">
-                    <svg viewBox="0 0 40 40" className="w-10 h-10 text-red-700" fill="none">
-                      <rect x="8" y="12" width="24" height="18" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-                      <path d="M8 18 L20 24 L32 18" stroke="currentColor" strokeWidth="1" fill="currentColor" fillOpacity="0.1"/>
-                      <path d="M14 8 L14 12 M26 8 L26 12" stroke="currentColor" strokeWidth="1.5"/>
-                    </svg>
+                  <div className="w-14 h-14 rounded-xl overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=200&q=80"
+                      alt="Dhaka Textile"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <p className="text-[10px] font-medium text-foreground mt-1">Dhaka Textile</p>
+                  <p className="text-[10px] font-medium text-foreground mt-1.5">Dhaka Textile</p>
                 </motion.div>
 
                 {/* Floating product card 3 */}
@@ -323,15 +310,14 @@ export default function Home() {
                   transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
                   className="absolute top-1/2 -right-8 bg-white rounded-2xl shadow-xl p-3 border border-white/50"
                 >
-                  <div className="w-16 h-16 rounded-xl bg-linear-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
-                    <svg viewBox="0 0 40 40" className="w-10 h-10 text-emerald-700" fill="none">
-                      <path d="M10 30 Q10 15 20 10 Q30 15 30 30" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.1"/>
-                      <line x1="20" y1="10" x2="20" y2="30" stroke="currentColor" strokeWidth="1"/>
-                      <path d="M15 20 Q20 18 25 20" stroke="currentColor" strokeWidth="1" fill="none"/>
-                      <path d="M13 25 Q20 22 27 25" stroke="currentColor" strokeWidth="1" fill="none"/>
-                    </svg>
+                  <div className="w-14 h-14 rounded-xl overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=200&q=80"
+                      alt="Wood Carving"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <p className="text-[10px] font-medium text-foreground mt-1">Wood Carving</p>
+                  <p className="text-[10px] font-medium text-foreground mt-1.5">Wood Carving</p>
                 </motion.div>
               </div>
             </motion.div>
