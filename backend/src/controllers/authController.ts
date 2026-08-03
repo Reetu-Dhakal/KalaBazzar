@@ -32,31 +32,10 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   emailService.sendEmailVerification(email, verificationToken, firstName)
     .catch(err => console.error('Failed to send verification email:', err));
 
-  const accessToken = generateAccessToken(user._id.toString(), user.role);
-  const refreshToken = generateRefreshToken(user._id.toString());
-
-  await User.findByIdAndUpdate(user._id, { refreshToken });
-
-  res.cookie('accessToken', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 15 * 60 * 1000,
-  });
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
   res.status(201).json({
     success: true,
-    message: 'Registration successful. Please verify your email.',
+    message: 'Registration successful. Please login.',
     data: {
-      accessToken,
       user: {
         _id: user._id,
         email: user.email,

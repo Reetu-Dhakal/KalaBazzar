@@ -130,6 +130,7 @@ export const updateSellerProfile = asyncHandler(async (req: AuthRequest, res: Re
     storeName,
     storeDescription,
     bio,
+    description,
     craftType,
     specialization,
     location,
@@ -158,7 +159,9 @@ export const updateSellerProfile = asyncHandler(async (req: AuthRequest, res: Re
     profile.storeName = storeName;
   }
 
-  if (bio !== undefined) {
+  if (description !== undefined) {
+    profile.description = description;
+  } else if (bio !== undefined) {
     profile.description = bio;
   } else if (storeDescription !== undefined) {
     profile.description = storeDescription;

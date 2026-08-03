@@ -545,6 +545,7 @@ export interface RegisterFormData {
   password: string;
   confirmPassword: string;
   phone?: string;
+  role?: 'customer' | 'seller';
 }
 
 export interface ProductFormData {

@@ -149,6 +149,17 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
     return !!exists;
   });
 
+  let finalVariants = variants || [];
+  if (req.body.images && Array.isArray(req.body.images) && req.body.images.length > 0) {
+    if (finalVariants.length > 0) {
+      finalVariants = finalVariants.map((v: any, i: number) =>
+        i === 0 ? { ...v, images: req.body.images } : v
+      );
+    } else {
+      finalVariants = [{ name: 'Default', price: basePrice || 0, inventory: 0, images: req.body.images }];
+    }
+  }
+
   const product = await Product.create({
     seller: req.user._id,
     name,
@@ -159,7 +170,7 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
     category,
     craft,
     region,
-    variants: variants || [],
+    variants: finalVariants,
     basePrice: basePrice || 0,
     compareAtPrice,
     tags: tags || [],

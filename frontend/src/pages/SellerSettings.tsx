@@ -124,7 +124,11 @@ export default function SellerSettings() {
   const onSubmit = async (data: SettingsForm) => {
     setIsSaving(true);
     try {
-      await api.put('/sellers/profile', data);
+      const { payoutDetails, ...profileData } = data;
+      await api.put('/sellers/profile', profileData);
+      if (payoutDetails) {
+        await api.put('/sellers/payout', payoutDetails);
+      }
       toast.success('Settings saved successfully');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to save settings';
@@ -168,7 +172,7 @@ export default function SellerSettings() {
                 Store Description
               </label>
               <textarea
-                className="flex min-h-[100px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                className="flex min-h-25 w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                 placeholder="Describe your store and what you sell..."
                 {...register('description')}
               />
@@ -188,7 +192,7 @@ export default function SellerSettings() {
                   className="sr-only peer"
                   {...register('isStoreOpen')}
                 />
-                <div className="w-11 h-6 bg-muted peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <div className="w-11 h-6 bg-muted peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
           </CardContent>

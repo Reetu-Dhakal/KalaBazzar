@@ -27,7 +27,7 @@ class EmailService {
 
   async sendEmail(options: EmailOptions): Promise<void> {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.log(`[Email skipped — no SMTP credentials] To: ${options.to}, Subject: ${options.subject}`);
+      console.log('[Email skipped — no SMTP credentials]');
       return;
     }
     try {

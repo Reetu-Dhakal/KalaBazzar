@@ -25,7 +25,7 @@ export const uploadSingle = (fieldName: string) => upload.single(fieldName);
 export const uploadArray = (fieldName: string, maxCount: number = 5) => upload.array(fieldName, maxCount);
 export const uploadFields = (fields: { name: string; maxCount: number }[]) => upload.fields(fields);
 
-export const handleUploadError = (err: Error, req: Request, res: Response, next: NextFunction): void => {
+export const handleUploadError = (err: any, req: Request, res: Response, next: NextFunction): void => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       res.status(400).json({ success: false, message: 'File too large. Maximum size is 10MB.' });
@@ -40,11 +40,11 @@ export const handleUploadError = (err: Error, req: Request, res: Response, next:
       return;
     }
   }
-  
-  if (err.message.includes('Invalid file type')) {
+
+  if (err?.message?.includes('Invalid file type')) {
     res.status(400).json({ success: false, message: err.message });
     return;
   }
-  
+
   next(err);
 };

@@ -19,7 +19,7 @@ import Banner from './models/Banner';
 import Collection from './models/Collection';
 import { UserRole, SellerStatus, ProductStatus, OrderStatus, PaymentMethod, PaymentStatus } from './config/constants';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kala-bazaar';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kalabazaar';
 
 const log = (msg: string) => console.log(`  ${msg}`);
 
@@ -61,7 +61,7 @@ async function seedUsers() {
 
   const customer = await User.create({
     email: 'sita@example.com',
-    password: 'Customer1!',
+    password: 'Customer123!',
     firstName: 'Sita',
     lastName: 'Devii',
     role: UserRole.CUSTOMER,
@@ -1378,7 +1378,7 @@ async function seed(): Promise<void> {
     console.log('\nTest accounts:');
     console.log('  Admin:    admin@kalabazaar.com / Admin123!');
     console.log('  Seller:   hari@example.com / Seller123!');
-    console.log('  Customer: sita@example.com / Customer1!');
+    console.log('  Customer: sita@example.com / Customer123!');
   } catch (error) {
     console.error('\n✗ Seed failed:', error);
     process.exit(1);

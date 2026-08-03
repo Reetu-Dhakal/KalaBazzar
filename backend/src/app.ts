@@ -25,6 +25,7 @@ import bannerRoutes from './routes/banner';
 import homepageRoutes from './routes/homepage';
 import { errorHandler, notFoundHandler } from './utils/ApiError';
 import { apiLimiter } from './middleware/rateLimiter';
+import { handleUploadError } from './middleware/upload';
 
 const app: Application = express();
 
@@ -60,6 +61,7 @@ app.use('/api/banners', bannerRoutes);
 app.use('/api/homepage', homepageRoutes);
 
 app.use('/api', notFoundHandler);
+app.use(handleUploadError);
 app.use(errorHandler);
 
 export default app;

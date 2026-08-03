@@ -7,11 +7,10 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import type { RegisterFormData } from '@/types';
 
 const registerSchema = z
   .object({
@@ -24,7 +23,8 @@ const registerSchema = z
       .min(8, 'Password must be at least 8 characters')
       .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
       .regex(/[a-z]/, 'Must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Must contain at least one number'),
+      .regex(/[0-9]/, 'Must contain at least one number')
+      .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character'),
     confirmPassword: z.string(),
     role: z.enum(['customer', 'seller']),
     acceptTerms: z.literal(true, {
@@ -55,13 +55,7 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 export default function Register() {
   usePageTitle();
   const navigate = useNavigate();
-  const { register: registerUser, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-
-  if (isAuthenticated) {
-    navigate('/', { replace: true });
-    return null;
-  }
 
   const {
     register,
@@ -85,21 +79,21 @@ export default function Register() {
     setIsLoading(true);
     try {
       const { acceptTerms: _, ...formData } = data;
-      const user = await registerUser(formData as RegisterFormData);
-      toast.success('Account created successfully!');
-      if (user?.role === 'admin') {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (user?.role === 'seller') {
-        navigate('/seller/dashboard', { replace: true });
-      } else {
-        navigate('/shop', { replace: true });
-      }
+      await api.post('/auth/register', formData);
+      toast.success('Account created successfully! Please login.');
+      navigate('/login', { replace: true });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Registration failed. Please try again.';
-      toast.error(message);
+      const axiosErr = err as { response?: { data?: { message?: string; errors?: { field: string; message: string }[] } } };
+      const validationErrors = axiosErr.response?.data?.errors;
+      if (validationErrors?.length) {
+        toast.error(validationErrors.map((e) => e.message).join('. '));
+      } else {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Registration failed. Please try again.';
+        toast.error(message);
+      }
     } finally {
       setIsLoading(false);
     }
