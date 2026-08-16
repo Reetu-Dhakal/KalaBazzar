@@ -18,6 +18,7 @@ import {
   Clock,
   Facebook,
   Instagram,
+  Youtube,
   ChevronDown,
   Send,
 } from 'lucide-react';
@@ -28,9 +29,10 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatCurrency } from '@/lib/utils';
+import { CONTACT, SOCIAL_LINKS } from '@/lib/contact';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import type { Product, Category, Review } from '@/types';
+import type { Product, Category, Review, Banner } from '@/types';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -236,6 +238,8 @@ export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [topReviews, setTopReviews] = useState<Review[]>([]);
+  const [heroBanners, setHeroBanners] = useState<Banner[]>([]);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -256,14 +260,20 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsRes, categoriesRes, reviewsRes] = await Promise.allSettled([
+        const [productsRes, categoriesRes, reviewsRes, bannersRes] = await Promise.allSettled([
           api.get('/products/featured'),
           api.get('/categories'),
           api.get('/reviews', { params: { sort: '-rating', limit: 3 } }),
+          api.get('/banners', { params: { position: 'hero' } }),
         ]);
         if (productsRes.status === 'fulfilled') setFeaturedProducts(productsRes.value.data.data || []);
         if (categoriesRes.status === 'fulfilled') setCategories((categoriesRes.value.data.data || []).slice(0, 12));
         if (reviewsRes.status === 'fulfilled') setTopReviews(reviewsRes.value.data.data || []);
+        if (bannersRes.status === 'fulfilled') {
+          const banners = bannersRes.value.data.data || [];
+          setHeroBanners(banners);
+          setActiveBannerIndex(0);
+        }
       } catch {} finally {
         setIsLoadingProducts(false);
         setIsLoadingCategories(false);
@@ -272,14 +282,47 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const handleContactSubmit = (e: FormEvent) => {
+  useEffect(() => {
+    if (heroBanners.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveBannerIndex((i) => (i + 1) % heroBanners.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [heroBanners.length]);
+
+  const getBannerLink = (banner: Banner): string => {
+    if (banner.linkType === 'url') return banner.linkValue || '/shop';
+    if (banner.linkType === 'product') return `/shop/${banner.linkValue}`;
+    if (banner.linkType === 'artisan') return `/store/${banner.linkValue}`;
+    if (banner.linkType === 'category') return `/shop?category=${banner.linkValue}`;
+    if (banner.linkType === 'region') return `/shop?region=${banner.linkValue}`;
+    if (banner.linkType === 'craft') return `/shop?craft=${banner.linkValue}`;
+    if (banner.linkType === 'collection') return `/shop?collection=${banner.linkValue}`;
+    return '/shop';
+  };
+
+  const resolveAlignment = (alignment: string): string => {
+    if (alignment === 'left') return 'text-left items-start';
+    if (alignment === 'right') return 'text-right items-end';
+    return 'text-center items-center';
+  };
+
+  const activeBanner = heroBanners[activeBannerIndex];
+
+  const handleContactSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmittingContact(true);
-    setTimeout(() => {
+    try {
+      await api.post('/contact', contactForm);
       toast.success('Message sent! We will get back to you soon.');
       setContactForm({ name: '', email: '', subject: '', message: '' });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to send your message. Please try again.';
+      toast.error(message);
+    } finally {
       setIsSubmittingContact(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -288,33 +331,100 @@ export default function Home() {
       <section className="relative min-h-[85vh] flex items-center overflow-hidden scroll-mt-20" id="hero">
         {/* Background image */}
         <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1546006200-f8c574598b28?w=1920&q=80&auto=format&fit=crop"
-            alt="Nepali handicrafts"
-            className="w-full h-full object-cover"
-          />
+          {activeBanner ? (
+            <img
+              key={activeBanner._id}
+              src={activeBanner.mobileImage || activeBanner.image}
+              alt={activeBanner.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              src="https://images.unsplash.com/photo-1546006200-f8c574598b28?w=1920&q=80&auto=format&fit=crop"
+              alt="Nepali handicrafts"
+              className="w-full h-full object-cover"
+            />
+          )}
           {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-linear-to-r from-[#1C1917]/90 via-[#1C1917]/70 to-[#1C1917]/40" />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundColor: activeBanner
+                ? `${activeBanner.backgroundColor || '#1C1917'}${Math.round((activeBanner.overlayOpacity ?? 0.7) * 255).toString(16).padStart(2, '0')}`
+                : undefined,
+            }}
+          />
+          {!activeBanner && (
+            <div className="absolute inset-0 bg-linear-to-r from-[#1C1917]/90 via-[#1C1917]/70 to-[#1C1917]/40" />
+          )}
         </div>
 
         <div className="relative container mx-auto px-4 py-20 md:py-32">
-          <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-2xl">
-            <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-heading text-white leading-tight">
-              Discover Authentic Nepali Crafts
-            </motion.h1>
-            <motion.p variants={fadeInUp} className="mt-6 text-lg text-white/70 max-w-lg">
-              Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal&apos;s rich cultural heritage.
-            </motion.p>
-            <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap gap-4">
-              <Button asChild size="lg" className="bg-secondary text-white hover:bg-secondary/90">
-                <Link to="/shop">Shop Now <ArrowRight className="h-4 w-4" /></Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
-                <Link to="/seller/apply">Become an Artisan</Link>
-              </Button>
+          {activeBanner ? (
+            <motion.div
+              key={activeBanner._id + activeBannerIndex}
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              className={`max-w-2xl flex flex-col ${resolveAlignment(activeBanner.alignment)}`}
+              style={{ color: activeBanner.textColor || '#FFFFFF' }}
+            >
+              <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-heading leading-tight">
+                {activeBanner.title}
+              </motion.h1>
+              {activeBanner.subtitle && (
+                <motion.p variants={fadeInUp} className="mt-4 text-xl text-white/80 max-w-lg">
+                  {activeBanner.subtitle}
+                </motion.p>
+              )}
+              {(activeBanner.description || activeBanner.buttonText) && (
+                <motion.div variants={fadeInUp} className="mt-6 flex flex-wrap gap-4">
+                  {activeBanner.buttonText && (
+                    <Button asChild size="lg" className="bg-secondary text-white hover:bg-secondary/90">
+                      <Link to={getBannerLink(activeBanner)}>{activeBanner.buttonText} <ArrowRight className="h-4 w-4" /></Link>
+                    </Button>
+                  )}
+                  {activeBanner.description && (
+                    <span className="text-white/70 text-base">{activeBanner.description}</span>
+                  )}
+                </motion.div>
+              )}
             </motion.div>
-          </motion.div>
+          ) : (
+            <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-2xl">
+              <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-heading text-white leading-tight">
+                Discover Authentic Nepali Crafts
+              </motion.h1>
+              <motion.p variants={fadeInUp} className="mt-6 text-lg text-white/70 max-w-lg">
+                Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal&apos;s rich cultural heritage.
+              </motion.p>
+              <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap gap-4">
+                <Button asChild size="lg" className="bg-secondary text-white hover:bg-secondary/90">
+                  <Link to="/shop">Shop Now <ArrowRight className="h-4 w-4" /></Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                  <Link to="/seller/apply">Become an Artisan</Link>
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
         </div>
+
+        {/* Carousel navigation dots */}
+        {heroBanners.length > 1 && (
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            {heroBanners.map((b, i) => (
+              <button
+                key={b._id}
+                onClick={() => setActiveBannerIndex(i)}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  i === activeBannerIndex ? 'w-8 bg-secondary' : 'w-2.5 bg-white/50 hover:bg-white/80'
+                }`}
+                aria-label={`Go to banner ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ─── FEATURES ─── */}
@@ -553,7 +663,7 @@ export default function Home() {
                   <Link to="/#contact">Contact Support</Link>
                 </Button>
                 <Button asChild variant="ghost">
-                  <a href="mailto:support@kalabazzar.com">Email Us</a>
+                  <a href={CONTACT.emailHref}>Email Us</a>
                 </Button>
               </div>
             </motion.div>
@@ -594,10 +704,10 @@ export default function Home() {
                   <CardContent className="p-6 space-y-4">
                     <h3 className="font-heading text-lg font-semibold text-foreground">Contact Information</h3>
                     {[
-                      { icon: Mail, label: 'Email', value: 'support@kalabazaar.com', href: 'mailto:support@kalabazaar.com' },
-                      { icon: Phone, label: 'Phone', value: '+977-1-4567890', href: 'tel:+97714567890' },
-                      { icon: MapPin, label: 'Address', value: 'Kathmandu, Nepal', href: '' },
-                      { icon: Clock, label: 'Hours', value: 'Sun-Fri: 9AM - 6PM', href: '' },
+                      { icon: Mail, label: 'Email', value: CONTACT.email, href: CONTACT.emailHref },
+                      { icon: Phone, label: 'Phone', value: CONTACT.phone, href: CONTACT.phoneHref },
+                      { icon: MapPin, label: 'Address', value: CONTACT.address, href: '' },
+                      { icon: Clock, label: 'Hours', value: CONTACT.hours, href: '' },
                     ].map((c) => (
                       <div key={c.label} className="flex items-start gap-3">
                         <c.icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
@@ -613,11 +723,14 @@ export default function Home() {
                   <CardContent className="p-6">
                     <h3 className="font-heading text-lg font-semibold text-foreground mb-3">Follow Us</h3>
                     <div className="flex gap-3">
-                      <a href="https://facebook.com/kalabazaar" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
+                      <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
                         <Facebook className="h-5 w-5" />
                       </a>
-                      <a href="https://instagram.com/kalabazaar" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
+                      <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
                         <Instagram className="h-5 w-5" />
+                      </a>
+                      <a href={SOCIAL_LINKS.youtube} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
+                        <Youtube className="h-5 w-5" />
                       </a>
                     </div>
                   </CardContent>

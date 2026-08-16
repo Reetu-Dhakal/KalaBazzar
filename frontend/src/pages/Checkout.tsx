@@ -147,7 +147,13 @@ export default function Checkout() {
           orderId,
           paymentMethod,
         });
-        const redirectUrl = paymentData.data.redirectUrl;
+        const payment = paymentData.data?.data;
+        const redirectUrl = payment?.redirectUrl;
+        if (payment?.alreadyPaid) {
+          await clearCart();
+          navigate(`/order-success/${orderId}`);
+          return;
+        }
         if (redirectUrl) {
           window.location.href = redirectUrl;
           return;

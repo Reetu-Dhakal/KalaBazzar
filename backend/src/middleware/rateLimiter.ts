@@ -53,3 +53,9 @@ export const contactLimiter = createRateLimiter({
   max: 5,
   message: 'Too many contact form submissions, please try again later.',
 });
+
+export const newsletterLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  message: 'Too many subscription attempts, please try again later.',
+});

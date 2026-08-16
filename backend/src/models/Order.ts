@@ -47,6 +47,11 @@ export interface IOrder extends Document {
     transactionId?: string;
     paidAt?: Date;
     failureReason?: string;
+    pidx?: string;
+    purchaseOrderId?: string;
+    transactionUuid?: string;
+    initiatedAt?: Date;
+    failedAt?: Date;
   };
   shippingAddress: IShippingAddress;
   billingAddress?: IShippingAddress;
@@ -58,6 +63,11 @@ export interface IOrder extends Document {
   cancellationReason?: string;
   refundAmount?: number;
   refundReason?: string;
+  refundStatus?: 'none' | 'requested' | 'approved' | 'rejected';
+  refundRequestedAt?: Date;
+  refundReviewedAt?: Date;
+  refundReviewNote?: string;
+  refundedAt?: Date;
   statusHistory: {
     status: OrderStatus;
     timestamp: Date;
@@ -147,6 +157,11 @@ const orderSchema = new Schema<IOrder>({
     transactionId: String,
     paidAt: Date,
     failureReason: String,
+    pidx: String,
+    purchaseOrderId: String,
+    transactionUuid: String,
+    initiatedAt: Date,
+    failedAt: Date,
   },
   shippingAddress: { type: addressSchema, required: true },
   billingAddress: addressSchema,
@@ -158,6 +173,15 @@ const orderSchema = new Schema<IOrder>({
   cancellationReason: String,
   refundAmount: { type: Number, min: 0 },
   refundReason: String,
+  refundStatus: {
+    type: String,
+    enum: ['none', 'requested', 'approved', 'rejected'],
+    default: 'none',
+  },
+  refundRequestedAt: Date,
+  refundReviewedAt: Date,
+  refundReviewNote: String,
+  refundedAt: Date,
   statusHistory: {
     type: [statusHistorySchema],
     default: [],

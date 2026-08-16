@@ -7,7 +7,7 @@
 ## Stack
 - **Backend:** Express + MongoDB (Mongoose) + TypeScript, JWT access/refresh tokens, HTTP-only cookies, Cloudinary, Multer, Helmet, express-validator, Nodemailer
 - **Frontend:** React 19 + TypeScript + Vite 6 + Tailwind CSS v4 (`@tailwindcss/vite` plugin), React Router v7, TanStack Query v5, Axios, React Hook Form + Zod, Framer Motion, Recharts, Lucide React, react-hot-toast
-- **TypeScript throughout, no test framework, no CI**
+- **TypeScript throughout, no CI. Backend unit tests run with Vitest (`npm run test` in backend/) — no MongoDB required.**
 
 ## Quick start
 ```bash
@@ -25,6 +25,7 @@ cd backend && npm run seed
 | `backend/` | `npm run build` | TypeScript compile |
 | `backend/` | `npm start` | Production start |
 | `backend/` | `npm run seed` | Seed database |
+| `backend/` | `npm run test` | Vitest unit tests (no DB needed) |
 | `frontend/` | `npm run dev` | Vite dev server |
 | `frontend/` | `npm run build` | TypeScript + Vite build |
 | `frontend/` | `npm run lint` | oxlint — must pass before commits |
@@ -32,13 +33,13 @@ cd backend && npm run seed
 ## Architecture
 ### Backend (`backend/src/`)
 - `server.ts` — entrypoint, connects DB, starts Express
-- `app.ts` — Express app setup, middleware, route mounting (18 route groups)
+- `app.ts` — Express app setup, middleware, route mounting (19 route groups)
 - `config/` — DB connection, Cloudinary config, constants (enums)
-- `models/` — 16 Mongoose models (User, SellerProfile, Product, Category, Craft, Region, Collection, Order, Review, Cart, Wishlist, Story, Notification, Banner, HomepageSettings, Coupon)
+- `models/` — 17 Mongoose models (User, SellerProfile, Product, Category, Craft, Region, Collection, Order, Review, Cart, Wishlist, Story, Notification, Banner, HomepageSettings, Coupon, Newsletter)
 - `middleware/` — auth (authenticate, authorize, optionalAuth), validation (express-validator), upload (multer), errorHandler, rateLimiter
-- `controllers/` — 17 controllers (auth, seller, product, order, cart, wishlist, review, category, craft, region, story, notification, admin, upload, coupon, banner, homepage, collection)
+- `controllers/` — 18 controllers (auth, seller, product, order, cart, wishlist, review, category, craft, region, story, notification, admin, upload, coupon, banner, homepage, collection, newsletter)
 - `services/` — emailService (Nodemailer)
-- `routes/` — 18 route files mounted in app.ts
+- `routes/` — 19 route files mounted in app.ts
 - `validators/` — express-validator schemas (auth, seller, product, order, category, craft, region)
 - `utils/` — ApiError, ApiResponse, tokenGenerator, pagination, helpers
 
@@ -47,11 +48,12 @@ cd backend && npm run seed
 - `App.tsx` — 30+ React.lazy routes wrapped in Suspense
 - `lib/api.ts` — Axios instance, auto-JWT Bearer header, 401 refresh interceptor
 - `lib/utils.ts` — cn(), formatCurrency(), formatDate(), truncateText()
+- `lib/contact.ts` — Centralized CONTACT (email/phone/address/hours) + SOCIAL_LINKS used by Home, Footer, OrderInvoice
 - `types/index.ts` — Complete TypeScript type definitions
 - `context/` — AuthContext, NotificationContext (30s polling), CartContext (debounced updateQuantity), WishlistContext (move-to-cart/clear)
 - `hooks/` — usePageTitle (SEO), useRecentlyViewed (localStorage, max 8 items)
-- `pages/` — Home, Login, Register, ForgotPassword, ResetPassword, Shop, ProductDetail, CartPage, WishlistPage, RecentlyViewed, Checkout, OrderSuccess, OrdersPage, OrderDetail, OrderInvoice, ProfilePage, SellerApplication, SellerDashboard, SellerProducts, SellerProductForm, SellerOrders, SellerEarnings, SellerSettings, StorePage, CategoryPage, AdminDashboard, AdminSellers, AdminCoupons, AdminOrders, AdminReviews, AdminUsers, About, Contact, FAQ, Privacy, Terms, NotFound
-- `components/ui/` — Button, Card, Input, Badge, Skeleton
+- `pages/` — Home, Login, Register, VerifyEmail, ForgotPassword, ResetPassword, Shop, ProductDetail, CartPage, WishlistPage, RecentlyViewed, Checkout, OrderSuccess, PaymentMock, PaymentReturn, OrdersPage, OrderDetail, OrderInvoice, ProfilePage, SellerApplication, SellerDashboard, SellerProducts, SellerProductForm, SellerOrders, SellerEarnings, SellerSettings, StorePage, CategoryPage, AdminDashboard, AdminSellers, AdminCoupons, AdminCategories, AdminCrafts, AdminRegions, AdminBanners, AdminCollections, AdminHomepage, AdminOrders, AdminReviews, AdminUsers, About, Contact, FAQ, Privacy, Terms, NotFound
+- `components/ui/` — Button, Card, Input, Badge, Skeleton, ImageField (upload or paste URL)
 - `components/layout/` — Layout, Navbar, Footer, CartDrawer, NotificationBell, AdminLayout
 - `components/auth/` — ProtectedRoute, AdminRoute
 - `components/ProductCard.tsx` — Reusable product card
@@ -73,9 +75,12 @@ cd backend && npm run seed
 5. Seller can create/publish/manage products in dashboard, view orders, update settings, view earnings, add tracking
 
 ### Payment gateways
-- Khalti: initiate → redirect → verify (stub services)
-- eSewa: initiate → callback → verify (stub services)
+- Khalti: `POST /api/payment/initiate` (real Khalti ePayment v2 initiate) → redirect → lookup/verify; pidx saved to order before redirect
+- eSewa: initiate returns auto-submitting pay-form page → POST form to eSewa → `GET /api/payment/esewa/callback` verifies signature + status API → redirect
 - COD: no gateway call, paymentStatus stays 'Pending'
+- `PAYMENT_MODE=mock` (default): no real gateway calls — checkout redirects to `/payment/mock/:method/:orderId` for simulation; `PAYMENT_MODE=live` enables real gateways (needs `KHALTI_SECRET_KEY`, `ESEWA_MERCHANT_CODE`, `ESEWA_SECRET_KEY`)
+- Contact form: `POST /api/contact` emails submitted form to support inbox
+- Newsletter: `POST /api/newsletter` (public, rate-limited subscribe), `POST /api/newsletter/unsubscribe`, admin `GET /api/newsletter` (searchable/paginated) + `DELETE /api/newsletter/:id`; Footer subscribe form wired to real API
 
 ## Complete Feature Inventory
 
@@ -125,6 +130,7 @@ cd backend && npm run seed
 - Cancel with reason modal
 - Printable invoice page (`/orders/:id/invoice`) with print styles
 - Tracking number displayed on detail page
+- Refund flow: customer requests refund on delivered order (`POST /api/orders/:id/refund-request`), admin reviews (approve/reject with note + amount) at `/admin/orders` (`PUT /api/admin/orders/:id/refund`); refund status badges, `Refund Requests` filter; emails + notifications on both actions
 
 ### Seller Dashboard
 - Stats cards (products, orders, sales, rating)
@@ -144,6 +150,8 @@ cd backend && npm run seed
 - Reviews management — table with star rating, delete action
 - Users management — table with role/status badges, search filter
 - AdminLayout with collapsible sidebar navigation
+- Catalog management — Categories (flat tree with parent/sub-levels), Crafts (techniques, materials, region), Regions (districts, province), Banners (position, link, colours, scheduling), Collections (products/artisans by ID), Homepage settings (hero, featured content by ID, trust badges, newsletter, footer, SEO) — CRUD tables + modal forms, image upload via `/upload/single` + ImageField
+- Banners with `position=hero` render as an auto-rotating carousel on the Home hero; `isActive=all` on GET endpoints returns inactive records for admin views
 
 ### Public Pages
 - Home — hero banner, features grid, category grid, featured products, recently viewed, testimonials, artisan CTA

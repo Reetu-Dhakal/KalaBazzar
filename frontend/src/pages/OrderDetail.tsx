@@ -12,6 +12,8 @@ import {
   XCircle,
   RotateCcw,
   Printer,
+  BadgeDollarSign,
+  RefreshCcw,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/Button';
@@ -64,6 +66,8 @@ export default function OrderDetail() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [customReason, setCustomReason] = useState('');
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundReason, setRefundReason] = useState('');
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', id],
@@ -98,6 +102,30 @@ export default function OrderDetail() {
       return;
     }
     cancelMutation.mutate(reason);
+  };
+
+  const refundMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      await api.post(`/orders/${id}/refund-request`, { reason });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['order', id] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast.success('Refund request submitted. We will review it shortly.');
+      setShowRefundModal(false);
+      setRefundReason('');
+    },
+    onError: () => {
+      toast.error('Failed to submit refund request');
+    },
+  });
+
+  const handleRequestRefund = () => {
+    if (refundReason.trim().length < 10) {
+      toast.error('Please provide a refund reason (at least 10 characters)');
+      return;
+    }
+    refundMutation.mutate(refundReason);
   };
 
   const getStepIndex = (status: OrderStatus) =>
@@ -227,6 +255,48 @@ export default function OrderDetail() {
                 {order.cancelledAt && (
                   <p className="text-xs text-muted-foreground mt-1">
                     Cancelled on {formatDate(order.cancelledAt)}
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {order.refundStatus && order.refundStatus !== 'none' && (
+        <Card className="mb-6 border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <RefreshCcw
+                className={`h-5 w-5 ${
+                  order.refundStatus === 'approved'
+                    ? 'text-emerald-600'
+                    : order.refundStatus === 'rejected'
+                    ? 'text-destructive'
+                    : 'text-primary'
+                }`}
+              />
+              <div>
+                <p className="font-medium text-foreground">
+                  {order.refundStatus === 'requested'
+                    ? 'Refund request pending review'
+                    : order.refundStatus === 'approved'
+                    ? 'Refund approved'
+                    : 'Refund request rejected'}
+                </p>
+                {order.refundReason && (
+                  <p className="text-sm text-muted-foreground">
+                    Reason: {order.refundReason}
+                  </p>
+                )}
+                {order.refundStatus === 'approved' && order.refundAmount != null && (
+                  <p className="text-sm font-medium text-emerald-600">
+                    Amount refunded: {formatCurrency(order.refundAmount)}
+                  </p>
+                )}
+                {order.refundReviewNote && (
+                  <p className="text-sm text-muted-foreground">
+                    Review note: {order.refundReviewNote}
                   </p>
                 )}
               </div>
@@ -399,8 +469,68 @@ export default function OrderDetail() {
               Cancel Order
             </Button>
           )}
+
+          {order.status === 'delivered' && (!order.refundStatus || order.refundStatus === 'none') && (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowRefundModal(true)}
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Request Refund
+            </Button>
+          )}
         </div>
       </div>
+
+      {showRefundModal && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-black/50"
+            onClick={() => setShowRefundModal(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle>Request Refund</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <BadgeDollarSign className="h-4 w-4" />
+                  <span>
+                    Refund amount: {formatCurrency(order.totalAmount)} via{' '}
+                    {order.paymentMethod.toUpperCase()}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Please tell us why you would like a refund — our team will review your
+                  request shortly.
+                </p>
+                <textarea
+                  placeholder="Describe the reason for your refund request..."
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 resize-none"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setShowRefundModal(false)}>
+                    Close
+                  </Button>
+                  <Button
+                    onClick={handleRequestRefund}
+                    isLoading={refundMutation.isPending}
+                    disabled={refundReason.trim().length < 10}
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                    Submit Request
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
 
       {showCancelModal && (
         <>

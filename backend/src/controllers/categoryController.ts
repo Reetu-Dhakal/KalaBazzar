@@ -12,9 +12,9 @@ export const getCategories = asyncHandler(async (req: Request, res: Response) =>
   const { includeProductCount, isActive } = req.query;
 
   const filter: Record<string, any> = {};
-  if (isActive !== undefined) {
+  if (isActive !== undefined && isActive !== 'all') {
     filter.isActive = isActive === 'true';
-  } else {
+  } else if (isActive === undefined) {
     filter.isActive = true;
   }
 

@@ -9,6 +9,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 const Home = lazy(() => import('@/pages/Home'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
+const VerifyEmail = lazy(() => import('@/pages/VerifyEmail'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const Shop = lazy(() => import('@/pages/Shop'));
@@ -16,6 +17,8 @@ const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
 const CartPage = lazy(() => import('@/pages/CartPage'));
 const Checkout = lazy(() => import('@/pages/Checkout'));
 const OrderSuccess = lazy(() => import('@/pages/OrderSuccess'));
+const PaymentMock = lazy(() => import('@/pages/PaymentMock'));
+const PaymentReturn = lazy(() => import('@/pages/PaymentReturn'));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
 const OrderDetail = lazy(() => import('@/pages/OrderDetail'));
 const OrderInvoice = lazy(() => import('@/pages/OrderInvoice'));
@@ -34,6 +37,12 @@ const AdminUsers = lazy(() => import('@/pages/AdminUsers'));
 const AdminOrders = lazy(() => import('@/pages/AdminOrders'));
 const AdminReviews = lazy(() => import('@/pages/AdminReviews'));
 const AdminCoupons = lazy(() => import('@/pages/AdminCoupons'));
+const AdminCategories = lazy(() => import('@/pages/AdminCategories'));
+const AdminCrafts = lazy(() => import('@/pages/AdminCrafts'));
+const AdminRegions = lazy(() => import('@/pages/AdminRegions'));
+const AdminBanners = lazy(() => import('@/pages/AdminBanners'));
+const AdminCollections = lazy(() => import('@/pages/AdminCollections'));
+const AdminHomepage = lazy(() => import('@/pages/AdminHomepage'));
 const CategoryPage = lazy(() => import('@/pages/CategoryPage'));
 const WishlistPage = lazy(() => import('@/pages/WishlistPage'));
 const RecentlyViewed = lazy(() => import('@/pages/RecentlyViewed'));
@@ -61,6 +70,7 @@ export default function App() {
 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
@@ -69,6 +79,8 @@ export default function App() {
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-success/:id" element={<OrderSuccess />} />
+            <Route path="/payment/mock/:method/:orderId" element={<PaymentMock />} />
+            <Route path="/payment/return" element={<PaymentReturn />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
             <Route path="/orders/:id/invoice" element={<OrderInvoice />} />
@@ -91,6 +103,12 @@ export default function App() {
               <Route path="/admin/orders" element={<AdminOrders />} />
               <Route path="/admin/reviews" element={<AdminReviews />} />
               <Route path="/admin/coupons" element={<AdminCoupons />} />
+              <Route path="/admin/categories" element={<AdminCategories />} />
+              <Route path="/admin/crafts" element={<AdminCrafts />} />
+              <Route path="/admin/regions" element={<AdminRegions />} />
+              <Route path="/admin/banners" element={<AdminBanners />} />
+              <Route path="/admin/collections" element={<AdminCollections />} />
+              <Route path="/admin/homepage" element={<AdminHomepage />} />
             </Route>
           </Route>
 

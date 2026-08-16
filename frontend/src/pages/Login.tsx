@@ -118,6 +118,15 @@ export default function Login() {
                 </Link>
               </div>
 
+              <div className="text-center">
+                <Link
+                  to="/verify-email"
+                  className="text-xs text-muted-foreground hover:text-primary hover:underline"
+                >
+                  Didn&apos;t receive your verification email?
+                </Link>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full"

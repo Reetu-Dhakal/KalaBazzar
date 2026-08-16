@@ -4,11 +4,15 @@ import {
   ChevronLeft,
   ChevronRight,
   ShoppingCart,
+  RefreshCcw,
+  Check,
+  X,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatCurrency, formatDate, getStatusColor } from '@/lib/utils';
 import api from '@/lib/api';
@@ -23,9 +27,10 @@ const statusFilters: { label: string; value: string }[] = [
   { label: 'Shipped', value: 'shipped' },
   { label: 'Delivered', value: 'delivered' },
   { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Refund Requests', value: 'requested' },
 ];
 
-const allStatuses: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+const allStatuses: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
 
 function TableSkeleton() {
   return (
@@ -47,11 +52,21 @@ export default function AdminOrders() {
   const [page, setPage] = useState(1);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
+  // Refund review modal state
+  const [reviewing, setReviewing] = useState<Order | null>(null);
+  const [refundAmount, setRefundAmount] = useState<number>(0);
+  const [reviewNote, setReviewNote] = useState('');
+  const [reviewLoading, setReviewLoading] = useState(false);
+
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     try {
       const params: Record<string, string | number> = { page, limit: 10 };
-      if (statusFilter) params.status = statusFilter;
+      if (statusFilter === 'requested') {
+        params.refundStatus = 'requested';
+      } else if (statusFilter) {
+        params.status = statusFilter;
+      }
       if (search.trim()) params.search = search.trim();
       const { data } = await api.get('/admin/orders', { params });
       setOrders(data.data || []);
@@ -84,6 +99,29 @@ export default function AdminOrders() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
+  };
+
+  const openReviewRefund = (order: Order) => {
+    setReviewing(order);
+    setRefundAmount(order.totalAmount);
+    setReviewNote('');
+  };
+
+  const handleReviewRefund = async (action: 'approve' | 'reject') => {
+    if (!reviewing) return;
+    setReviewLoading(true);
+    try {
+      const body: Record<string, string | number> = { action, note: reviewNote };
+      if (action === 'approve') body.amount = Number(refundAmount) || reviewing.totalAmount;
+      await api.put(`/admin/orders/${reviewing._id}/refund`, body);
+      toast.success(action === 'approve' ? 'Refund approved' : 'Refund request rejected');
+      setReviewing(null);
+      fetchOrders();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to review refund');
+    } finally {
+      setReviewLoading(false);
+    }
   };
 
   return (
@@ -142,6 +180,7 @@ export default function AdminOrders() {
                     <th className="text-left text-xs font-medium text-muted-foreground p-4">Items</th>
                     <th className="text-left text-xs font-medium text-muted-foreground p-4">Total</th>
                     <th className="text-left text-xs font-medium text-muted-foreground p-4">Status</th>
+                    <th className="text-left text-xs font-medium text-muted-foreground p-4">Refund</th>
                     <th className="text-left text-xs font-medium text-muted-foreground p-4">Date</th>
                     <th className="text-right text-xs font-medium text-muted-foreground p-4">Actions</th>
                   </tr>
@@ -164,11 +203,39 @@ export default function AdminOrders() {
                         <td className="p-4">
                           <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
                         </td>
+                        <td className="p-4">
+                          {order.refundStatus && order.refundStatus !== 'none' ? (
+                            <Badge
+                              className={
+                                order.refundStatus === 'approved'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                                  : order.refundStatus === 'rejected'
+                                  ? 'bg-red-50 text-red-700 border border-red-200/60'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                              }
+                            >
+                              {order.refundStatus}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </td>
                         <td className="p-4 text-sm text-muted-foreground">
                           {formatDate(order.createdAt)}
                         </td>
                         <td className="p-4">
                           <div className="flex items-center justify-end gap-1">
+                            {order.refundStatus === 'requested' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openReviewRefund(order)}
+                                title="Review refund request"
+                              >
+                                <RefreshCcw className="h-3.5 w-3.5" />
+                                Review
+                              </Button>
+                            )}
                             <select
                               value={order.status}
                               onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
@@ -222,6 +289,70 @@ export default function AdminOrders() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Refund review modal */}
+      {reviewing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Review Refund Request</CardTitle>
+              <Button variant="ghost" size="icon-sm" onClick={() => setReviewing(null)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-foreground">
+                Order <span className="font-medium text-primary">{reviewing.orderNumber}</span>
+              </p>
+              {reviewing.refundReason && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Customer reason</p>
+                  <p className="text-sm text-foreground bg-muted/40 rounded-lg p-3">{reviewing.refundReason}</p>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Order total</span>
+                <span className="font-medium">{formatCurrency(reviewing.totalAmount)}</span>
+              </div>
+              <Input
+                label="Refund amount (NPR)"
+                type="number"
+                min="0"
+                max={reviewing.totalAmount}
+                value={refundAmount || ''}
+                onChange={(e) => setRefundAmount(Number(e.target.value))}
+              />
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Review note (optional)</label>
+                <textarea
+                  value={reviewNote}
+                  onChange={(e) => setReviewNote(e.target.value)}
+                  rows={3}
+                  placeholder="Visible to the customer (set when rejecting)"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="destructive"
+                  onClick={() => handleReviewRefund('reject')}
+                  isLoading={reviewLoading}
+                >
+                  <X className="h-4 w-4" />
+                  Reject
+                </Button>
+                <Button
+                  onClick={() => handleReviewRefund('approve')}
+                  isLoading={reviewLoading}
+                >
+                  <Check className="h-4 w-4" />
+                  Approve Refund
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

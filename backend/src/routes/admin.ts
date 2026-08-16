@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getDashboardStats, getAllUsers, getUserById, updateUserStatus, getSellerApplications, approveSellerApplication, rejectSellerApplication, getAllOrders, updateOrderStatus, getCoupons, createCoupon, updateCoupon, deleteCoupon } from '../controllers/adminController';
+import { reviewRefund } from '../controllers/orderController';
 import { authenticate, authorize } from '../middleware/auth';
 import { body } from 'express-validator';
 import { validate } from '../middleware/validation';
@@ -20,6 +21,7 @@ router.put('/sellers/:id/reject', rejectSellerApplication);
 
 router.get('/orders', getAllOrders);
 router.put('/orders/:id/status', updateOrderStatus);
+router.put('/orders/:id/refund', reviewRefund);
 
 router.get('/coupons', getCoupons);
 router.post('/coupons', validate([

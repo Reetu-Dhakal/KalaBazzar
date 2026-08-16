@@ -154,6 +154,33 @@ class EmailService {
     });
   }
 
+  async sendRefundNotification(
+    to: string,
+    orderNumber: string,
+    firstName: string,
+    status: 'requested' | 'approved' | 'rejected',
+    amount?: number,
+    note?: string,
+  ): Promise<void> {
+    const messages = {
+      requested: 'We have received your refund request and will review it shortly.',
+      approved: `Your refund of NPR ${(amount || 0).toLocaleString()} has been processed.`,
+      rejected: `Unfortunately, your refund request was not approved.${note ? ` Reason: ${note}` : ''}`,
+    };
+
+    await this.sendEmail({
+      to,
+      subject: `Refund Update - ${orderNumber}`,
+      html: this.getTemplate('order-status', {
+        firstName,
+        title: 'Refund Update',
+        message: `Your order <strong>${orderNumber}</strong> — ${messages[status]}`,
+        ctaUrl: `${process.env.CLIENT_URL}/orders/${orderNumber}`,
+        ctaText: 'View Order',
+      }),
+    });
+  }
+
   async sendSellerApplicationReceived(to: string, firstName: string): Promise<void> {
     await this.sendEmail({
       to,
@@ -213,6 +240,28 @@ class EmailService {
         ctaUrl: `${process.env.CLIENT_URL}/seller/reviews`,
         ctaText: 'View Reviews',
       }),
+    });
+  }
+
+  async sendContactFormNotification(data: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }): Promise<void> {
+    await this.sendEmail({
+      to: process.env.SUPPORT_EMAIL || process.env.SMTP_USER || '',
+      subject: `New Contact Form: ${data.subject || 'Inquiry'}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #7C2D12;">New Contact Form Submission</h2>
+          <p><strong>Name:</strong> ${data.name}</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Subject:</strong> ${data.subject}</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 16px 0;">
+          <p style="white-space: pre-wrap;">${data.message}</p>
+        </div>
+      `,
     });
   }
 }

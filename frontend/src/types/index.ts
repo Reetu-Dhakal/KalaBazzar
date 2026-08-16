@@ -222,6 +222,7 @@ export interface Category {
     description?: string;
   };
   productCount: number;
+  children?: Category[];
   createdAt: string;
   updatedAt: string;
 }
@@ -242,6 +243,7 @@ export interface Craft {
   isActive: boolean;
   isFeatured: boolean;
   sortOrder: number;
+  productCount?: number;
   seo?: {
     title?: string;
     description?: string;
@@ -349,6 +351,11 @@ export interface Order {
   trackingNumber?: string;
   refundAmount?: number;
   refundReason?: string;
+  refundStatus?: 'none' | 'requested' | 'approved' | 'rejected';
+  refundRequestedAt?: string;
+  refundReviewedAt?: string;
+  refundReviewNote?: string;
+  refundedAt?: string;
   statusHistory: StatusHistory[];
   createdAt: string;
   updatedAt: string;
@@ -589,8 +596,64 @@ export interface AddressFormData {
   isDefault?: boolean;
 }
 
+export interface HomepageSettings {
+  hero: {
+    headline: string;
+    subheadline: string;
+    ctaText: string;
+    ctaLink: string;
+    backgroundImage: string;
+    mobileBackgroundImage?: string;
+    overlayOpacity: number;
+    textAlignment: 'left' | 'center' | 'right';
+  };
+  featuredCategories: Array<string | { _id: string; name: string; slug: string; image?: string }>;
+  featuredCollections: Array<string | { _id: string; name: string; slug: string; image?: string }>;
+  featuredArtisans: Array<string | { _id: string; storeName: string; slug: string; logo?: string }>;
+  featuredProducts: Array<string | { _id: string; name: string; slug: string; basePrice: number; images: string[] }>;
+  artisanSpotlight: {
+    title: string;
+    description: string;
+    artisans: string[];
+  };
+  storySection: {
+    title: string;
+    description: string;
+    stories: string[];
+  };
+  trustBadges: {
+    icon: string;
+    title: string;
+    description: string;
+  }[];
+  newsletter: {
+    headline: string;
+    subheadline: string;
+    placeholder: string;
+    buttonText: string;
+  };
+  footer: {
+    aboutText: string;
+    socialLinks: {
+      facebook?: string;
+      instagram?: string;
+      twitter?: string;
+      youtube?: string;
+    };
+    quickLinks: { label: string; url: string }[];
+    policies: { label: string; url: string }[];
+  };
+  seo: {
+    title: string;
+    description: string;
+    ogImage?: string;
+  };
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SellerApplicationFormData {
-  storeName: string;
   description?: string;
   region: string;
   crafts: string[];

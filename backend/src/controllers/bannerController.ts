@@ -6,20 +6,26 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { AuthRequest } from '../middleware/auth';
 
 export const getBanners = asyncHandler(async (req: Request, res: Response) => {
-  const { position, targetAudience } = req.query;
+  const { position, targetAudience, isActive } = req.query;
 
-  const filter: any = { isActive: true };
+  const filter: any = {};
+
+  if (isActive === 'all') {
+    // admin view — return all banners regardless of status/window
+  } else {
+    filter.isActive = isActive !== undefined ? isActive === 'true' : true;
+
+    const now = new Date();
+    filter.$or = [
+      { startDate: { $exists: false }, endDate: { $exists: false } },
+      { startDate: { $lte: now }, endDate: { $exists: false } },
+      { startDate: { $exists: false }, endDate: { $gte: now } },
+      { startDate: { $lte: now }, endDate: { $gte: now } },
+    ];
+  }
 
   if (position) filter.position = position;
   if (targetAudience) filter.targetAudience = targetAudience;
-
-  const now = new Date();
-  filter.$or = [
-    { startDate: { $exists: false }, endDate: { $exists: false } },
-    { startDate: { $lte: now }, endDate: { $exists: false } },
-    { startDate: { $exists: false }, endDate: { $gte: now } },
-    { startDate: { $lte: now }, endDate: { $gte: now } },
-  ];
 
   const banners = await Banner.find(filter)
     .sort({ sortOrder: 1, createdAt: -1 })

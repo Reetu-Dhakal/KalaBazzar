@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Send, Mail, Phone, MapPin, Facebook, Instagram, Youtube } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
+import { CONTACT, SOCIAL_LINKS } from '@/lib/contact';
 
 const quickLinks = [
   { to: '/', label: 'Home' },
@@ -20,9 +22,9 @@ const categoryLinks = [
 ];
 
 const socialLinks = [
-  { href: 'https://facebook.com', label: 'Facebook', icon: Facebook },
-  { href: 'https://instagram.com', label: 'Instagram', icon: Instagram },
-  { href: 'https://youtube.com', label: 'YouTube', icon: Youtube },
+  { href: SOCIAL_LINKS.facebook, label: 'Facebook', icon: Facebook },
+  { href: SOCIAL_LINKS.instagram, label: 'Instagram', icon: Instagram },
+  { href: SOCIAL_LINKS.youtube, label: 'YouTube', icon: Youtube },
 ];
 
 export function Footer() {
@@ -35,7 +37,7 @@ export function Footer() {
 
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await api.post('/newsletter', { email });
       toast.success('Thanks for subscribing!');
       setEmail('');
     } catch {
@@ -65,22 +67,22 @@ export function Footer() {
               </p>
               <div className="space-y-3">
                 <a
-                  href="mailto:hello@kalabazaar.com"
+                  href={CONTACT.emailHref}
                   className="flex items-center gap-3 text-sm text-white/70 hover:text-white transition-colors"
                 >
                   <Mail className="h-4 w-4" />
-                  kalabazaar@gmail.com
+                  {CONTACT.email}
                 </a>
                 <a
-                  href="tel:+977-1-4567890"
+                  href={CONTACT.phoneHref}
                   className="flex items-center gap-3 text-sm text-white/70 hover:text-white transition-colors"
                 >
                   <Phone className="h-4 w-4" />
-                  +977-******
+                  {CONTACT.phone}
                 </a>
                 <div className="flex items-start gap-3 text-sm text-white/70">
                   <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>Kathmandu, Nepal</span>
+                  <span>{CONTACT.address}</span>
                 </div>
               </div>
             </div>

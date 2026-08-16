@@ -80,8 +80,8 @@ export default function Register() {
     try {
       const { acceptTerms: _, ...formData } = data;
       await api.post('/auth/register', formData);
-      toast.success('Account created successfully! Please login.');
-      navigate('/login', { replace: true });
+      toast.success('Account created! Check your email to verify your account.');
+      navigate('/verify-email', { replace: true });
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string; errors?: { field: string; message: string }[] } } };
       const validationErrors = axiosErr.response?.data?.errors;

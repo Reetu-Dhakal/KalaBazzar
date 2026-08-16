@@ -4,6 +4,7 @@ import { Printer, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { CONTACT } from '@/lib/contact';
 import api from '@/lib/api';
 import type { Order } from '@/types';
 
@@ -210,7 +211,7 @@ export default function OrderInvoice() {
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
           <p className="text-sm text-gray-500">Thank you for shopping with Kala Bazaar!</p>
           <p className="text-xs text-gray-400 mt-1">
-            For questions about this order, please contact support@kalabazaar.com
+            For questions about this order, please contact {CONTACT.email}
           </p>
         </div>
       </div>

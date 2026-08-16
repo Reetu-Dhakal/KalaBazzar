@@ -12,6 +12,7 @@ import { generateOrderNumber } from '../utils/helpers';
 import { getPaginationParams } from '../utils/pagination';
 import { OrderStatus, PaymentMethod, PaymentStatus, UserRole } from '../config/constants';
 import { emailService } from '../services/emailService';
+import { createNotification } from './notificationController';
 import mongoose from 'mongoose';
 import { AuthRequest } from '../middleware/auth';
 
@@ -298,6 +299,20 @@ export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Resp
     );
   }
 
+  if (status === OrderStatus.REFUNDED && user.role === UserRole.ADMIN) {
+    const refundAmount = req.body.refundAmount !== undefined ? Number(req.body.refundAmount) : order.totalAmount;
+    const refundReason = req.body.refundReason || order.refundReason || 'Refund processed';
+    if (!refundAmount || refundAmount <= 0 || refundAmount > order.totalAmount) {
+      throw ApiError.badRequest('Valid refund amount required (must not exceed order total)');
+    }
+    order.refundAmount = refundAmount;
+    order.refundReason = refundReason;
+    order.refundStatus = 'approved';
+    order.refundReviewedAt = new Date();
+    order.refundedAt = new Date();
+    order.paymentStatus = PaymentStatus.REFUNDED;
+  }
+
   await order.addStatusHistory(status as OrderStatus, note, user._id);
 
   const updatedOrder = await Order.findById(id)
@@ -382,6 +397,146 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
   }
 });
 
+export const requestRefund = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  const userId = req.user._id;
+
+  if (!reason || reason.trim().length < 10) {
+    throw ApiError.badRequest('Please provide a refund reason (at least 10 characters)');
+  }
+
+  const order = await Order.findById(id);
+  if (!order) {
+    throw ApiError.notFound('Order not found');
+  }
+
+  if (order.customer.toString() !== userId.toString()) {
+    throw ApiError.forbidden('You can only request a refund for your own orders');
+  }
+
+  if (order.status !== OrderStatus.DELIVERED) {
+    throw ApiError.badRequest('Refunds can only be requested for delivered orders');
+  }
+
+  if (order.refundStatus && order.refundStatus !== 'none') {
+    throw ApiError.badRequest('A refund request has already been submitted for this order');
+  }
+
+  order.refundStatus = 'requested';
+  order.refundReason = reason.trim();
+  order.refundRequestedAt = new Date();
+  await order.save();
+
+  const admins = await User.find({ role: UserRole.ADMIN }).select('_id').lean();
+  await Promise.all(admins.map((admin: any) =>
+    createNotification({
+      userId: admin._id,
+      type: 'refund_initiated',
+      title: 'Refund Requested',
+      message: `Order ${order.orderNumber} has a refund request from ${req.user.firstName} ${req.user.lastName}: ${reason.trim()}`,
+      relatedEntity: { type: 'order', id: order._id as any },
+      priority: 'high',
+    })
+  ));
+
+  emailService.sendRefundNotification(
+    req.user.email,
+    order.orderNumber,
+    req.user.firstName,
+    'requested'
+  ).catch(err => console.error('Failed to send refund request email:', err));
+
+  res.json(ApiResponse.success(order, 'Refund request submitted successfully'));
+});
+
+export const reviewRefund = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { action, amount, note } = req.body;
+
+  if (!action || !['approve', 'reject'].includes(action)) {
+    throw ApiError.badRequest('Valid action is required (approve or reject)');
+  }
+
+  const order = await Order.findById(id).populate('customer', 'firstName lastName email');
+  if (!order) {
+    throw ApiError.notFound('Order not found');
+  }
+
+  if (order.refundStatus !== 'requested') {
+    throw ApiError.badRequest('There is no pending refund request for this order');
+  }
+
+  const customer = order.customer as any;
+
+  if (action === 'approve') {
+    const refundAmount = amount !== undefined ? Number(amount) : order.totalAmount;
+    if (!refundAmount || refundAmount <= 0 || refundAmount > order.totalAmount) {
+      throw ApiError.badRequest('Valid refund amount is required (must not exceed order total)');
+    }
+
+    order.status = OrderStatus.REFUNDED;
+    order.paymentStatus = PaymentStatus.REFUNDED;
+    order.refundStatus = 'approved';
+    order.refundAmount = refundAmount;
+    order.refundedAt = new Date();
+    order.refundReviewedAt = new Date();
+    order.refundReviewNote = note;
+    order.statusHistory.push({
+      status: OrderStatus.REFUNDED,
+      timestamp: new Date(),
+      note: `Refund approved — NPR ${refundAmount.toLocaleString()}${note ? ` (${note})` : ''}`,
+      updatedBy: req.user._id,
+    } as any);
+    await order.save();
+
+    createNotification({
+      userId: order.customer as any,
+      type: 'refund_completed',
+      title: 'Refund Approved',
+      message: `Your refund of NPR ${refundAmount.toLocaleString()} for order ${order.orderNumber} has been processed.`,
+      relatedEntity: { type: 'order', id: order._id as any },
+      priority: 'high',
+    });
+
+    emailService.sendRefundNotification(
+      customer.email,
+      order.orderNumber,
+      customer.firstName,
+      'approved',
+      refundAmount
+    ).catch(err => console.error('Failed to send refund approved email:', err));
+
+    res.json(ApiResponse.success(order, 'Refund approved successfully'));
+    return;
+  }
+
+  order.refundStatus = 'rejected';
+  order.refundReviewedAt = new Date();
+  order.refundReviewNote = note;
+  await order.save();
+
+  createNotification({
+    userId: order.customer as any,
+    type: 'refund_completed',
+    title: 'Refund Request Rejected',
+    message: `Your refund request for order ${order.orderNumber} was not approved.${note ? ` Reason: ${note}` : ''}`,
+    relatedEntity: { type: 'order', id: order._id as any },
+    priority: 'normal',
+  });
+
+  emailService.sendRefundNotification(
+    customer.email,
+    order.orderNumber,
+    customer.firstName,
+    'rejected',
+    undefined,
+    note
+  ).catch(err => console.error('Failed to send refund rejected email:', err));
+
+  res.json(ApiResponse.success(order, 'Refund request rejected'));
+});
+
 export const addTrackingNumber = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { trackingNumber, itemIndex } = req.body;
@@ -428,6 +583,10 @@ export const getAllOrders = asyncHandler(async (req: Request, res: Response) => 
 
   if (req.query.status) {
     filter.status = req.query.status;
+  }
+
+  if (req.query.refundStatus) {
+    filter.refundStatus = req.query.refundStatus;
   }
 
   if (req.query.search) {

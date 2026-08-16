@@ -177,5 +177,6 @@ KalaBazzar/
 ## Payment Gateways
 
 - **COD** — no gateway call, paymentStatus stays 'Pending'
-- **Khalti** — initiate → redirect → verify (stubs)
-- **eSewa** — initiate → callback → verify (stubs)
+- **Khalti** — `POST /api/payment/initiate` → real ePayment v2 initiate (returns `pidx` + payment URL) → redirect → `POST /api/payment/verify` does server-side lookup before marking paid
+- **eSewa** — initiate returns an auto-submitting signed ePay v2 form → `GET /api/payment/esewa/callback` verifies the response signature + status API → redirects to order success
+- Set `PAYMENT_MODE=live` with `KHALTI_SECRET_KEY` / `ESEWA_MERCHANT_CODE` / `ESEWA_SECRET_KEY` to use real gateways; default `mock` mode simulates payment at `/payment/mock/:method/:orderId`

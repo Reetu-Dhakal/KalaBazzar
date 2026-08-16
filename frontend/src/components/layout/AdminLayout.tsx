@@ -11,6 +11,12 @@ import {
   Menu,
   X,
   Shield,
+  FolderTree,
+  Hammer,
+  MapPin,
+  Image,
+  Layers,
+  Home,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
@@ -22,6 +28,12 @@ const navItems = [
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
   { to: '/admin/coupons', label: 'Coupons', icon: Tag },
+  { to: '/admin/categories', label: 'Categories', icon: FolderTree },
+  { to: '/admin/crafts', label: 'Crafts', icon: Hammer },
+  { to: '/admin/regions', label: 'Regions', icon: MapPin },
+  { to: '/admin/banners', label: 'Banners', icon: Image },
+  { to: '/admin/collections', label: 'Collections', icon: Layers },
+  { to: '/admin/homepage', label: 'Homepage', icon: Home },
 ];
 
 export function AdminLayout() {

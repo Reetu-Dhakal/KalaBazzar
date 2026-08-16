@@ -183,15 +183,17 @@ export const updateUserStatus = asyncHandler(async (req: AuthRequest, res: Respo
 });
 
 export const getSellerApplications = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { page, limit, skip, sortBy, sortOrder } = getPaginationParams(req);
-  const { status, search } = req.query;
+const { page, limit, skip, sortBy, sortOrder } = getPaginationParams(req);
+  const { status, search, refundStatus } = req.query;
 
   const filter: any = {};
 
   if (status) {
     filter.status = status;
-  } else {
-    filter.status = SellerStatus.PENDING;
+  }
+
+  if (refundStatus) {
+    filter.refundStatus = refundStatus;
   }
 
   if (search) {

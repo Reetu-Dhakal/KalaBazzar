@@ -1,12 +1,22 @@
+import { useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { CheckCircle, Package, ShoppingBag, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useCart } from '@/context/CartContext';
 
 export default function OrderSuccess() {
   const { id } = useParams<{ id: string }>();
+  const { clearCart } = useCart();
+  const clearedRef = useRef(false);
   usePageTitle('Order Confirmed');
+
+  useEffect(() => {
+    if (clearedRef.current) return;
+    clearedRef.current = true;
+    clearCart().catch(() => {});
+  }, [clearCart]);
 
   return (
     <div className="container mx-auto px-4 py-16">
