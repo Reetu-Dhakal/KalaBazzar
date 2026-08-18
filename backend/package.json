@@ -1,7 +1,7 @@
 {
   "name": "kala-bazaar-backend",
   "version": "1.0.0",
-  "description": "Kala Bazaar Nepal - Backend API",
+  "description": "कलाbazzar Nepal - Backend API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

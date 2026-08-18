@@ -189,7 +189,7 @@ export function Navbar() {
                   <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
                 </svg>
                 <span className="font-heading text-xl font-bold text-primary hidden sm:block">
-                  Kala Bazaar
+                  कलाbazzar
                 </span>
               </Link>
 

@@ -72,7 +72,7 @@ function TableSkeleton() {
 }
 
 export default function AdminCategories() {
-  usePageTitle('Manage Categories — KalaBazzar', 'Create and manage product categories.');
+  usePageTitle('Manage Categories — कलाbazzar', 'Create and manage product categories.');
   const [rows, setRows] = useState<FlatRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');

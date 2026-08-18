@@ -32,7 +32,7 @@ class EmailService {
     }
     try {
       await this.transporter.sendMail({
-        from: process.env.EMAIL_FROM || 'Kala Bazaar <noreply@kalabazaar.com>',
+        from: process.env.EMAIL_FROM || 'कलाbazzar <noreply@kalabazaar.com>',
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -69,7 +69,7 @@ class EmailService {
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1C1917; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: #FAFAF9; border-radius: 16px; padding: 40px; border: 1px solid #E7E5E4;">
-            <h1 style="color: #7C2D12; margin-bottom: 24px; font-family: 'Cormorant Garamond', Georgia, serif;">${vars.title || 'Kala Bazaar'}</h1>
+            <h1 style="color: #7C2D12; margin-bottom: 24px; font-family: 'Cormorant Garamond', Georgia, serif;">${vars.title || 'कलाbazzar'}</h1>
             <p style="color: #1C1917; margin-bottom: 16px;">${vars.message || ''}</p>
             ${vars.ctaUrl ? `<a href="${vars.ctaUrl}" style="display: inline-block; background: #7C2D12; color: #FFFFFF; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600;">${vars.ctaText || 'Click Here'}</a>` : ''}
             <hr style="border: none; border-top: 1px solid #E7E5E4; margin: 24px 0;">
@@ -83,8 +83,8 @@ class EmailService {
   async sendWelcomeEmail(to: string, firstName: string): Promise<void> {
     await this.sendEmail({
       to,
-      subject: 'Welcome to Kala Bazaar Nepal',
-      html: this.getTemplate('welcome', { firstName, title: 'Welcome to Kala Bazaar' }),
+      subject: 'Welcome to कलाbazzar Nepal',
+      html: this.getTemplate('welcome', { firstName, title: 'Welcome to कलाbazzar' }),
     });
   }
 

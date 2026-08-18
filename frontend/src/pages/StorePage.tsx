@@ -43,7 +43,7 @@ export default function StorePage() {
   const [activeTab, setActiveTab] = useState<'products' | 'about' | 'reviews'>('products');
 
   usePageTitle(
-    store ? `${store.storeName} — KalaBazzar` : undefined,
+    store ? `${store.storeName} — कलाbazzar` : undefined,
     store?.description || undefined,
   );
 
@@ -92,7 +92,7 @@ export default function StorePage() {
   return (
     <div>
       {/* Banner */}
-      <div className="relative h-48 sm:h-64 bg-gradient-to-br from-primary/20 to-secondary/20">
+      <div className="relative h-48 sm:h-64 bg-linear-to-br from-primary/20 to-secondary/20">
         {store.coverImage && (
           <img
             src={store.coverImage}
@@ -100,7 +100,7 @@ export default function StorePage() {
             className="w-full h-full object-cover"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
       </div>
 
       <div className="container mx-auto px-4">
@@ -110,7 +110,7 @@ export default function StorePage() {
             {store.logo ? (
               <img src={store.logo} alt={store.storeName} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+              <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/10 to-secondary/10">
                 <span className="text-4xl font-heading text-primary">
                   {store.storeName.charAt(0)}
                 </span>

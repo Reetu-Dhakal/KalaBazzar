@@ -68,7 +68,7 @@ export default function OrderInvoice() {
                 <span className="w-2 h-5 rounded-sm bg-red-600 -ml-0.5" />
                 <span className="w-2 h-5 rounded-sm bg-white border border-gray-300 -ml-0.5" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Kala Bazaar</span>
+              <span className="text-xl font-bold text-gray-900">कलाbazzar</span>
             </div>
             <p className="text-sm text-gray-500">Authentic Handmade Crafts from Nepal</p>
           </div>
@@ -209,7 +209,7 @@ export default function OrderInvoice() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-          <p className="text-sm text-gray-500">Thank you for shopping with Kala Bazaar!</p>
+          <p className="text-sm text-gray-500">Thank you for shopping with कलाbazzar!</p>
           <p className="text-xs text-gray-400 mt-1">
             For questions about this order, please contact {CONTACT.email}
           </p>

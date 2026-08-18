@@ -1,4 +1,4 @@
-# Kala Bazaar Nepal
+# कलाbazzar Nepal
 
 A production-ready multi-vendor marketplace connecting Nepali artisans with customers across Nepal. Built with TypeScript, Express/MongoDB backend and React 19 + Vite 6 + Tailwind v4 frontend.
 

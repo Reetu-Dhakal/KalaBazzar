@@ -361,7 +361,7 @@ export default function SellerProductForm() {
                   Full Description <span className="text-destructive">*</span>
                 </label>
                 <textarea
-                  className="flex min-h-[150px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  className="flex min-h-[37.5px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                   placeholder="Describe your product in detail..."
                   {...register('description')}
                 />
@@ -374,7 +374,7 @@ export default function SellerProductForm() {
                   Story Behind the Product
                 </label>
                 <textarea
-                  className="flex min-h-[100px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  className="flex min-h-25 w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                   placeholder="Tell the story behind this product..."
                   {...register('story')}
                 />
@@ -539,7 +539,7 @@ export default function SellerProductForm() {
                   SEO Description
                 </label>
                 <textarea
-                  className="flex min-h-[80px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  className="flex min-h-[6.25px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                   placeholder="Description for search engines"
                   {...register('seo.description')}
                 />
@@ -836,7 +836,7 @@ export default function SellerProductForm() {
                   Care Instructions
                 </label>
                 <textarea
-                  className="flex min-h-[80px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  className="flex min-h-[6.25px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                   placeholder="How to care for this product..."
                   {...register('careInstructions')}
                 />

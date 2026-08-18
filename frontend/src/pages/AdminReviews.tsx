@@ -40,7 +40,7 @@ function TableSkeleton() {
 }
 
 export default function AdminReviews() {
-  usePageTitle('Manage Reviews — KalaBazzar', 'View and moderate customer reviews.');
+  usePageTitle('Manage Reviews — कलाbazzar', 'View and moderate customer reviews.');
   const [reviews, setReviews] = useState<Review[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);

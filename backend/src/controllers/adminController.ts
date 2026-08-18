@@ -24,6 +24,12 @@ const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
 };
 
 export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setMonth(startDate.getMonth() - 11);
+  startDate.setDate(1);
+  startDate.setHours(0, 0, 0, 0);
+
   const [
     totalUsers,
     totalSellers,
@@ -33,7 +39,7 @@ export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Resp
     pendingSellers,
     recentOrders,
     ordersByStatus,
-    revenueByMonth,
+    revenueSeries,
   ] = await Promise.all([
     User.countDocuments({ role: { $ne: UserRole.ADMIN } }),
     SellerProfile.countDocuments({ status: SellerStatus.APPROVED }),
@@ -53,19 +59,15 @@ export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Resp
       { $group: { _id: '$status', count: { $sum: 1 } } },
     ]),
     Order.aggregate([
-      { $match: { paymentStatus: PaymentStatus.PAID } },
+      { $match: { paymentStatus: PaymentStatus.PAID, createdAt: { $gte: startDate } } },
       {
         $group: {
-          _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' },
-          },
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
           revenue: { $sum: '$totalAmount' },
           orders: { $sum: 1 },
         },
       },
-      { $sort: { '_id.year': 1, '_id.month': 1 } },
-      { $limit: 12 },
+      { $sort: { _id: 1 } },
     ]),
   ]);
 
@@ -76,6 +78,29 @@ export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Resp
     ordersByStatusMap[item._id] = item.count;
   });
 
+  const revenueData = revenueSeries.map((item: any) => ({
+    date: item._id,
+    revenue: item.revenue,
+    orders: item.orders,
+  }));
+
+  const monthMap = new Map<string, { year: number; month: number; revenue: number; orders: number }>();
+  revenueData.forEach((d: { date: string; revenue: number; orders: number }) => {
+    const [year, month] = d.date.split('-').map(Number);
+    const key = `${year}-${month}`;
+    const existing = monthMap.get(key);
+    if (existing) {
+      existing.revenue += d.revenue;
+      existing.orders += d.orders;
+    } else {
+      monthMap.set(key, { year, month, revenue: d.revenue, orders: d.orders });
+    }
+  });
+
+  const revenueByMonth = Array.from(monthMap.values()).sort((a, b) =>
+    a.year === b.year ? a.month - b.month : a.year - b.year,
+  );
+
   const stats = {
     totalUsers,
     totalSellers,
@@ -85,15 +110,44 @@ export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Resp
     pendingSellers,
     recentOrders,
     ordersByStatus: ordersByStatusMap,
-    revenueByMonth: revenueByMonth.map((item: any) => ({
-      year: item._id.year,
-      month: item._id.month,
-      revenue: item.revenue,
-      orders: item.orders,
-    })),
+    revenueByMonth,
+    revenueData,
   };
 
   res.json(ApiResponse.success(stats, 'Dashboard stats retrieved successfully'));
+});
+
+export const getDayDetails = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { date } = req.query;
+  if (!date || typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw ApiError.badRequest('A valid date (YYYY-MM-DD) is required');
+  }
+
+  const start = new Date(`${date}T00:00:00.000Z`);
+  const end = new Date(`${date}T23:59:59.999Z`);
+
+  const orders = await Order.find({ createdAt: { $gte: start, $lte: end } })
+    .populate('customer', 'firstName lastName email')
+    .lean();
+
+  const paid = orders.filter((o) => o.paymentStatus === PaymentStatus.PAID);
+  const totalIncome = paid.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+  res.json(
+    ApiResponse.success(
+      {
+        date,
+        summary: {
+          receivedOrders: orders.length,
+          totalIncome,
+          completedOrders: orders.filter((o) => o.status === OrderStatus.DELIVERED).length,
+          pendingOrders: orders.filter((o) => o.status === OrderStatus.PENDING).length,
+        },
+        orders,
+      },
+      'Day details retrieved successfully'
+    )
+  );
 });
 
 export const getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) => {

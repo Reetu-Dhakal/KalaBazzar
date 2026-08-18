@@ -37,7 +37,7 @@ const ORDER_STATUSES: OrderStatus[] = [
 ];
 
 export default function SellerOrders() {
-  usePageTitle('My Orders — KalaBazzar', 'Manage and fulfill customer orders.');
+  usePageTitle('My Orders — कलाbazzar', 'Manage and fulfill customer orders.');
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);

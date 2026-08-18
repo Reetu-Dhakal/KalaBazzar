@@ -56,7 +56,7 @@ function csvToLinks(csv: string): { label: string; url: string }[] {
 }
 
 export default function AdminHomepage() {
-  usePageTitle('Homepage Settings — KalaBazzar', 'Configure the public homepage.');
+  usePageTitle('Homepage Settings — कलाbazzar', 'Configure the public homepage.');
   const [settings, setSettings] = useState<HomepageSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

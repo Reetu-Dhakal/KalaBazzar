@@ -41,7 +41,7 @@ function getRoleBadge(role: string) {
 }
 
 export default function AdminUsers() {
-  usePageTitle('Manage Users — KalaBazzar', 'Manage platform users and their roles.');
+  usePageTitle('Manage Users — कलाbazzar', 'Manage platform users and their roles.');
   const [users, setUsers] = useState<User[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);

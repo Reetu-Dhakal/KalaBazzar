@@ -114,7 +114,7 @@ export default function Register() {
             </div>
             <CardTitle className="text-2xl">Create Account</CardTitle>
             <CardDescription>
-              Join KalaBazzar and discover authentic Nepali crafts
+              Join कलाbazzar and discover authentic Nepali crafts
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -21,7 +21,7 @@ export const getHomepageSettings = asyncHandler(async (req: Request, res: Respon
     const userId = (req as AuthRequest).user?._id;
     const created = await HomepageSettings.create({
       hero: {
-        headline: 'Welcome to KalaBazzar',
+        headline: 'Welcome to कलाbazzar',
         subheadline: 'Discover authentic Nepali handicrafts',
         ctaText: 'Shop Now',
         ctaLink: '/shop',
@@ -48,7 +48,7 @@ export const getHomepageSettings = asyncHandler(async (req: Request, res: Respon
         quickLinks: [],
         policies: [],
       },
-      seo: { title: 'KalaBazzar', description: 'Nepali Handicraft Marketplace' },
+      seo: { title: 'कलाbazzar', description: 'Nepali Handicraft Marketplace' },
       ...(userId ? { updatedBy: userId } : {}),
     });
     settings = JSON.parse(JSON.stringify(created));

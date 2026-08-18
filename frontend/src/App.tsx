@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AdminRoute } from '@/components/auth/AdminRoute';
 import { Layout } from '@/components/layout/Layout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { SellerLayout } from '@/components/layout/SellerLayout';
 
 const Home = lazy(() => import('@/pages/Home'));
 const Login = lazy(() => import('@/pages/Login'));
@@ -86,13 +87,15 @@ export default function App() {
             <Route path="/orders/:id/invoice" element={<OrderInvoice />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/seller/apply" element={<SellerApplication />} />
-            <Route path="/seller/dashboard" element={<SellerDashboard />} />
-            <Route path="/seller/products" element={<SellerProducts />} />
-            <Route path="/seller/products/new" element={<SellerProductForm />} />
-            <Route path="/seller/products/:id/edit" element={<SellerProductForm />} />
-            <Route path="/seller/orders" element={<SellerOrders />} />
-            <Route path="/seller/settings" element={<SellerSettings />} />
-            <Route path="/seller/earnings" element={<SellerEarnings />} />
+            <Route element={<SellerLayout />}>
+              <Route path="/seller/dashboard" element={<SellerDashboard />} />
+              <Route path="/seller/products" element={<SellerProducts />} />
+              <Route path="/seller/products/new" element={<SellerProductForm />} />
+              <Route path="/seller/products/:id/edit" element={<SellerProductForm />} />
+              <Route path="/seller/orders" element={<SellerOrders />} />
+              <Route path="/seller/settings" element={<SellerSettings />} />
+              <Route path="/seller/earnings" element={<SellerEarnings />} />
+            </Route>
           </Route>
 
           <Route element={<AdminRoute />}>

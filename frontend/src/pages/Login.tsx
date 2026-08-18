@@ -79,7 +79,7 @@ export default function Login() {
             </div>
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
             <CardDescription>
-              Sign in to your KalaBazzar account
+              Sign in to your कलाbazzar account
             </CardDescription>
           </CardHeader>
           <CardContent>

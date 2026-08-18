@@ -38,7 +38,7 @@ const SORT_OPTIONS = [
 ] as const;
 
 export default function SellerProducts() {
-  usePageTitle('My Products — KalaBazzar', 'Manage your product listings.');
+  usePageTitle('My Products — कलाbazzar', 'Manage your product listings.');
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
@@ -229,7 +229,7 @@ export default function SellerProducts() {
                               className="h-12 w-12 rounded-lg object-cover bg-muted"
                             />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate max-w-[200px]">
+                              <p className="text-sm font-medium text-foreground truncate max-w-[12.5px]">
                                 {product.name}
                               </p>
                               {typeof product.category === 'object' && product.category && (

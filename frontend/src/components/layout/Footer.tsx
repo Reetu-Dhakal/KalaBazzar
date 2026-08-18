@@ -59,7 +59,7 @@ export function Footer() {
                   <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#2D1810">K</text>
                   <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
                 </svg>
-                <span className="font-heading text-2xl font-bold">Kala Bazaar</span>
+                <span className="font-heading text-2xl font-bold">कलाbazzar</span>
               </Link>
               <p className="text-sm text-white/70 leading-relaxed max-w-sm mb-6">
                 Nepal&apos;s premier artisan marketplace connecting you with authentic handmade crafts.
@@ -162,7 +162,7 @@ export function Footer() {
 
           <div className="border-t border-white/20 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-white/60">
-              &copy; {new Date().getFullYear()} Kala Bazaar. All rights reserved.
+              &copy; {new Date().getFullYear()} कलाbazzar. All rights reserved.
             </p>
           </div>
         </div>

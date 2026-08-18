@@ -111,7 +111,7 @@ const POSITION_LABELS: Record<string, string> = {
 };
 
 export default function AdminBanners() {
-  usePageTitle('Manage Banners — KalaBazzar', 'Create and manage homepage banners.');
+  usePageTitle('Manage Banners — कलाbazzar', 'Create and manage homepage banners.');
   const [banners, setBanners] = useState<Banner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');

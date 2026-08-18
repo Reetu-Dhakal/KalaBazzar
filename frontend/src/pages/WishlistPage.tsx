@@ -25,7 +25,7 @@ const staggerContainer = {
 };
 
 export default function WishlistPage() {
-  usePageTitle('Wishlist — KalaBazzar', 'Your saved products.');
+  usePageTitle('Wishlist — कलाbazzar', 'Your saved products.');
   const { items, isLoading, removeFromWishlist, clearWishlist, moveToCart } = useWishlist();
   const { addToCart } = useCart();
   const [movingItems, setMovingItems] = useState<Set<string>>(new Set());

@@ -289,7 +289,7 @@ export default function SellerApplication() {
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <h1 className="text-3xl font-heading text-primary mb-2">Become a Seller</h1>
       <p className="text-muted-foreground mb-8">
-        Join KalaBazzar and share your craft with the world.
+        Join कलाbazzar and share your craft with the world.
       </p>
 
       {/* Step Progress */}
@@ -357,7 +357,7 @@ export default function SellerApplication() {
                   Store Description (optional)
                 </label>
                 <textarea
-                  className="flex min-h-[100px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  className="flex min-h-25 w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                   placeholder="Tell customers about your store..."
                   {...register('description')}
                 />
@@ -542,7 +542,7 @@ export default function SellerApplication() {
                       Craft Story
                     </label>
                     <textarea
-                      className="flex min-h-[120px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                      className="flex min-h-[7.5px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                       placeholder="Tell us about your craft, how you learned, and what makes it special..."
                       {...register('verificationDocuments.craftStory')}
                     />
@@ -647,7 +647,7 @@ export default function SellerApplication() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Crafts</span>
-                  <div className="flex flex-wrap gap-1 justify-end max-w-[200px]">
+                  <div className="flex flex-wrap gap-1 justify-end max-w-12">
                     {selectedCrafts?.map((craftId) => {
                       const craft = crafts.find((c) => c._id === craftId);
                       return craft ? (

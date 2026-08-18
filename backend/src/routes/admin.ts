@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getDashboardStats, getAllUsers, getUserById, updateUserStatus, getSellerApplications, approveSellerApplication, rejectSellerApplication, getAllOrders, updateOrderStatus, getCoupons, createCoupon, updateCoupon, deleteCoupon } from '../controllers/adminController';
+import { getDashboardStats, getDayDetails, getAllUsers, getUserById, updateUserStatus, getSellerApplications, approveSellerApplication, rejectSellerApplication, getAllOrders, updateOrderStatus, getCoupons, createCoupon, updateCoupon, deleteCoupon } from '../controllers/adminController';
 import { reviewRefund } from '../controllers/orderController';
 import { authenticate, authorize } from '../middleware/auth';
 import { body } from 'express-validator';
@@ -10,6 +10,7 @@ const router = Router();
 router.use(authenticate, authorize('admin'));
 
 router.get('/dashboard', getDashboardStats);
+router.get('/dashboard/day', getDayDetails);
 
 router.get('/users', getAllUsers);
 router.get('/users/:id', getUserById);

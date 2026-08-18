@@ -21,7 +21,7 @@ const staggerContainer = {
 };
 
 export default function RecentlyViewed() {
-  usePageTitle('Recently Viewed — KalaBazzar', 'Continue where you left off.');
+  usePageTitle('Recently Viewed — कलाbazzar', 'Continue where you left off.');
   const { recentItems, clearHistory } = useRecentlyViewed();
 
   return (

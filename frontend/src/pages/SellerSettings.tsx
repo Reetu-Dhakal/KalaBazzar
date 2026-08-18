@@ -38,7 +38,7 @@ const settingsSchema = z.object({
 type SettingsForm = z.infer<typeof settingsSchema>;
 
 export default function SellerSettings() {
-  usePageTitle('Store Settings — KalaBazzar', 'Manage your store settings and payout details.');
+  usePageTitle('Store Settings — कलाbazzar', 'Manage your store settings and payout details.');
   const [, setProfile] = useState<SellerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

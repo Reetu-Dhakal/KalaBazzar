@@ -56,7 +56,7 @@ export default function CategoryPage() {
   });
 
   usePageTitle(
-    categoryData ? `${categoryData.name} — KalaBazzar` : undefined,
+    categoryData ? `${categoryData.name} — कलाbazzar` : undefined,
     categoryData?.description || categoryData?.seo?.description,
   );
 

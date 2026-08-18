@@ -62,7 +62,7 @@ function StatCard({
 }
 
 export default function SellerEarnings() {
-  usePageTitle('Earnings — KalaBazzar', 'View your earnings and payout information.');
+  usePageTitle('Earnings — कलाbazzar', 'View your earnings and payout information.');
   const [data, setData] = useState<EarningsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -104,7 +104,7 @@ async function seedCategories() {
     description: 'Traditional Nepali handicrafts made by skilled artisans',
     level: 0,
     sortOrder: 1,
-    seo: { title: 'Handicrafts - KalaBazzar', description: 'Discover authentic Nepali handicrafts' },
+    seo: { title: 'Handicrafts - कलाbazzar', description: 'Discover authentic Nepali handicrafts' },
   });
   log('Category: Handicrafts');
 
@@ -147,7 +147,7 @@ async function seedCategories() {
     description: 'Handcrafted Nepali jewelry pieces',
     level: 0,
     sortOrder: 2,
-    seo: { title: 'Jewelry - KalaBazzar', description: 'Authentic Nepali handcrafted jewelry' },
+    seo: { title: 'Jewelry - कलाbazzar', description: 'Authentic Nepali handcrafted jewelry' },
   });
   log('Category: Jewelry');
 
@@ -219,7 +219,7 @@ async function seedCategories() {
     description: 'Handcrafted stone, wood, and metal sculptures',
     level: 0,
     sortOrder: 5,
-    seo: { title: 'Sculptures - KalaBazzar', description: 'Authentic Nepali handcrafted sculptures' },
+    seo: { title: 'Sculptures - कलाbazzar', description: 'Authentic Nepali handcrafted sculptures' },
   });
   log('Category: Sculptures');
 
@@ -229,7 +229,7 @@ async function seedCategories() {
     description: 'Handmade bags, purses, and accessories',
     level: 0,
     sortOrder: 6,
-    seo: { title: 'Bags & Accessories - KalaBazzar', description: 'Handcrafted Nepali bags and accessories' },
+    seo: { title: 'Bags & Accessories - कलाbazzar', description: 'Handcrafted Nepali bags and accessories' },
   });
   log('Category: Bags & Accessories');
 
@@ -239,7 +239,7 @@ async function seedCategories() {
     description: 'Beautiful handcrafted items for your home',
     level: 0,
     sortOrder: 7,
-    seo: { title: 'Home Decor - KalaBazzar', description: 'Handcrafted Nepali home decoration items' },
+    seo: { title: 'Home Decor - कलाbazzar', description: 'Handcrafted Nepali home decoration items' },
   });
   log('Category: Home Decor');
 
@@ -249,7 +249,7 @@ async function seedCategories() {
     description: 'Traditional Nepali musical instruments',
     level: 0,
     sortOrder: 8,
-    seo: { title: 'Musical Instruments - KalaBazzar', description: 'Traditional Nepali musical instruments' },
+    seo: { title: 'Musical Instruments - कलाbazzar', description: 'Traditional Nepali musical instruments' },
   });
   log('Category: Musical Instruments');
 
@@ -373,7 +373,7 @@ async function seedRegions(craftIds: mongoose.Types.ObjectId[]) {
     province: 'Bagmati',
     isActive: true,
     sortOrder: 1,
-    seo: { title: 'Kathmandu - KalaBazzar', description: 'Discover artisan crafts from Kathmandu Valley' },
+    seo: { title: 'Kathmandu - कलाbazzar', description: 'Discover artisan crafts from Kathmandu Valley' },
   });
   log('Region: Kathmandu');
 
@@ -490,7 +490,7 @@ async function seedCollections(sellerProfileId: mongoose.Types.ObjectId) {
     isFeatured: true,
     sortOrder: 1,
     artisans: [sellerProfileId],
-    seo: { title: 'New Arrivals - KalaBazzar', description: 'Discover the latest handcrafted items' },
+    seo: { title: 'New Arrivals - कलाbazzar', description: 'Discover the latest handcrafted items' },
   });
   log('Collection: New Arrivals');
 
@@ -503,7 +503,7 @@ async function seedCollections(sellerProfileId: mongoose.Types.ObjectId) {
     isFeatured: true,
     sortOrder: 2,
     artisans: [sellerProfileId],
-    seo: { title: 'Best Sellers - KalaBazzar', description: 'Shop the most popular handcrafted items' },
+    seo: { title: 'Best Sellers - कलाbazzar', description: 'Shop the most popular handcrafted items' },
   });
   log('Collection: Best Sellers');
 
@@ -1113,7 +1113,7 @@ async function seedStories(
 <p>Today, Hari's workshop is filled with the scent of freshly carved sal wood. His hands, weathered but steady, move with the confidence of thousands of hours of practice. Each piece he creates — from ornate door frames to delicate figurines — carries the legacy of the Newar wood carving tradition.</p>
 <p>The Kathmandu Valley has been a center of wood carving for over a millennium. The intricate window carvings of Patan, the temple struts of Bhaktapur, and the ceremonial gates of Kathmandu all testify to the extraordinary skill of Newar artisans.</p>
 <p>"Every carving tells a story," Hari explains. "The peacock represents beauty and pride. The elephant symbolizes strength and wisdom. The lotus flower stands for purity. When I carve these motifs, I am not just creating decoration — I am keeping our stories alive."</p>
-<p>Through KalaBazzar, Hari's work has reached customers across the globe. "I never imagined that people in America or Europe would appreciate my work," he says with a shy smile. "It gives me hope that our traditions will survive."</p>`,
+<p>Through कलाbazzar, Hari's work has reached customers across the globe. "I never imagined that people in America or Europe would appreciate my work," he says with a shy smile. "It gives me hope that our traditions will survive."</p>`,
     author: adminUserId,
     artisan: sellerProfileId,
     craft: craftIds.woodCarving,
@@ -1134,7 +1134,7 @@ async function seedStories(
 <p>"Each pattern has a name and a meaning," explains Maya Tamang, a weaver from Dolakha district. "The zigzag pattern represents the mountains. The diamond pattern stands for the eyes of the gods. When we weave, we are telling the story of our land."</p>
 <p>The process begins with spinning cotton into yarn, then dyeing it using natural pigments derived from plants and minerals. The yarn is then wound onto bobbins and threaded through the loom in intricate patterns that can take days to set up.</p>
 <p>"A single shawl can take two to three weeks to complete," Maya says. "But when you see the finished product, with all its colors and patterns, you feel a deep satisfaction."</p>
-<p>Today, cooperatives and online marketplaces like KalaBazzar are helping weavers reach wider audiences, ensuring that this ancient craft continues to thrive in the modern world.</p>`,
+<p>Today, cooperatives and online marketplaces like कलाbazzar are helping weavers reach wider audiences, ensuring that this ancient craft continues to thrive in the modern world.</p>`,
     author: adminUserId,
     craft: craftIds.dhakaWeaving,
     region: regionIds.kathmandu,
@@ -1229,8 +1229,8 @@ async function seedNotifications(
   await Notification.create({
     user: customerUserId,
     type: 'welcome',
-    title: 'Welcome to KalaBazzar!',
-    message: 'Thank you for joining KalaBazzar. Discover authentic Nepali handicrafts from verified artisans.',
+    title: 'Welcome to कलाbazzar!',
+    message: 'Thank you for joining कलाbazzar. Discover authentic Nepali handicrafts from verified artisans.',
     isRead: true,
     readAt: new Date(),
     priority: 'normal',

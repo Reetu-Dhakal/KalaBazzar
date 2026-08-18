@@ -56,7 +56,7 @@ function TableSkeleton() {
 }
 
 export default function AdminCoupons() {
-  usePageTitle('Manage Coupons — KalaBazzar', 'Create and manage discount coupons.');
+  usePageTitle('Manage Coupons — कलाbazzar', 'Create and manage discount coupons.');
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);

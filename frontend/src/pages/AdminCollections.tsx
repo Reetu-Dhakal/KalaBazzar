@@ -73,7 +73,7 @@ function toIds(csv: string): string[] {
 }
 
 export default function AdminCollections() {
-  usePageTitle('Manage Collections — KalaBazzar', 'Create and manage product collections.');
+  usePageTitle('Manage Collections — कलाbazzar', 'Create and manage product collections.');
   const [collections, setCollections] = useState<Collection[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);

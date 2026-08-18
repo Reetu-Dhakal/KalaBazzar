@@ -31,7 +31,7 @@ function TableSkeleton() {
 }
 
 export default function AdminSellers() {
-  usePageTitle('Manage Sellers — KalaBazzar', 'Review and manage seller applications.');
+  usePageTitle('Manage Sellers — कलाbazzar', 'Review and manage seller applications.');
   const [sellers, setSellers] = useState<SellerProfile[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);

@@ -28,7 +28,7 @@ const popularLinks = [
 ];
 
 export default function NotFound() {
-  usePageTitle('Page Not Found — KalaBazzar', 'The page you are looking for does not exist.');
+  usePageTitle('Page Not Found — कलाbazzar', 'The page you are looking for does not exist.');
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 

@@ -86,7 +86,7 @@ function DashboardSkeleton() {
 }
 
 export default function SellerDashboard() {
-  usePageTitle('Seller Dashboard — KalaBazzar', 'Manage your products, orders, and store.');
+  usePageTitle('Seller Dashboard — कलाbazzar', 'Manage your products, orders, and store.');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

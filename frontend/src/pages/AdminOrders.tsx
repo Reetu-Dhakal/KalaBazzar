@@ -43,7 +43,7 @@ function TableSkeleton() {
 }
 
 export default function AdminOrders() {
-  usePageTitle('Manage Orders — KalaBazzar', 'View and manage all customer orders.');
+  usePageTitle('Manage Orders — कलाbazzar', 'View and manage all customer orders.');
   const [orders, setOrders] = useState<Order[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);

@@ -250,7 +250,7 @@ export default function ProductDetail() {
   }, [slug]);
 
   usePageTitle(
-    productData ? `${productData.name} — KalaBazzar` : undefined,
+    productData ? `${productData.name} — कलाbazzar` : undefined,
     productData?.shortDescription || productData?.description?.slice(0, 160),
   );
 

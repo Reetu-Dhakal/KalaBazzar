@@ -44,7 +44,7 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 }
 
 export default function ResetPassword() {
-  usePageTitle('Reset Password — KalaBazzar');
+  usePageTitle('Reset Password — कलाbazzar');
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);

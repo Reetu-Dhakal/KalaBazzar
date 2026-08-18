@@ -9,7 +9,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function VerifyEmail() {
-  usePageTitle('Verify Email — KalaBazzar');
+  usePageTitle('Verify Email — कलाbazzar');
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
 

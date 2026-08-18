@@ -68,7 +68,7 @@ function TableSkeleton() {
 }
 
 export default function AdminCrafts() {
-  usePageTitle('Manage Crafts — KalaBazzar', 'Create and manage craft types.');
+  usePageTitle('Manage Crafts — कलाbazzar', 'Create and manage craft types.');
   const [crafts, setCrafts] = useState<Craft[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -55,16 +55,16 @@ const features = [
 ];
 
 const values = [
-  { icon: ShieldCheck, title: 'Authenticity', description: 'Every product on KalaBazzar is verified to be genuinely handcrafted. We work directly with artisans to ensure traditional techniques are preserved.' },
+  { icon: ShieldCheck, title: 'Authenticity', description: 'Every product on कलाbazzar is verified to be genuinely handcrafted. We work directly with artisans to ensure traditional techniques are preserved.' },
   { icon: Star, title: 'Quality', description: 'We curate only the finest handcrafted goods. Our quality standards ensure that every item meets the expectations of discerning customers.' },
-  { icon: Users, title: 'Community', description: 'KalaBazzar is more than a marketplace — it is a community that connects artisans with appreciative customers worldwide.' },
+  { icon: Users, title: 'Community', description: 'कलाbazzar is more than a marketplace — it is a community that connects artisans with appreciative customers worldwide.' },
   { icon: Leaf, title: 'Sustainability', description: 'Handcrafted products are inherently sustainable. We promote eco-friendly materials and ethical production practices.' },
 ];
 
 const testimonials = [
-  { id: '1', name: 'Anita Sharma', location: 'Kathmandu', comment: 'The handwoven shawl I purchased is absolutely stunning. The quality is exceptional and it arrived beautifully packaged. KalaBazzar has become my go-to for authentic Nepali crafts.', rating: 5 },
+  { id: '1', name: 'Anita Sharma', location: 'Kathmandu', comment: 'The handwoven shawl I purchased is absolutely stunning. The quality is exceptional and it arrived beautifully packaged. कलाbazzar has become my go-to for authentic Nepali crafts.', rating: 5 },
   { id: '2', name: 'Rajesh Thapa', location: 'Pokhara', comment: 'I bought a traditional Dhaka topi as a gift. The artisan even added a personalized note. This is what real craftsmanship looks like. Highly recommended!', rating: 5 },
-  { id: '3', name: 'Maya Gurung', location: 'Lalitpur', comment: 'Supporting local artisans through KalaBazzar feels wonderful. The products are genuine, well-made, and the customer service is outstanding.', rating: 5 },
+  { id: '3', name: 'Maya Gurung', location: 'Lalitpur', comment: 'Supporting local artisans through कलाbazzar feels wonderful. The products are genuine, well-made, and the customer service is outstanding.', rating: 5 },
 ];
 
 const categoryImages: Record<string, string> = {
@@ -113,7 +113,7 @@ const faqCategories = [
     title: 'Seller Questions',
     items: [
       { q: 'How do I become a seller?', a: 'Click "Become an Artisan" and fill out the seller application form. Our team will review your application within 3-5 business days.' },
-      { q: 'What are the fees for selling?', a: 'KalaBazzar charges a small commission on each sale. There are no listing fees or monthly charges. You only pay when you make a sale.' },
+      { q: 'What are the fees for selling?', a: 'कलाbazzar charges a small commission on each sale. There are no listing fees or monthly charges. You only pay when you make a sale.' },
       { q: 'Can I offer custom orders?', a: 'Yes! You can enable custom orders in your product listings and specify customization options. Customers can then request personalized versions of your products.' },
     ],
   },
@@ -525,7 +525,7 @@ export default function Home() {
               <Badge variant="secondary" className="mb-4">Our Mission</Badge>
               <h2 className="text-3xl md:text-4xl font-heading text-foreground">Empowering Artisans, Preserving Heritage</h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                KalaBazzar was born from a simple observation: Nepal&apos;s talented artisans — weavers, potters, woodworkers, and craftspeople — possess extraordinary skills passed down through generations, yet many struggled to reach the customers who would treasure their work. Today, KalaBazzar is home to over 500 verified artisans from all seven provinces of Nepal.
+                कलाbazzar was born from a simple observation: Nepal&apos;s talented artisans — weavers, potters, woodworkers, and craftspeople — possess extraordinary skills passed down through generations, yet many struggled to reach the customers who would treasure their work. Today, कलाbazzar is home to over 500 verified artisans from all seven provinces of Nepal.
               </p>
             </motion.div>
 
@@ -613,7 +613,7 @@ export default function Home() {
                     <Badge variant="secondary" className="w-fit mb-4">For Artisans</Badge>
                     <h2 className="text-3xl font-heading text-foreground mb-4">Turn Your Craft Into a Business</h2>
                     <p className="text-muted-foreground mb-6 leading-relaxed">
-                      Join KalaBazzar and reach customers who appreciate authentic handcrafted products. Set up your online store, manage orders, and grow your artisan business with our support.
+                      Join कलाbazzar and reach customers who appreciate authentic handcrafted products. Set up your online store, manage orders, and grow your artisan business with our support.
                     </p>
                     <ul className="space-y-3 mb-8">
                       {['Zero listing fees for your first month', 'Verified artisan badge', 'Marketing & promotional support', 'Secure payment processing'].map((b) => (
@@ -642,7 +642,7 @@ export default function Home() {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
             <motion.div variants={fadeInUp} className="text-center mb-12">
               <h2 className="text-3xl font-heading text-foreground">Frequently Asked Questions</h2>
-              <p className="mt-2 text-muted-foreground">Find answers to common questions about shopping on KalaBazzar</p>
+              <p className="mt-2 text-muted-foreground">Find answers to common questions about shopping on कलाbazzar</p>
             </motion.div>
             <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
               {faqCategories.map((cat) => (

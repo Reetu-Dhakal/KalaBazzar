@@ -38,6 +38,26 @@ interface DashboardStats {
   recentOrders: Order[];
   ordersByStatus: Record<string, number>;
   revenueByMonth: { year: number; month: number; revenue: number; orders: number }[];
+  revenueData: { date?: string; year?: number; month?: number; revenue: number; orders: number }[];
+}
+
+interface RevenuePoint {
+  name: string;
+  revenue: number;
+  orders: number;
+  fullDate?: Date;
+  meta?: { monthKey: string; weekIndex: number };
+}
+
+interface DayDetail {
+  date: string;
+  summary: {
+    receivedOrders: number;
+    totalIncome: number;
+    completedOrders: number;
+    pendingOrders: number;
+  };
+  orders: Order[];
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -115,15 +135,35 @@ function DashboardSkeleton() {
   );
 }
 
-const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monthNamesArr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function AdminDashboard() {
-  usePageTitle('Admin Dashboard — KalaBazzar', 'Admin panel for managing the KalaBazzar platform.');
+  usePageTitle('Admin Dashboard — कलाbazzar', 'Admin panel for managing the कलाbazzar platform.');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [monthKey, setMonthKey] = useState<string | null>(null);
+  const [weekIndex, setWeekIndex] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [dayDetail, setDayDetail] = useState<DayDetail | null>(null);
+  const [isLoadingDay, setIsLoadingDay] = useState(false);
+
+  useEffect(() => {
+    if (!selectedDate) {
+      setDayDetail(null);
+      return;
+    }
+    setIsLoadingDay(true);
+    setDayDetail(null);
+    api
+      .get('/admin/dashboard/day', { params: { date: selectedDate } })
+      .then(({ data }) => setDayDetail(data.data))
+      .catch(() => setDayDetail(null))
+      .finally(() => setIsLoadingDay(false));
+  }, [selectedDate]);
 
   useEffect(() => {
     const fetchStats = async () => {
+      setIsLoading(true);
       try {
         const { data } = await api.get('/admin/dashboard');
         setStats(data.data);
@@ -138,11 +178,92 @@ export default function AdminDashboard() {
 
   if (isLoading) return <DashboardSkeleton />;
 
-  const revenueData = (stats?.revenueByMonth || []).map((item) => ({
-    name: `${monthNames[item.month - 1]}`,
-    revenue: item.revenue,
-    orders: item.orders,
-  }));
+  const dailyBuckets = new Map<string, { revenue: number; orders: number }>();
+  (stats?.revenueData || []).forEach((item) => {
+    if (item.date) {
+      dailyBuckets.set(item.date, { revenue: item.revenue, orders: item.orders });
+    }
+  });
+
+  const months: RevenuePoint[] = (() => {
+    const now = new Date();
+    const out: RevenuePoint[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const month = stats?.revenueByMonth?.find((m) => m.year === d.getFullYear() && m.month === d.getMonth() + 1);
+      out.push({
+        name: `${monthNamesArr[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`,
+        revenue: month?.revenue || 0,
+        orders: month?.orders || 0,
+        meta: { monthKey: key, weekIndex: -1 },
+      });
+    }
+    return out;
+  })();
+
+  const getWeeksForMonth = (key: string): RevenuePoint[] => {
+    const [year, month] = key.split('-').map(Number);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const weeks: RevenuePoint[] = [];
+    for (let start = 1; start <= daysInMonth; start += 7) {
+      const end = Math.min(start + 6, daysInMonth);
+      let revenue = 0;
+      let orders = 0;
+      for (let day = start; day <= end; day++) {
+        const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const b = dailyBuckets.get(dateKey);
+        revenue += b?.revenue || 0;
+        orders += b?.orders || 0;
+      }
+      weeks.push({
+        name: `Week ${weeks.length + 1} (${start}-${end})`,
+        revenue,
+        orders,
+        meta: { monthKey: key, weekIndex: weeks.length },
+      });
+    }
+    return weeks;
+  };
+
+  const getDaysForWeek = (key: string, wkIndex: number): RevenuePoint[] => {
+    const [year, month] = key.split('-').map(Number);
+    const start = wkIndex * 7 + 1;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const out: RevenuePoint[] = [];
+    for (let day = start; day <= Math.min(start + 6, daysInMonth); day++) {
+      const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const b = dailyBuckets.get(dateKey);
+      const full = new Date(year, month - 1, day);
+      out.push({
+        name: `${monthNamesArr[month - 1]} ${day}`,
+        revenue: b?.revenue || 0,
+        orders: b?.orders || 0,
+        fullDate: full,
+      });
+    }
+    return out;
+  };
+
+  const currentMonth = months.find((m) => m.meta?.monthKey === monthKey) || null;
+  const weeks = monthKey ? getWeeksForMonth(monthKey) : [];
+  const currentWeek = weekIndex !== null ? weeks.find((w) => w.meta?.weekIndex === weekIndex) || null : null;
+  const days = monthKey && weekIndex !== null ? getDaysForWeek(monthKey, weekIndex) : [];
+
+  const chartData: RevenuePoint[] =
+    weekIndex !== null ? days : monthKey ? weeks : months;
+  const chartTitle =
+    weekIndex !== null && currentWeek
+      ? `${currentMonth?.name || monthKey} — ${currentWeek.name}`
+      : monthKey
+        ? `Revenue — ${currentMonth?.name || monthKey}`
+        : 'Revenue (Last 12 Months)';
+
+  const resetDrill = () => {
+    setMonthKey(null);
+    setWeekIndex(null);
+    setSelectedDate(null);
+  };
 
   const statusEntries = Object.entries(stats?.ordersByStatus || {}).filter(([, count]) => count > 0);
 
@@ -200,22 +321,74 @@ export default function AdminDashboard() {
       <div className="grid lg:grid-cols-3 gap-6 mb-8">
         {/* Revenue Chart */}
         <Card className="lg:col-span-2">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              Revenue (Last 12 Months)
+              {chartTitle}
             </CardTitle>
+            <div className="flex items-center gap-2">
+              {(monthKey || weekIndex !== null) && (
+                <Button variant="outline" size="sm" onClick={resetDrill}>
+                  All Months
+                </Button>
+              )}
+              {monthKey && weekIndex !== null && (
+                <Button variant="ghost" size="sm" onClick={() => { setWeekIndex(null); setSelectedDate(null); }}>
+                  Back to Weeks
+                </Button>
+              )}
+              {selectedDate && (
+                <Button variant="ghost" size="sm" onClick={() => setSelectedDate(null)}>
+                  Back to Days
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            {revenueData.length > 0 ? (
+            {chartData.length > 0 ? (
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={revenueData}>
+                  <BarChart
+                    data={chartData}
+                    onClick={(state: any) => {
+                      if (!state || !state.activePayload || state.activePayload.length === 0) return;
+                      const entry = state.activePayload[0]?.payload as RevenuePoint | undefined;
+                      if (!entry) return;
+                      if (!monthKey) {
+                        if (entry.meta?.monthKey) {
+                          setMonthKey(entry.meta.monthKey);
+                          setWeekIndex(null);
+                        }
+                      } else if (weekIndex === null) {
+                        if (entry.meta?.weekIndex !== undefined && entry.meta.weekIndex >= 0) {
+                          setWeekIndex(entry.meta.weekIndex);
+                        }
+                      } else {
+                        if (entry.fullDate) {
+                          const key = `${entry.fullDate.getFullYear()}-${String(entry.fullDate.getMonth() + 1).padStart(2, '0')}-${String(entry.fullDate.getDate()).padStart(2, '0')}`;
+                          setSelectedDate(key);
+                        }
+                      }
+                    }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="#E7E5E4" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 12 }}
+                      interval={weekIndex !== null ? 0 : 'preserveStartEnd'}
+                    />
                     <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => `Rs ${v}`} />
                     <Tooltip
+                      cursor={{ fill: 'rgba(139, 69, 19, 0.08)' }}
                       formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                      labelFormatter={(label: string) => {
+                        const p = chartData.find((d) => d.name === label);
+                        if (!p) return label;
+                        const weekday = p.fullDate
+                          ? ` ${p.fullDate.toLocaleDateString(undefined, { weekday: 'short' })}`
+                          : '';
+                        return `${label}${weekday} — ${p.orders} order${p.orders === 1 ? '' : 's'} (click to drill down)`;
+                      }}
                     />
                     <Bar dataKey="revenue" fill="#8B4513" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -224,6 +397,92 @@ export default function AdminDashboard() {
             ) : (
               <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">
                 No revenue data yet
+              </div>
+            )}
+            <p className="mt-3 text-xs text-muted-foreground">
+              Click a month to view its weeks, then click a week to see each day&apos;s revenue. Click a day for full details.
+            </p>
+
+            {isLoadingDay && (
+              <div className="mt-4 h-40 flex items-center justify-center text-muted-foreground text-sm">
+                Loading day details...
+              </div>
+            )}
+
+            {!isLoadingDay && dayDetail && (
+              <div className="mt-6 border-t border-border pt-5">
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+                  <h3 className="text-lg font-heading font-semibold text-foreground">
+                    {(() => {
+                      const [y, m, d] = dayDetail.date.split('-').map(Number);
+                      return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      });
+                    })()} — Day Details
+                  </h3>
+                  <span className="text-sm text-muted-foreground">
+                    {dayDetail.summary.receivedOrders} order{dayDetail.summary.receivedOrders === 1 ? '' : 's'} received
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                  <div className="rounded-lg bg-muted/50 p-4">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Received Orders</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground">{dayDetail.summary.receivedOrders}</p>
+                  </div>
+                  <div className="rounded-lg bg-emerald-50 p-4">
+                    <p className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Total Income</p>
+                    <p className="mt-1 text-2xl font-bold text-emerald-700">{formatCurrency(dayDetail.summary.totalIncome)}</p>
+                  </div>
+                  <div className="rounded-lg bg-green-50 p-4">
+                    <p className="text-xs font-medium text-green-600 uppercase tracking-wide">Completed Orders</p>
+                    <p className="mt-1 text-2xl font-bold text-green-700">{dayDetail.summary.completedOrders}</p>
+                  </div>
+                </div>
+
+                {dayDetail.orders.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left text-xs font-medium text-muted-foreground pb-3">Order #</th>
+                          <th className="text-left text-xs font-medium text-muted-foreground pb-3">Customer</th>
+                          <th className="text-left text-xs font-medium text-muted-foreground pb-3">Total</th>
+                          <th className="text-left text-xs font-medium text-muted-foreground pb-3">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dayDetail.orders.map((order) => (
+                          <tr key={order._id} className="border-b border-border last:border-0">
+                            <td className="py-3">
+                              <Link to={`/admin/orders`} className="text-sm font-medium text-primary hover:underline">
+                                {order.orderNumber}
+                              </Link>
+                            </td>
+                            <td className="py-3 text-sm text-foreground">
+                              {typeof order.customer === 'object' && order.customer
+                                ? `${order.customer.firstName} ${order.customer.lastName}`
+                                : 'Customer'}
+                            </td>
+                            <td className="py-3 text-sm font-medium">{formatCurrency(order.totalAmount)}</td>
+                            <td className="py-3">
+                              <Badge className={getStatusColor(order.status)}>
+                                {order.status}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-10 text-muted-foreground">
+                    <ShoppingCart className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                    <p>No orders received on this day</p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

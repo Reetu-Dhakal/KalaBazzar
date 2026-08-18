@@ -60,7 +60,7 @@ function TableSkeleton() {
 }
 
 export default function AdminRegions() {
-  usePageTitle('Manage Regions — KalaBazzar', 'Create and manage artisan regions.');
+  usePageTitle('Manage Regions — कलाbazzar', 'Create and manage artisan regions.');
   const [regions, setRegions] = useState<Region[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
