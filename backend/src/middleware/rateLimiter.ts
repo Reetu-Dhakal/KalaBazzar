@@ -40,6 +40,7 @@ export const authLimiter = createRateLimiter({
 export const apiLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
+  skipSuccessfulRequests: true,
 });
 
 export const uploadLimiter = createRateLimiter({
