@@ -353,7 +353,7 @@ export default function ProductDetail() {
             </>
           )}
           <ChevronRight className="h-3.5 w-3.5" />
-          <span className="text-foreground font-medium truncate max-w-[200px]">{product.name}</span>
+          <span className="text-foreground font-medium truncate max-w-50">{product.name}</span>
         </nav>
 
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
@@ -382,7 +382,7 @@ export default function ProductDetail() {
                   <button
                     key={i}
                     onClick={() => setSelectedImageIndex(i)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                    className={`shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
                       i === selectedImageIndex
                         ? 'border-primary'
                         : 'border-border hover:border-muted-foreground/50'
@@ -475,7 +475,7 @@ export default function ProductDetail() {
                     >
                       <Minus className="h-4 w-4" />
                     </button>
-                    <span className="px-5 py-2 text-sm font-medium min-w-[3rem] text-center">
+                    <span className="px-5 py-2 text-sm font-medium min-w-12 text-center">
                       {quantity}
                     </span>
                     <button
@@ -731,7 +731,7 @@ export default function ProductDetail() {
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                               {reviewer?.avatar ? (
                                 <img
                                   src={reviewer.avatar}
@@ -835,7 +835,7 @@ export default function ProductDetail() {
                         key={p}
                         variant={p === reviewPage ? 'primary' : 'outline'}
                         size="sm"
-                        className="min-w-[32px]"
+                        className="min-w-8"
                         onClick={() => setReviewPage(p)}
                       >
                         {p}
