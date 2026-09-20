@@ -13,51 +13,54 @@ export const sellerApplicationValidation = [
   body('region')
     .isMongoId()
     .withMessage('Valid region ID required'),
-  body('crafts')
+  body('craftType')
     .isArray({ min: 1 })
     .withMessage('At least one craft required'),
-  body('crafts.*')
+  body('craftType.*')
     .isMongoId()
     .withMessage('Valid craft IDs required'),
   body('verificationPath')
-    .isIn(['social', 'marketplace', 'offline'])
+    .isIn(['social-media', 'marketplace', 'offline-artisan'])
     .withMessage('Invalid verification path'),
-  body('verificationDocuments')
-    .isObject()
-    .withMessage('Verification documents required'),
-  body('verificationDocuments.workshopPhotos')
-    .isArray({ min: 3, max: 10 })
-    .withMessage('3-10 workshop photos required'),
-  body('verificationDocuments.makingVideo')
-    .optional()
-    .isURL()
-    .withMessage('Valid video URL required'),
-  body('verificationDocuments.craftStory')
-    .trim()
-    .isLength({ min: 100, max: 5000 })
-    .withMessage('Craft story must be 100-5000 characters'),
-  body('verificationDocuments.district')
+  body('district')
     .trim()
     .notEmpty()
     .withMessage('District required'),
-  body('verificationDocuments.yearsOfExperience')
+  body('yearsOfExperience')
+    .optional()
     .isInt({ min: 0, max: 100 })
     .withMessage('Years of experience 0-100'),
-  body('verificationDocuments.specialization')
-    .isArray({ min: 1 })
-    .withMessage('At least one specialization required'),
-  body('verificationDocuments.idDocument')
+  body('specialization')
+    .optional()
+    .isArray()
+    .withMessage('Specialization must be an array'),
+  body('specialization.*')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Specialization entries can not be empty'),
+  body('socialMediaLinks')
+    .optional()
+    .isObject()
+    .withMessage('Social media links must be an object'),
+  body('socialMediaLinks.*')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Social media link values can not be empty'),
+  body('workshopPhotos')
+    .optional()
+    .isArray({ min: 1, max: 10 })
+    .withMessage('1-10 workshop photos required'),
+  body('workshopPhotos.*')
     .optional()
     .isURL()
-    .withMessage('Valid ID document URL'),
-  body('verificationDocuments.panDocument')
+    .withMessage('Workshop photos must be valid URLs'),
+  body('craftStory')
     .optional()
-    .isURL()
-    .withMessage('Valid PAN document URL'),
-  body('verificationDocuments.vatDocument')
-    .optional()
-    .isURL()
-    .withMessage('Valid VAT document URL'),
+    .trim()
+    .isLength({ min: 20, max: 5000 })
+    .withMessage('Craft story must be 20-5000 characters'),
 ];
 
 export const updateSellerProfileValidation = [

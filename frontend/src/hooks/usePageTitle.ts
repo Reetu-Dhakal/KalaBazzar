@@ -64,9 +64,9 @@ const routeMeta: Record<string, { title: string; description: string }> = {
     title: 'Earnings — कलाbazzar',
     description: 'View your earnings and payout information.',
   },
-  '/seller/settings': {
-    title: 'Store Settings — कलाbazzar',
-    description: 'Manage your store details and payout information.',
+  '/seller/profile': {
+    title: 'Shop Profile — कलाbazzar',
+    description: 'Your shop profile and product feed.',
   },
   '/admin/dashboard': {
     title: 'Admin Dashboard — कलाbazzar',

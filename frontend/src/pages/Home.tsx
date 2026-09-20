@@ -1,5 +1,5 @@
-import { useState, useEffect, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   HandMetal,
@@ -9,33 +9,17 @@ import {
   Star,
   ChevronRight,
   ArrowRight,
-  Quote,
-  Users,
-  Leaf,
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  Facebook,
-  Instagram,
-  Youtube,
-  ChevronDown,
   Send,
 } from 'lucide-react';
-import { usePageTitle } from '@/hooks/usePageTitle';
-import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { formatCurrency } from '@/lib/utils';
-import { CONTACT, SOCIAL_LINKS } from '@/lib/contact';
-import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import { formatCurrency } from '@/lib/utils';
+import api from '@/lib/api';
+import { Footer } from '@/components/layout/Footer';
 import type { Product, Category, Review, Banner } from '@/types';
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0 },
 };
 
@@ -43,90 +27,79 @@ const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.09 },
   },
 };
 
+const goldPattern = (opacity = 0.08) =>
+  `url("data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><g fill='none' stroke='%23E6C582' stroke-opacity='${opacity}'><path d='M48 4 92 48 48 92 4 48Z' stroke-width='0.75'/><path d='M4 4 92 92M92 4 4 92' stroke-width='0.4'/></g></svg>`,
+  )}")`;
+
+const HERO_FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1767390552768-6703f91c2518?w=1920&q=80&auto=format&fit=crop';
+
+function Eyebrow({ children, centered = false }: { children: React.ReactNode; centered?: boolean }) {
+  return (
+    <p
+      className={`flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-gold-400 md:text-xs ${
+        centered ? 'justify-center' : ''
+      }`}
+    >
+      <span className="h-px w-8 bg-gradient-to-r from-transparent to-gold-500/70" />
+      <span className="shrink-0">✦ {children} ✦</span>
+      <span className="h-px w-8 bg-gradient-to-l from-transparent to-gold-500/70" />
+    </p>
+  );
+}
+
+function Ornament() {
+  return (
+    <div className="flex items-center justify-center gap-3 text-gold-500">
+      <span className="h-px w-14 bg-gradient-to-r from-transparent to-gold-500/50" />
+      <span className="text-gold-400">✦</span>
+      <span className="h-px w-14 bg-gradient-to-l from-transparent to-gold-500/50" />
+    </div>
+  );
+}
+
+const heroPrimaryBtn =
+  'inline-flex items-center justify-center gap-2 h-12 px-8 rounded-lg bg-gold-500 text-[#1A2340] font-semibold tracking-wide shadow-lg shadow-black/40 hover:bg-gold-400 hover:-translate-y-0.5 transition-all duration-300';
+const heroOutlineBtn =
+  'inline-flex items-center justify-center gap-2 h-12 px-8 rounded-lg border border-[#EDF2FA]/30 text-[#EDF2FA] hover:border-gold-400/70 hover:text-gold-300 hover:bg-white/5 transition-all duration-300';
+
 const features = [
-  { icon: HandMetal, title: 'Handmade', description: 'Every product is handcrafted with love and traditional techniques.' },
-  { icon: ShieldCheck, title: 'Verified Artisans', description: 'All sellers are verified to ensure authenticity and quality.' },
-  { icon: CreditCard, title: 'Secure Payment', description: 'Multiple secure payment options including COD, Khalti, and eSewa.' },
-  { icon: Truck, title: 'Fast Delivery', description: 'Reliable delivery across Nepal with tracking support.' },
-];
-
-const values = [
-  { icon: ShieldCheck, title: 'Authenticity', description: 'Every product on कलाbazzar is verified to be genuinely handcrafted. We work directly with artisans to ensure traditional techniques are preserved.' },
-  { icon: Star, title: 'Quality', description: 'We curate only the finest handcrafted goods. Our quality standards ensure that every item meets the expectations of discerning customers.' },
-  { icon: Users, title: 'Community', description: 'कलाbazzar is more than a marketplace — it is a community that connects artisans with appreciative customers worldwide.' },
-  { icon: Leaf, title: 'Sustainability', description: 'Handcrafted products are inherently sustainable. We promote eco-friendly materials and ethical production practices.' },
-];
-
-const testimonials = [
-  { id: '1', name: 'Anita Sharma', location: 'Kathmandu', comment: 'The handwoven shawl I purchased is absolutely stunning. The quality is exceptional and it arrived beautifully packaged. कलाbazzar has become my go-to for authentic Nepali crafts.', rating: 5 },
-  { id: '2', name: 'Rajesh Thapa', location: 'Pokhara', comment: 'I bought a traditional Dhaka topi as a gift. The artisan even added a personalized note. This is what real craftsmanship looks like. Highly recommended!', rating: 5 },
-  { id: '3', name: 'Maya Gurung', location: 'Lalitpur', comment: 'Supporting local artisans through कलाbazzar feels wonderful. The products are genuine, well-made, and the customer service is outstanding.', rating: 5 },
+  { icon: HandMetal, title: 'Handmade', description: 'Every piece is handcrafted using techniques passed down through generations.' },
+  { icon: ShieldCheck, title: 'Verified Artisans', description: 'Every seller is personally verified for authenticity and quality.' },
+  { icon: CreditCard, title: 'Secure Payments', description: 'Pay with COD, Khalti, or eSewa — all transactions fully protected.' },
+  { icon: Truck, title: 'Nationwide Delivery', description: 'Reliable delivery across all seven provinces with tracking.' },
 ];
 
 const categoryImages: Record<string, string> = {
-  handicrafts: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80',
-  jewelry: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80',
-  paintings: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&q=80',
-  ceramics: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
-  pottery: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=400&q=80',
-  woodwork: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80',
-  textiles: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80',
-  metalwork: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=400&q=80',
-  sculptures: 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=400&q=80',
-  'bags-accessories': 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80',
-  'home-decor': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&q=80',
-  'musical-instruments': 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=400&q=80',
+  handicrafts: 'https://images.unsplash.com/photo-1595231776515-ddffb1f4eb73?w=500&q=80',
+  jewelry: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&q=80',
+  paintings: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=500&q=80',
+  ceramics: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=500&q=80',
+  pottery: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=500&q=80',
+  woodwork: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=500&q=80',
+  textiles: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&q=80',
+  metalwork: 'https://images.unsplash.com/photo-1590422749897-47036da0b0ff?w=500&q=80',
+  sculptures: 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=500&q=80',
+  'bags-accessories': 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500&q=80',
+  'home-decor': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500&q=80',
+  'musical-instruments': 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80',
 };
 
-const fallbackCategoryImage = 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80';
-
-const faqCategories = [
-  {
-    title: 'Orders & Shipping',
-    items: [
-      { q: 'How do I place an order?', a: 'Simply browse our shop, add items to your cart, and proceed to checkout. You can pay via COD, Khalti, or eSewa. After placing an order, you will receive a confirmation email with your order details.' },
-      { q: 'How long does shipping take?', a: 'Standard shipping within Nepal typically takes 3-7 business days depending on your location. Express shipping is available for faster delivery.' },
-      { q: 'Can I track my order?', a: 'Yes! Once your order is shipped, you will receive a tracking number via email. You can also track your order status from your Orders page in your account.' },
-    ],
-  },
-  {
-    title: 'Payments',
-    items: [
-      { q: 'What payment methods do you accept?', a: 'We accept Cash on Delivery (COD), Khalti digital wallet, and eSewa. All online payments are processed securely.' },
-      { q: 'Is COD available everywhere?', a: 'COD is available in most areas within Nepal. Some remote locations may only support online payment methods.' },
-      { q: 'Can I get a refund if I paid online?', a: 'Yes, refunds for online payments are processed back to your original payment method within 5-7 business days after the refund is approved.' },
-    ],
-  },
-  {
-    title: 'Returns & Refunds',
-    items: [
-      { q: 'What is your return policy?', a: 'We offer a 7-day return policy for most items. Products must be unused, in original packaging, and in the same condition as received. Custom-made items are not eligible for returns.' },
-      { q: 'How do I initiate a return?', a: 'Go to your Orders page, select the order containing the item you want to return, and click "Request Return." Follow the instructions and we will process your request.' },
-      { q: 'What if I receive a damaged item?', a: 'If you receive a damaged item, please contact us within 48 hours with photos of the damage. We will arrange a replacement or full refund immediately.' },
-    ],
-  },
-  {
-    title: 'Seller Questions',
-    items: [
-      { q: 'How do I become a seller?', a: 'Click "Become an Artisan" and fill out the seller application form. Our team will review your application within 3-5 business days.' },
-      { q: 'What are the fees for selling?', a: 'कलाbazzar charges a small commission on each sale. There are no listing fees or monthly charges. You only pay when you make a sale.' },
-      { q: 'Can I offer custom orders?', a: 'Yes! You can enable custom orders in your product listings and specify customization options. Customers can then request personalized versions of your products.' },
-    ],
-  },
-];
+const fallbackCategoryImage = 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=500&q=80';
 
 function ProductSkeleton() {
   return (
-    <div className="min-w-48">
-      <Skeleton className="aspect-square rounded-xl" />
-      <div className="mt-3 space-y-2">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-6 w-1/3" />
+    <div className="w-64 shrink-0 sm:w-72">
+      <div className="aspect-square animate-pulse rounded-2xl bg-[#E3E9F4]" />
+      <div className="mt-4 space-y-2">
+        <div className="h-4 w-3/4 animate-pulse rounded bg-[#E3E9F4]" />
+        <div className="h-4 w-1/2 animate-pulse rounded bg-[#E3E9F4]" />
+        <div className="h-6 w-1/3 animate-pulse rounded bg-[#E3E9F4]" />
       </div>
     </div>
   );
@@ -177,34 +150,48 @@ function ProductCard({ product }: { product: Product }) {
   const firstImage = images[0] || getHomeFallbackImage(product.name);
 
   return (
-    <Link to={`/shop/${product.slug}`} className="group block min-w-48">
-      <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-shadow duration-300 group-hover:shadow-lg">
+    <Link to={`/shop/${product.slug}`} className="group block w-64 shrink-0 sm:w-72">
+      <div className="relative overflow-hidden rounded-2xl border border-[#DDE4EF] bg-white shadow-sm transition-all duration-300 group-hover:border-gold-500/50">
         <div className="aspect-square overflow-hidden">
-          <img src={firstImage} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <img
+            src={firstImage}
+            alt={product.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
         </div>
         {product.compareAtPrice && product.compareAtPrice > product.basePrice && (
-          <Badge variant="destructive" className="absolute top-2 left-2">
-            {Math.round(((product.compareAtPrice - product.basePrice) / product.compareAtPrice) * 100)}% OFF
-          </Badge>
+          <span className="absolute left-3 top-3 rounded-full bg-[#A52019] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#FFF6EC]">
+            {Math.round(((product.compareAtPrice - product.basePrice) / product.compareAtPrice) * 100)}% Off
+          </span>
         )}
         {product.isFeatured && (
-          <Badge variant="secondary" className="absolute top-2 right-2">Featured</Badge>
+          <span className="absolute right-3 top-3 rounded-full border border-gold-500/50 bg-black/60 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-gold-300 backdrop-blur">
+            Featured
+          </span>
         )}
+        <div className="absolute inset-0 flex items-end justify-center bg-black/0 p-4 opacity-0 transition-all duration-300 group-hover:bg-black/40 group-hover:opacity-100">
+          <span className="rounded-lg bg-gold-500 px-5 py-2 text-xs font-semibold uppercase tracking-widest text-[#1A2340]">
+            View Piece
+          </span>
+        </div>
       </div>
-      <div className="mt-3">
-        <h3 className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">{product.name}</h3>
+      <div className="mt-4">
+        <h3 className="line-clamp-1 font-heading text-lg leading-snug text-[#33415C] transition-colors group-hover:text-primary">
+          {product.name}
+        </h3>
         {typeof product.category === 'object' && product.category && (
-          <p className="text-xs text-muted-foreground mt-1">{product.category.name}</p>
+          <p className="mt-0.5 text-xs uppercase tracking-widest text-[#53617E]">{product.category.name}</p>
         )}
-        <div className="mt-1 flex items-center gap-2">
-          <span className="text-lg font-semibold text-primary">{formatCurrency(product.basePrice)}</span>
+        <div className="mt-2 flex items-baseline gap-2">
+          <span className="text-lg font-semibold text-gold-600">{formatCurrency(product.basePrice)}</span>
           {product.compareAtPrice && product.compareAtPrice > product.basePrice && (
-            <span className="text-sm text-muted-foreground line-through">{formatCurrency(product.compareAtPrice)}</span>
+            <span className="text-sm text-[#8A95AD] line-through">{formatCurrency(product.compareAtPrice)}</span>
           )}
         </div>
         {product.analytics?.averageRating > 0 && (
-          <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-            <Star className="h-3.5 w-3.5 fill-secondary text-secondary" />
+          <div className="mt-1 flex items-center gap-1.5 text-sm text-[#53617E]">
+            <Star className="h-3.5 w-3.5 fill-gold-400 text-gold-400" />
             <span>{product.analytics?.averageRating.toFixed(1)}</span>
             <span>({product.analytics?.reviewCount})</span>
           </div>
@@ -214,27 +201,8 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
-function FaqItem({ question, answer }: { question: string; answer: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border border-border rounded-xl overflow-hidden transition-shadow hover:shadow-sm">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-hover transition-colors">
-        <span className="font-medium text-foreground">{question}</span>
-        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
-      </button>
-      <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed">
-          {answer}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Home() {
   usePageTitle();
-  const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [topReviews, setTopReviews] = useState<Review[]>([]);
@@ -242,20 +210,24 @@ export default function Home() {
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
-  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (user.role === 'seller') {
-        navigate('/seller/dashboard', { replace: true });
-      } else {
-        navigate('/shop', { replace: true });
-      }
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+
+    setIsSubscribing(true);
+    try {
+      await api.post('/newsletter', { email: newsletterEmail });
+      toast.success('Thanks for subscribing!');
+      setNewsletterEmail('');
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setIsSubscribing(false);
     }
-  }, [isAuthenticated, user, navigate]);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -301,147 +273,168 @@ export default function Home() {
     return '/shop';
   };
 
-  const resolveAlignment = (alignment: string): string => {
-    if (alignment === 'left') return 'text-left items-start';
-    if (alignment === 'right') return 'text-right items-end';
-    return 'text-center items-center';
-  };
-
   const activeBanner = heroBanners[activeBannerIndex];
 
-  const handleContactSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsSubmittingContact(true);
-    try {
-      await api.post('/contact', contactForm);
-      toast.success('Message sent! We will get back to you soon.');
-      setContactForm({ name: '', email: '', subject: '', message: '' });
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to send your message. Please try again.';
-      toast.error(message);
-    } finally {
-      setIsSubmittingContact(false);
-    }
-  };
+  const heroBannerTextColor = activeBanner?.textColor || '#EDF2FA';
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#EDF2FA] text-[#33415C]">
       {/* ─── HERO ─── */}
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden scroll-mt-20" id="hero">
-        {/* Background image */}
+      <section className="relative flex min-h-screen items-end overflow-hidden" id="hero">
         <div className="absolute inset-0">
-          {activeBanner ? (
-            <img
-              key={activeBanner._id}
-              src={activeBanner.mobileImage || activeBanner.image}
-              alt={activeBanner.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <img
-              src="https://images.unsplash.com/photo-1546006200-f8c574598b28?w=1920&q=80&auto=format&fit=crop"
-              alt="Nepali handicrafts"
-              className="w-full h-full object-cover"
-            />
-          )}
-          {/* Dark overlay for text readability */}
+          <img
+            key={activeBanner?._id || 'hero-default'}
+            src={activeBanner?.mobileImage || activeBanner?.image || HERO_FALLBACK_IMAGE}
+            alt={activeBanner?.title || 'Artisan weaving on a traditional loom'}
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = HERO_FALLBACK_IMAGE;
+            }}
+          />
           <div
             className="absolute inset-0"
             style={{
               backgroundColor: activeBanner
-                ? `${activeBanner.backgroundColor || '#1C1917'}${Math.round((activeBanner.overlayOpacity ?? 0.7) * 255).toString(16).padStart(2, '0')}`
+                ? `${activeBanner.backgroundColor || '#14100B'}${Math.round((activeBanner.overlayOpacity ?? 0.7) * 255)
+                    .toString(16)
+                    .padStart(2, '0')}`
                 : undefined,
             }}
           />
-          {!activeBanner && (
-            <div className="absolute inset-0 bg-linear-to-r from-[#1C1917]/90 via-[#1C1917]/70 to-[#1C1917]/40" />
-          )}
         </div>
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(20,16,11,0.5) 0%, rgba(20,16,11,0.2) 40%, rgba(20,16,11,0.94) 100%), linear-gradient(90deg, rgba(20,16,11,0.55) 0%, rgba(20,16,11,0.15) 45%, rgba(20,16,11,0) 70%)',
+          }}
+        />
+        <div className="absolute inset-0" style={{ backgroundImage: goldPattern(0.1) }} />
 
-        <div className="relative container mx-auto px-4 py-20 md:py-32">
+        <div className="relative container mx-auto px-4 pb-16 pt-32 md:pb-20">
           {activeBanner ? (
             <motion.div
               key={activeBanner._id + activeBannerIndex}
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
-              className={`max-w-2xl flex flex-col ${resolveAlignment(activeBanner.alignment)}`}
-              style={{ color: activeBanner.textColor || '#FFFFFF' }}
+              className="flex max-w-2xl flex-col items-start text-left"
+              style={{ color: heroBannerTextColor }}
             >
-              <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-heading leading-tight">
+              <motion.div variants={fadeInUp}>
+                <Eyebrow>Handcrafted Heritage</Eyebrow>
+              </motion.div>
+              <motion.h1
+                variants={fadeInUp}
+                className="mt-6 font-heading text-3xl leading-tight sm:text-4xl md:text-5xl lg:text-6xl"
+                style={{ color: heroBannerTextColor }}
+              >
                 {activeBanner.title}
+                {activeBanner.subtitle && (
+                  <em className="mt-2 block italic text-gold-400">{activeBanner.subtitle}</em>
+                )}
               </motion.h1>
-              {activeBanner.subtitle && (
-                <motion.p variants={fadeInUp} className="mt-4 text-xl text-white/80 max-w-lg">
-                  {activeBanner.subtitle}
+              {activeBanner.description && (
+                <motion.p
+                  variants={fadeInUp}
+                  className="mt-6 max-w-lg text-lg leading-relaxed"
+                  style={{ color: activeBanner.textColor ? undefined : '#EDF2FA' }}
+                >
+                  {activeBanner.description}
                 </motion.p>
               )}
-              {(activeBanner.description || activeBanner.buttonText) && (
-                <motion.div variants={fadeInUp} className="mt-6 flex flex-wrap gap-4">
-                  {activeBanner.buttonText && (
-                    <Button asChild size="lg" className="bg-secondary text-white hover:bg-secondary/90">
-                      <Link to={getBannerLink(activeBanner)}>{activeBanner.buttonText} <ArrowRight className="h-4 w-4" /></Link>
-                    </Button>
-                  )}
-                  {activeBanner.description && (
-                    <span className="text-white/70 text-base">{activeBanner.description}</span>
+              {(activeBanner.buttonText || !activeBanner.description) && (
+                <motion.div variants={fadeInUp} className="mt-9 flex flex-wrap gap-4">
+                  {activeBanner.buttonText ? (
+                    <Link to={getBannerLink(activeBanner)} className={heroPrimaryBtn}>
+                      {activeBanner.buttonText} <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  ) : (
+                    <>
+                      <Link to="/shop" className={heroPrimaryBtn}>
+                        Shop Handmade Goods <ArrowRight className="h-4 w-4" />
+                      </Link>
+                      <Link to="/seller/apply" className={heroOutlineBtn}>
+                        Become an Artisan
+                      </Link>
+                    </>
                   )}
                 </motion.div>
               )}
             </motion.div>
           ) : (
-            <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-2xl">
-              <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-heading text-white leading-tight">
-                Discover Authentic Nepali Crafts
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              className="flex max-w-3xl flex-col items-start"
+            >
+              <motion.div variants={fadeInUp}>
+                <Eyebrow>Handcrafted Heritage from the Himalayas</Eyebrow>
+              </motion.div>
+              <motion.h1
+                variants={fadeInUp}
+                className="mt-6 font-heading text-3xl leading-tight text-[#EDF2FA] sm:text-4xl md:text-5xl lg:text-6xl"
+              >
+                The Soul of Nepal,
+                <br />
+                <em className="italic text-gold-400">Woven by Hand</em>
               </motion.h1>
-              <motion.p variants={fadeInUp} className="mt-6 text-lg text-white/70 max-w-lg">
-                Connect with skilled artisans and bring home handcrafted treasures that tell the story of Nepal&apos;s rich cultural heritage.
+              <motion.p
+                variants={fadeInUp}
+                className="mt-7 max-w-xl text-lg leading-relaxed text-[#EDF2FA]/75"
+              >
+                Discover authentic handcrafted treasures from skilled artisans across Nepal — each
+                piece carrying the stories, skills, and heritage of generations.
               </motion.p>
-              <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap gap-4">
-                <Button asChild size="lg" className="bg-secondary text-white hover:bg-secondary/90">
-                  <Link to="/shop">Shop Now <ArrowRight className="h-4 w-4" /></Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
-                  <Link to="/seller/apply">Become an Artisan</Link>
-                </Button>
+              <motion.div variants={fadeInUp} className="mt-10 flex flex-wrap gap-4">
+                <Link to="/shop" className={heroPrimaryBtn}>
+                  Shop Handmade Goods <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link to="/seller/apply" className={heroOutlineBtn}>
+                  Become an Artisan
+                </Link>
               </motion.div>
             </motion.div>
           )}
         </div>
 
-        {/* Carousel navigation dots */}
         {heroBanners.length > 1 && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {heroBanners.map((b, i) => (
-              <button
-                key={b._id}
-                onClick={() => setActiveBannerIndex(i)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  i === activeBannerIndex ? 'w-8 bg-secondary' : 'w-2.5 bg-white/50 hover:bg-white/80'
-                }`}
-                aria-label={`Go to banner ${i + 1}`}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+        <div className="absolute bottom-20 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+          {heroBanners.map((b, i) => (
+            <button
+              key={b._id}
+              onClick={() => setActiveBannerIndex(i)}
+              className={`transition-all duration-300 ${
+                i === activeBannerIndex ? 'h-2.5 w-10 rounded-full bg-gold-400' : 'h-2.5 w-2.5 rounded-full bg-white/40 hover:bg-white/70'
+              }`}
+              aria-label={`Go to banner ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
 
-      {/* ─── FEATURES ─── */}
-      <section className="py-16 md:py-20 scroll-mt-20" id="features">
+    {/* ─── FEATURES ─── */}
+      <section id="features" className="bg-[#EDF2FA] py-20 md:py-24">
         <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4"
+          >
             {features.map((f) => (
-              <motion.div key={f.title} variants={fadeInUp}>
-                <Card variant="elevated" className="text-center p-6 h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                  <CardContent className="p-0">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-                      <f.icon className="h-7 w-7 text-primary" />
-                    </div>
-                    <h3 className="font-heading text-lg font-semibold text-foreground">{f.title}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{f.description}</p>
-                  </CardContent>
-                </Card>
+              <motion.div key={f.title} variants={fadeInUp} className="text-center">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-gold-500/30 bg-gold-500/10">
+                  <f.icon className="h-7 w-7 text-gold-400" />
+                </div>
+                <h3 className="font-heading text-xl font-semibold text-[#33415C]">{f.title}</h3>
+                <p className="mx-auto mt-2 max-w-[16rem] text-sm leading-relaxed text-[#53617E]">
+                  {f.description}
+                </p>
               </motion.div>
             ))}
           </motion.div>
@@ -449,152 +442,216 @@ export default function Home() {
       </section>
 
       {/* ─── CATEGORIES ─── */}
-      <section className="py-16 md:py-20 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.div variants={fadeInUp} className="flex items-center justify-between mb-8">
+      <section className="relative overflow-hidden bg-white py-20 md:py-28">
+        <div className="absolute inset-0" style={{ backgroundImage: goldPattern(0.05) }} />
+        <div className="relative container mx-auto px-4">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeInUp} className="mb-10 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="text-3xl font-heading text-foreground">Shop by Category</h2>
-                <p className="mt-2 text-muted-foreground">Explore our curated collections</p>
+                <Eyebrow>Curated Collections</Eyebrow>
+                <h2 className="mt-4 font-heading text-4xl text-[#33415C] md:text-5xl">Shop by Category</h2>
               </div>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/shop">View All <ChevronRight className="h-4 w-4" /></Link>
-              </Button>
+              <Link
+                to="/shop"
+                className="group flex items-center gap-1.5 text-sm font-medium tracking-wide text-gold-400 transition-colors hover:text-gold-300"
+              >
+                View All Collections
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </motion.div>
+
             {isLoadingCategories ? (
-              <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-                <div className="flex gap-3 pb-4">
-                  {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="min-w-28 h-28 rounded-xl" />)}
-                </div>
+              <div className="scrollbar-hide -mx-4 flex gap-6 overflow-x-auto snap-x snap-mandatory px-4 pb-4">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="w-44 shrink-0 sm:w-64">
+                    <div className="aspect-[3/4] animate-pulse rounded-t-[999px] rounded-b-2xl bg-[#E3E9F4]" />
+                  </div>
+                ))}
               </div>
             ) : (
-              <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-4 px-4">
-                <div className="flex gap-3 pb-4">
+              <motion.div className="scrollbar-hide -mx-4 overflow-x-auto snap-x snap-mandatory px-4 pb-4">
+                <div className="flex gap-6">
                   {categories.map((cat) => (
-                    <motion.div key={cat._id} variants={fadeInUp} className="snap-start shrink-0 min-w-28">
-                      <Link to={`/shop?category=${cat.slug}`} className="group block relative overflow-hidden rounded-xl h-28">
+                    <motion.div key={cat._id} variants={fadeInUp} className="w-44 shrink-0 snap-start sm:w-64">
+                      <Link
+                        to={`/shop?category=${cat.slug}`}
+                        className="group relative block aspect-[3/4] overflow-hidden rounded-t-[999px] rounded-b-2xl border border-[#DDE4EF] transition-colors duration-300 hover:border-gold-500/50"
+                      >
                         <img
                           src={cat.image || categoryImages[cat.slug] || fallbackCategoryImage}
                           alt={cat.name}
                           loading="lazy"
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                          <h3 className="font-heading text-sm font-semibold text-white leading-tight">{cat.name}</h3>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1F2937]/85 via-[#1F2937]/20 to-transparent" />
+                        <div className="absolute bottom-0 inset-x-0 p-4 text-center">
+                          <p className="mb-2 text-gold-400 opacity-0 transition-all duration-300 group-hover:opacity-100">✦</p>
+                          <h3 className="font-heading text-lg leading-tight text-[#EDF2FA] transition-colors group-hover:text-gold-300">
+                            {cat.name}
+                          </h3>
                         </div>
                       </Link>
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
           </motion.div>
         </div>
       </section>
 
       {/* ─── FEATURED PRODUCTS ─── */}
-      <section className="py-16 md:py-20">
+      <section className="bg-[#EDF2FA] py-20 md:py-28">
         <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.div variants={fadeInUp} className="flex items-center justify-between mb-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeInUp} className="mb-10 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="text-3xl font-heading text-foreground">Featured Products</h2>
-                <p className="mt-2 text-muted-foreground">Handpicked by our curators</p>
+                <Eyebrow>Handpicked by Our Curators</Eyebrow>
+                <h2 className="mt-4 font-heading text-4xl text-[#33415C] md:text-5xl">Featured Craft</h2>
               </div>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/shop">View All <ChevronRight className="h-4 w-4" /></Link>
-              </Button>
+              <Link
+                to="/shop"
+                className="group flex items-center gap-1.5 text-sm font-medium tracking-wide text-gold-400 transition-colors hover:text-gold-300"
+              >
+                View All Pieces
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </motion.div>
-            <motion.div variants={fadeInUp} className="overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-4 px-4">
-              <div className="flex gap-6 pb-4">
+            <motion.div
+              variants={fadeInUp}
+              className="scrollbar-hide -mx-4 overflow-x-auto snap-x snap-mandatory px-4 pb-4"
+            >
+              <div className="flex gap-6">
                 {isLoadingProducts
                   ? Array.from({ length: 6 }).map((_, i) => <ProductSkeleton key={i} />)
-                  : featuredProducts.map((p) => <div key={p._id} className="snap-start"><ProductCard product={p} /></div>)}
+                  : featuredProducts.map((p) => (
+                      <div key={p._id} className="snap-start">
+                        <ProductCard product={p} />
+                      </div>
+                    ))}
               </div>
             </motion.div>
           </motion.div>
         </div>
-      </section>
+</section>
 
-      {/* ─── ABOUT / OUR STORY ─── */}
-      <section className="py-16 md:py-20 scroll-mt-20" id="about">
-        <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.div variants={fadeInUp} className="max-w-3xl mx-auto text-center mb-12">
-              <Badge variant="secondary" className="mb-4">Our Mission</Badge>
-              <h2 className="text-3xl md:text-4xl font-heading text-foreground">Empowering Artisans, Preserving Heritage</h2>
-              <p className="mt-4 text-muted-foreground leading-relaxed">
-                कलाbazzar was born from a simple observation: Nepal&apos;s talented artisans — weavers, potters, woodworkers, and craftspeople — possess extraordinary skills passed down through generations, yet many struggled to reach the customers who would treasure their work. Today, कलाbazzar is home to over 500 verified artisans from all seven provinces of Nepal.
-              </p>
+      {/* ─── ARTISAN CTA ─── */}
+      <section className="relative overflow-hidden py-24 md:py-32">
+        <img
+          src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80"
+          alt="Skilled wood carving"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[#14100B]/85" />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(180deg, rgba(20,16,11,0.6), rgba(20,16,11,0.9))' }}
+        />
+        <div className="absolute inset-0" style={{ backgroundImage: goldPattern(0.1) }} />
+
+        <div className="relative container mx-auto px-4">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="mx-auto max-w-3xl text-center"
+          >
+            <motion.div variants={fadeInUp}>
+              <Eyebrow centered>For Artisans</Eyebrow>
             </motion.div>
-
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ─── VALUES ─── */}
-      <section className="py-16 md:py-20 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.div variants={fadeInUp} className="text-center mb-12">
-              <h2 className="text-3xl font-heading text-foreground">Our Values</h2>
-              <p className="mt-2 text-muted-foreground">The principles that guide everything we do</p>
+            <motion.h2
+              variants={fadeInUp}
+              className="mt-5 font-heading text-3xl leading-tight text-[#EDF2FA] md:text-4xl"
+            >
+              Turn Your Craft Into a <em className="italic text-gold-400">Thriving Business</em>
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#EDF2FA]/70">
+              Join कलाbazzar and reach customers who treasure authentic handcrafted products. Set up
+              your store, manage orders, and grow your artisan business with our support.
+            </motion.p>
+            <motion.div variants={fadeInUp} className="mt-8 flex flex-wrap justify-center gap-3">
+              {['Zero listing fees for your first month', 'Verified artisan badge', 'Marketing support', 'Secure payments'].map(
+                (b) => (
+                  <span
+                    key={b}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-[#EDF2FA]/80"
+                  >
+                    <span className="text-gold-400">✦</span>
+                    {b}
+                  </span>
+                ),
+              )}
             </motion.div>
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {values.map((v) => (
-                <motion.div key={v.title} variants={fadeInUp}>
-                  <Card variant="elevated" className="h-full p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                    <CardContent className="p-0">
-                      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-                        <v.icon className="h-7 w-7 text-primary" />
-                      </div>
-                      <h3 className="font-heading text-lg font-semibold text-foreground">{v.title}</h3>
-                      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{v.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+            <motion.div variants={fadeInUp} className="mt-10 flex flex-wrap justify-center gap-4">
+              <Link to="/seller/apply" className={heroPrimaryBtn}>
+                Start Selling Today <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/shop" className={heroOutlineBtn}>
+                Explore the Marketplace
+              </Link>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* ─── TESTIMONIALS ─── */}
-      <section className="py-16 md:py-20">
+      <section className="bg-white py-20 md:py-28">
         <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.div variants={fadeInUp} className="text-center mb-12">
-              <h2 className="text-3xl font-heading text-foreground">What Our Customers Say</h2>
-              <p className="mt-2 text-muted-foreground max-w-lg mx-auto">Hear from people who have experienced the beauty of Nepali craftsmanship</p>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeInUp} className="mb-14 text-center">
+              <Eyebrow centered>Voices of Our Community</Eyebrow>
+              <h2 className="mt-5 font-heading text-4xl text-[#33415C] md:text-5xl">Loved by Customers Everywhere</h2>
+              <Ornament />
             </motion.div>
-            <div className="grid md:grid-cols-3 gap-6">
-              {(topReviews.length > 0 ? topReviews : testimonials).map((t) => {
-                const isReview = '_id' in t;
-                const key = isReview ? t._id : t.id;
-                const comment = t.comment;
-                const rating = t.rating;
-                const authorName = isReview
-                  ? typeof t.customer === 'object' && t.customer ? `${t.customer.firstName} ${t.customer.lastName}` : 'Verified Customer'
-                  : t.name;
-                const authorSub = isReview ? 'Verified Purchase' : t.location;
+            <div className="grid gap-6 md:grid-cols-3">
+              {topReviews.map((r) => {
+                const authorName =
+                  typeof r.customer === 'object' && r.customer
+                    ? `${r.customer.firstName} ${r.customer.lastName}`
+                    : 'Verified Customer';
                 return (
-                  <motion.div key={key} variants={fadeInUp}>
-                    <Card variant="elevated" className="h-full transition-all duration-300 hover:shadow-lg">
-                      <CardContent className="p-6">
-                        <Quote className="h-8 w-8 text-secondary/40 mb-4" />
-                        <p className="text-foreground leading-relaxed">{comment}</p>
-                        <div className="mt-4 flex items-center gap-1">
+                  <motion.div key={r._id} variants={fadeInUp}>
+                    <div className="relative h-full rounded-2xl border border-[#DDE4EF] bg-white p-7 pt-10 transition-all duration-300 hover:border-gold-500/40">
+                      <span className="absolute left-6 top-1 select-none font-heading text-7xl leading-none text-gold-500/30">
+                        “
+                      </span>
+                      <div className="relative">
+                        <div className="flex items-center gap-1">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className={`h-4 w-4 ${i < rating ? 'fill-secondary text-secondary' : 'text-muted-foreground'}`} />
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${i < r.rating ? 'fill-gold-400 text-gold-400' : 'text-[#E3E9F4]'}`}
+                            />
                           ))}
                         </div>
-                        <div className="mt-4 border-t border-border pt-4">
-                          <p className="font-medium text-foreground">{authorName}</p>
-                          <p className="text-sm text-muted-foreground">{authorSub}</p>
+                        <p className="mt-4 leading-relaxed text-[#53617E]">{r.comment}</p>
+                        <div className="mt-6 flex items-center gap-3 border-t border-[#EDF1F8] pt-5">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gold-500/30 bg-gold-500/10 font-heading text-base font-semibold text-gold-600">
+                            {authorName.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-[#33415C]">{authorName}</p>
+                            <p className="text-xs uppercase tracking-widest text-[#8A95AD]">Verified Purchase</p>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   </motion.div>
                 );
               })}
@@ -603,143 +660,60 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── ARTISAN CTA ─── */}
-      <section className="py-16 md:py-20 bg-primary/5 scroll-mt-20">
-        <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+      {/* ─── NEWSLETTER CTA ─── */}
+      <section className="relative overflow-hidden bg-[#1A2340] py-20 md:py-24">
+        <div className="absolute inset-0" style={{ backgroundImage: goldPattern(0.08) }} />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(120deg, rgba(20,16,11,0.5), rgba(20,16,11,0))' }}
+        />
+        <div className="relative container mx-auto px-4 text-center">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="mx-auto max-w-2xl"
+          >
             <motion.div variants={fadeInUp}>
-              <Card variant="elevated" className="overflow-hidden border-0 shadow-xl">
-                  <div className="p-8 md:p-12 flex flex-col justify-center">
-                    <Badge variant="secondary" className="w-fit mb-4">For Artisans</Badge>
-                    <h2 className="text-3xl font-heading text-foreground mb-4">Turn Your Craft Into a Business</h2>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">
-                      Join कलाbazzar and reach customers who appreciate authentic handcrafted products. Set up your online store, manage orders, and grow your artisan business with our support.
-                    </p>
-                    <ul className="space-y-3 mb-8">
-                      {['Zero listing fees for your first month', 'Verified artisan badge', 'Marketing & promotional support', 'Secure payment processing'].map((b) => (
-                        <li key={b} className="flex items-center gap-2 text-sm text-foreground">
-                          <ShieldCheck className="h-4 w-4 text-success shrink-0" />{b}
-                        </li>
-                      ))}
-                    </ul>
-                    <div>
-                      <Button asChild size="lg">
-                        <Link to={user?.role === 'seller' ? '/seller/dashboard' : '/seller/apply'}>
-                          {user?.role === 'seller' ? 'Go to Dashboard' : 'Start Selling Today'} <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-              </Card>
+              <Eyebrow centered>Stay Inspired</Eyebrow>
             </motion.div>
+            <motion.h2
+              variants={fadeInUp}
+              className="mt-5 font-heading text-3xl leading-tight text-[#EDF2FA] md:text-4xl"
+            >
+              Join the <em className="italic text-gold-400">कलाbazzar</em> Community
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="mx-auto mt-4 text-lg leading-relaxed text-[#EDF2FA]/70">
+              Get curated stories of Nepali artisans, new arrivals, and exclusive offers in your inbox.
+              No spam, ever.
+            </motion.p>
+            <motion.form
+              variants={fadeInUp}
+              onSubmit={handleNewsletterSubmit}
+              className="mx-auto mt-9 flex w-full max-w-lg flex-col gap-3 sm:flex-row"
+            >
+              <input
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder="Your email address"
+                className="h-12 flex-1 rounded-lg border border-white/15 bg-white/5 px-4 text-[#EDF2FA] placeholder:text-[#EDF2FA]/40 focus:outline-none focus:ring-2 focus:ring-gold-400"
+                required
+              />
+              <button
+                type="submit"
+                disabled={isSubscribing}
+                className={heroPrimaryBtn + ' shrink-0 disabled:opacity-50'}
+              >
+                Subscribe <Send className="h-4 w-4" />
+              </button>
+            </motion.form>
           </motion.div>
         </div>
       </section>
 
-      {/* ─── FAQ ─── */}
-      <section className="py-16 md:py-20 scroll-mt-20" id="faq">
-        <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.div variants={fadeInUp} className="text-center mb-12">
-              <h2 className="text-3xl font-heading text-foreground">Frequently Asked Questions</h2>
-              <p className="mt-2 text-muted-foreground">Find answers to common questions about shopping on कलाbazzar</p>
-            </motion.div>
-            <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-              {faqCategories.map((cat) => (
-                <motion.div key={cat.title} variants={fadeInUp}>
-                  <h3 className="font-heading text-lg font-semibold text-foreground mb-4">{cat.title}</h3>
-                  <div className="space-y-3">
-                    {cat.items.map((item) => (
-                      <FaqItem key={item.q} question={item.q} answer={item.a} />
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-            <motion.div variants={fadeInUp} className="text-center mt-8">
-              <p className="text-muted-foreground mb-4">Still have questions?</p>
-              <div className="flex justify-center gap-4">
-                <Button asChild variant="outline">
-                  <Link to="/#contact">Contact Support</Link>
-                </Button>
-                <Button asChild variant="ghost">
-                  <a href={CONTACT.emailHref}>Email Us</a>
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ─── CONTACT ─── */}
-      <section className="py-16 md:py-20 bg-muted/50 scroll-mt-20" id="contact">
-        <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-            <motion.div variants={fadeInUp} className="text-center mb-12">
-              <Badge variant="secondary" className="mb-4">Get in Touch</Badge>
-              <h2 className="text-3xl font-heading text-foreground">Contact Us</h2>
-              <p className="mt-2 text-muted-foreground">Have a question or feedback? We would love to hear from you.</p>
-            </motion.div>
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              <motion.div variants={fadeInUp} className="md:col-span-2">
-                <Card variant="elevated">
-                  <CardContent className="p-6">
-                    <h3 className="font-heading text-lg font-semibold text-foreground mb-6">Send us a Message</h3>
-                    <form onSubmit={handleContactSubmit} className="space-y-4">
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <input type="text" placeholder="Your name" required value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} className="w-full rounded-lg border border-border/60 bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
-                        <input type="email" placeholder="your@email.com" required value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })} className="w-full rounded-lg border border-border/60 bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
-                      </div>
-                      <input type="text" placeholder="How can we help?" required value={contactForm.subject} onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })} className="w-full rounded-lg border border-border/60 bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" />
-                      <textarea placeholder="Tell us more about your inquiry..." required rows={5} value={contactForm.message} onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })} className="w-full rounded-lg border border-border/60 bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none" />
-                      <Button type="submit" size="lg" isLoading={isSubmittingContact}>
-                        <Send className="h-4 w-4" /> Send Message
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              <motion.div variants={fadeInUp} className="space-y-4">
-                <Card variant="elevated">
-                  <CardContent className="p-6 space-y-4">
-                    <h3 className="font-heading text-lg font-semibold text-foreground">Contact Information</h3>
-                    {[
-                      { icon: Mail, label: 'Email', value: CONTACT.email, href: CONTACT.emailHref },
-                      { icon: Phone, label: 'Phone', value: CONTACT.phone, href: CONTACT.phoneHref },
-                      { icon: MapPin, label: 'Address', value: CONTACT.address, href: '' },
-                      { icon: Clock, label: 'Hours', value: CONTACT.hours, href: '' },
-                    ].map((c) => (
-                      <div key={c.label} className="flex items-start gap-3">
-                        <c.icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">{c.label}</p>
-                          {c.href ? <a href={c.href} className="text-sm text-foreground hover:text-primary transition-colors">{c.value}</a> : <p className="text-sm text-foreground">{c.value}</p>}
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-                <Card variant="elevated">
-                  <CardContent className="p-6">
-                    <h3 className="font-heading text-lg font-semibold text-foreground mb-3">Follow Us</h3>
-                    <div className="flex gap-3">
-                      <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
-                        <Facebook className="h-5 w-5" />
-                      </a>
-                      <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
-                        <Instagram className="h-5 w-5" />
-                      </a>
-                      <a href={SOCIAL_LINKS.youtube} target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
-                        <Youtube className="h-5 w-5" />
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <Footer />
     </div>
   );
 }

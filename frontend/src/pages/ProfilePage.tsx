@@ -82,7 +82,7 @@ export default function ProfilePage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [isEditingAddress, setIsEditingAddress] = useState<number | null>(null);
+  const [isEditingAddress, setIsEditingAddress] = useState<string | null>(null);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -171,15 +171,12 @@ export default function ProfilePage() {
   const onAddressSubmit = async (data: AddressSchema) => {
     try {
       if (isEditingAddress !== null) {
-        const { data: res } = await api.put(
-          `/addresses/${isEditingAddress}`,
-          data,
-        );
-        setAddresses(res.data.addresses);
+        const { data: res } = await api.put(`/auth/addresses/${isEditingAddress}`, data);
+        setAddresses(res.data.data);
         toast.success('Address updated');
       } else {
-        const { data: res } = await api.post('/addresses', data);
-        setAddresses(res.data.addresses);
+        const { data: res } = await api.post('/auth/addresses', data);
+        setAddresses(res.data.data);
         toast.success('Address added');
       }
       setIsEditingAddress(null);
@@ -192,10 +189,10 @@ export default function ProfilePage() {
     }
   };
 
-  const deleteAddress = async (index: number) => {
+  const deleteAddress = async (addressId: string) => {
     try {
-      const { data: res } = await api.delete(`/addresses/${index}`);
-      setAddresses(res.data.addresses);
+      const { data: res } = await api.delete(`/auth/addresses/${addressId}`);
+      setAddresses(res.data.data);
       toast.success('Address deleted');
     } catch (err: unknown) {
       const message =
@@ -204,10 +201,10 @@ export default function ProfilePage() {
     }
   };
 
-  const setDefaultAddress = async (index: number) => {
+  const setDefaultAddress = async (addressId: string) => {
     try {
-      const { data: res } = await api.put(`/addresses/${index}/default`);
-      setAddresses(res.data.addresses);
+      const { data: res } = await api.put(`/auth/addresses/${addressId}/default`);
+      setAddresses(res.data.data);
       toast.success('Default address updated');
     } catch (err: unknown) {
       const message =
@@ -216,8 +213,7 @@ export default function ProfilePage() {
     }
   };
 
-  const startEditAddress = (index: number) => {
-    const addr = addresses[index];
+  const startEditAddress = (addr: Address) => {
     addressForm.reset({
       label: addr.label,
       street: addr.street,
@@ -227,7 +223,7 @@ export default function ProfilePage() {
       country: addr.country,
       isDefault: addr.isDefault,
     });
-    setIsEditingAddress(index);
+    setIsEditingAddress(addr._id);
     setIsAddingAddress(true);
   };
 
@@ -625,11 +621,11 @@ export default function ProfilePage() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {addresses.map((addr, index) => {
+                        {addresses.map((addr) => {
                           const LabelIcon = labelIcons[addr.label];
                           return (
                             <div
-                              key={index}
+                              key={addr._id}
                               className={`relative rounded-lg border p-4 ${
                                 addr.isDefault
                                   ? 'border-primary bg-primary/5'
@@ -666,7 +662,7 @@ export default function ProfilePage() {
                                     <Button
                                       variant="ghost"
                                       size="icon-sm"
-                                      onClick={() => setDefaultAddress(index)}
+                                      onClick={() => setDefaultAddress(addr._id)}
                                       title="Set as default"
                                     >
                                       <Star className="h-4 w-4" />
@@ -675,7 +671,7 @@ export default function ProfilePage() {
                                   <Button
                                     variant="ghost"
                                     size="icon-sm"
-                                    onClick={() => startEditAddress(index)}
+                                    onClick={() => startEditAddress(addr)}
                                     title="Edit"
                                   >
                                     <Pencil className="h-4 w-4" />
@@ -683,7 +679,7 @@ export default function ProfilePage() {
                                   <Button
                                     variant="ghost"
                                     size="icon-sm"
-                                    onClick={() => deleteAddress(index)}
+                                    onClick={() => deleteAddress(addr._id)}
                                     title="Delete"
                                     className="text-destructive hover:text-destructive"
                                   >

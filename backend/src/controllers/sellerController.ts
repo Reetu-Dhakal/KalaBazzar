@@ -11,6 +11,7 @@ import { generateSlug, generateUniqueSlug } from '../utils/helpers';
 import { getPaginationParams, getSortObject } from '../utils/pagination';
 import { SellerStatus, UserRole, ProductStatus } from '../config/constants';
 import { emailService } from '../services/emailService';
+import { notify, notifyAll } from '../services/notificationService';
 
 export const applyAsSeller = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user._id;
@@ -107,6 +108,15 @@ export const applyAsSeller = asyncHandler(async (req: AuthRequest, res: Response
   emailService.sendSellerApplicationReceived(req.user.email, req.user.firstName)
     .catch(err => console.error('Failed to send seller application email:', err));
 
+  const admins = await User.find({ role: UserRole.ADMIN }).select('_id').lean();
+  await notifyAll(
+    admins.map((admin: any) => admin._id),
+    'seller_application_submitted',
+    'New seller application',
+    `${req.user.firstName} ${req.user.lastName} applied to become a seller (Store: ${storeName}).`,
+    { relatedEntity: { type: 'seller', id: (profile as any)._id }, priority: 'high' },
+  );
+
   res.status(201).json(
     ApiResponse.created(profile, 'Seller application submitted successfully')
   );
@@ -136,6 +146,7 @@ export const updateSellerProfile = asyncHandler(async (req: AuthRequest, res: Re
     location,
     coverImage,
     logo,
+    socialLinks,
     policies,
     isStoreOpen,
     storeHours,
@@ -180,6 +191,7 @@ export const updateSellerProfile = asyncHandler(async (req: AuthRequest, res: Re
   if (coverImage !== undefined) profile.coverImage = coverImage;
   if (logo !== undefined) profile.logo = logo;
   if (policies !== undefined) profile.policies = policies;
+  if (socialLinks !== undefined) profile.socialLinks = socialLinks;
   if (isStoreOpen !== undefined) profile.isStoreOpen = isStoreOpen;
   if (storeHours !== undefined) profile.storeHours = storeHours;
 
@@ -416,6 +428,14 @@ export const approveSeller = asyncHandler(async (req: AuthRequest, res: Response
     'approved'
   ).catch(err => console.error('Failed to send seller approval email:', err));
 
+  await notify(
+    user._id,
+    'seller_approved',
+    'You are now a verified seller',
+    `Congratulations! Your store "${profile.storeName}" has been approved. You can now manage products and receive orders.`,
+    { relatedEntity: { type: 'seller', id: profile._id }, priority: 'high' },
+  );
+
   res.json(ApiResponse.success(profile, 'Seller approved successfully'));
 });
 
@@ -450,6 +470,14 @@ export const rejectSeller = asyncHandler(async (req: AuthRequest, res: Response)
     'rejected',
     reason
   ).catch(err => console.error('Failed to send seller rejection email:', err));
+
+  await notify(
+    user._id,
+    'seller_rejected',
+    'Seller application not approved',
+    `We're sorry, your seller application for "${profile.storeName}" was not approved.${reason ? ` Reason: ${reason}` : ''}`,
+    { relatedEntity: { type: 'seller', id: profile._id }, priority: 'normal' },
+  );
 
   res.json(ApiResponse.success(profile, 'Seller rejected'));
 });

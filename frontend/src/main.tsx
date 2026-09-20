@@ -40,20 +40,20 @@ createRoot(document.getElementById('root')!).render(
             toastOptions={{
               duration: 4000,
               style: {
-                background: '#1C1917',
-                color: '#FAF7F2',
+                background: '#FFFFFF',
+                color: '#333F57',
                 borderRadius: '0.75rem',
               },
               success: {
                 iconTheme: {
                   primary: '#16A34A',
-                  secondary: '#FAF7F2',
+                  secondary: '#333F57',
                 },
               },
               error: {
                 iconTheme: {
                   primary: '#DC2626',
-                  secondary: '#FAF7F2',
+                  secondary: '#333F57',
                 },
               },
             }}

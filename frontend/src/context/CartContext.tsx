@@ -33,7 +33,7 @@ interface CartContextType extends CartState {
   addToCart: (productId: string, quantity?: number, selectedVariants?: Record<string, string>) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => Promise<void>;
-  clearCart: () => Promise<void>;
+  clearCart: (productIds?: string[]) => Promise<void>;
   applyCoupon: (code: string) => Promise<void>;
   removeCoupon: () => void;
 }
@@ -130,14 +130,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     await fetchCart();
   };
 
-  const clearCart = async () => {
-    await api.delete('/cart');
-    setItems([]);
-    setAppliedCoupon(null);
+  const clearCart = async (productIds?: string[]) => {
+    await api.delete('/cart', { data: productIds?.length ? { productIds } : undefined });
+    if (productIds?.length) {
+      setItems((prev) => prev.filter((item) => {
+        const productId = typeof item.product === 'string' ? item.product : item.product._id;
+        return !productIds.includes(productId);
+      }));
+    } else {
+      setItems([]);
+      setAppliedCoupon(null);
+    }
   };
 
   const applyCoupon = async (code: string) => {
-    const { data } = await api.post('/coupons/apply', { code });
+    const { data } = await api.post('/coupons/apply', { code, subtotal });
     setAppliedCoupon(data.data);
   };
 

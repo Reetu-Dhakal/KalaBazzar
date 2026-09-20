@@ -35,9 +35,19 @@ export const getCategories = asyncHandler(async (req: Request, res: Response) =>
       countMap.set(item._id.toString(), item.count);
     });
 
+    const subtreeCounts = new Map<string, number>();
+    categories.forEach((cat: any) => {
+      const ownCount = countMap.get(cat._id.toString()) || 0;
+      const categoryIds = [...(cat.ancestors || []), cat._id];
+      for (const id of categoryIds) {
+        const key = id.toString();
+        subtreeCounts.set(key, (subtreeCounts.get(key) || 0) + ownCount);
+      }
+    });
+
     categories = categories.map((cat: any) => ({
       ...cat,
-      productCount: countMap.get(cat._id.toString()) || 0,
+      productCount: subtreeCounts.get(cat._id.toString()) || 0,
     }));
   } else {
     categories = await Category.find(filter)

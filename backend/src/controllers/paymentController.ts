@@ -117,13 +117,23 @@ export const verifyPayment = asyncHandler(async (req: AuthRequest, res: Response
     return res.json(ApiResponse.success({ paid: true, orderId: order._id }, 'Order already paid'));
   }
 
+  if (order.paymentMethod !== paymentMethod) {
+    throw ApiError.badRequest(`This order is set for ${order.paymentMethod} payment`);
+  }
+  if (order.status === 'cancelled' || order.paymentStatus !== PaymentStatus.PENDING) {
+    throw ApiError.badRequest('This order is not payable');
+  }
+
   let paid = false;
   let transactionId: string | undefined;
 
   if (!isLivePayment()) {
-    paid = result === 'success';
+    paid = result === 'success' && paymentMethod === order.paymentMethod;
     transactionId = paid ? `MOCK-TXN-${Date.now()}` : undefined;
   } else if (paymentMethod === PaymentMethod.KHALTI && pidx) {
+    if (order.paymentDetails?.pidx !== pidx) {
+      throw ApiError.badRequest('Invalid Khalti payment reference');
+    }
     const lookup = await lookupKhaltiPayment(pidx);
     const expectedAmount = Math.round(order.totalAmount * 100);
     paid = isKhaltiCompleted(lookup.status) && lookup.totalAmount === expectedAmount;
@@ -132,12 +142,13 @@ export const verifyPayment = asyncHandler(async (req: AuthRequest, res: Response
     const uuid = order.paymentDetails?.transactionUuid;
     if (uuid) {
       const status = await getEsewaTransactionStatus(uuid, order.totalAmount);
-      paid = isEsewaComplete(status.status);
+      paid = isEsewaComplete(status.status)
+        && status.transaction_uuid === uuid
+        && status.total_amount === order.totalAmount;
       transactionId = status.ref_id || refId;
     }
   } else {
-    paid = refId ? true : false;
-    transactionId = refId;
+    paid = false;
   }
 
   if (paid) {
@@ -224,9 +235,23 @@ export const esewaCallback = asyncHandler(async (req: Request, res: Response) =>
       throw ApiError.badRequest('Payment failed');
     }
     const payload = decodeEsewaCallback(String(req.query.data || ''));
+    const expectedUuid = order.paymentDetails?.transactionUuid;
+    const expectedMerchantCode = paymentConfig.esewa.merchantCode;
+    if (!expectedUuid || payload.transaction_uuid !== expectedUuid) {
+      throw ApiError.badRequest('eSewa transaction does not match this order');
+    }
+    if (expectedMerchantCode && payload.product_code !== expectedMerchantCode) {
+      throw ApiError.badRequest('eSewa merchant code does not match');
+    }
+    if (payload.total_amount !== order.totalAmount) {
+      throw ApiError.badRequest('eSewa payment amount does not match this order');
+    }
     const confirmed = isEsewaComplete(payload.status);
-    const statusCheck = await getEsewaTransactionStatus(payload.transaction_uuid, payload.total_amount);
-    const verified = isEsewaComplete(statusCheck.status);
+    const statusCheck = await getEsewaTransactionStatus(expectedUuid, order.totalAmount);
+    const verified = isEsewaComplete(statusCheck.status)
+      && statusCheck.transaction_uuid === expectedUuid
+      && statusCheck.product_code === expectedMerchantCode
+      && statusCheck.total_amount === order.totalAmount;
 
     if (confirmed && verified) {
       await markOrderPaid(order, payload.transaction_code || statusCheck.ref_id || undefined);

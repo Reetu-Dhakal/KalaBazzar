@@ -42,6 +42,7 @@ export interface User {
 }
 
 export interface Address {
+  _id: string;
   label: AddressLabel;
   street: string;
   city: string;

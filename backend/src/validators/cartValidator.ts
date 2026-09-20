@@ -1,7 +1,7 @@
 import { body, param, query } from 'express-validator';
 
 export const addToCartValidation = [
-  body('product')
+  body('productId')
     .isMongoId()
     .withMessage('Valid product ID required'),
   body('quantity')
@@ -13,7 +13,7 @@ export const addToCartValidation = [
 ];
 
 export const updateCartItemValidation = [
-  param('id')
+  param('productId')
     .isMongoId()
     .withMessage('Invalid cart item ID'),
   body('quantity')
@@ -22,7 +22,7 @@ export const updateCartItemValidation = [
 ];
 
 export const cartItemIdValidation = [
-  param('id')
+  param('productId')
     .isMongoId()
     .withMessage('Invalid cart item ID'),
 ];

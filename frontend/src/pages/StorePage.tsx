@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import api from '@/lib/api';
-import type { SellerProfile, Product, Review } from '@/types';
+import type { SellerProfile, Product } from '@/types';
 
 function StoreSkeleton() {
   return (
@@ -38,9 +38,8 @@ export default function StorePage() {
   const { slug } = useParams<{ slug: string }>();
   const [store, setStore] = useState<SellerProfile | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'products' | 'about' | 'reviews'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'about'>('products');
 
   usePageTitle(
     store ? `${store.storeName} — कलाbazzar` : undefined,
@@ -51,21 +50,12 @@ export default function StorePage() {
     if (!slug) return;
     const fetchStore = async () => {
       try {
-        const [storeRes, productsRes, reviewsRes] = await Promise.allSettled([
-          api.get(`/sellers/${slug}`),
-          api.get(`/products?seller=${slug}&limit=12`),
-          api.get(`/reviews?seller=${slug}&limit=10`),
-        ]);
-
-        if (storeRes.status === 'fulfilled') {
-          setStore(storeRes.value.data?.data?.seller || storeRes.value.data?.data || null);
-        }
-        if (productsRes.status === 'fulfilled') {
-          setProducts(productsRes.value.data?.data?.products || []);
-        }
-        if (reviewsRes.status === 'fulfilled') {
-          setReviews(reviewsRes.value.data?.data?.reviews || []);
-        }
+        const storeRes = await api.get(`/sellers/${slug}`);
+        const payload = storeRes.data?.data as
+          | { profile?: SellerProfile; products?: Product[] }
+          | undefined;
+        setStore(payload?.profile || null);
+        setProducts(payload?.products || []);
       } catch {
         // handled
       } finally {
@@ -170,7 +160,6 @@ export default function StorePage() {
           {[
             { id: 'products' as const, label: 'Products', count: products.length },
             { id: 'about' as const, label: 'About' },
-            { id: 'reviews' as const, label: 'Reviews', count: reviews.length },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -330,63 +319,6 @@ export default function StorePage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
-
-        {/* Reviews Tab */}
-        {activeTab === 'reviews' && (
-          <div className="max-w-2xl pb-16 space-y-4">
-            {reviews.length > 0 ? (
-              reviews.map((review) => {
-                const customerName =
-                  typeof review.customer === 'object' && review.customer
-                    ? `${review.customer.firstName} ${review.customer.lastName}`
-                    : 'Customer';
-                return (
-                  <Card key={review._id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="font-medium text-sm">{customerName}</p>
-                          <div className="flex items-center gap-1 mt-1">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-3.5 w-3.5 ${
-                                  i < review.rating
-                                    ? 'fill-secondary text-secondary'
-                                    : 'text-muted-foreground'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(review.createdAt)}
-                        </span>
-                      </div>
-                      {review.title && (
-                        <p className="font-medium text-sm mt-3">{review.title}</p>
-                      )}
-                      <p className="text-sm text-muted-foreground mt-1">{review.comment}</p>
-                      {review.sellerResponse && (
-                        <div className="mt-3 p-3 rounded-lg bg-muted/50">
-                          <p className="text-xs font-medium text-muted-foreground mb-1">
-                            Seller Response:
-                          </p>
-                          <p className="text-sm">{review.sellerResponse.comment}</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })
-            ) : (
-              <div className="text-center py-16 text-muted-foreground">
-                <Star className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No reviews yet</p>
-              </div>
-            )}
           </div>
         )}
       </div>

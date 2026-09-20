@@ -160,19 +160,29 @@ export const productQueryValidation = [
     .isInt({ min: 1, max: 100 }),
   query('category')
     .optional()
-    .isMongoId(),
+    .trim()
+    .isLength({ min: 1, max: 64 })
+    .withMessage('category must be a valid slug or id'),
   query('craft')
     .optional()
-    .isMongoId(),
+    .trim()
+    .isLength({ min: 1, max: 64 })
+    .withMessage('craft must be a valid slug or id'),
   query('region')
     .optional()
-    .isMongoId(),
+    .trim()
+    .isLength({ min: 1, max: 64 })
+    .withMessage('region must be a valid slug or id'),
   query('seller')
     .optional()
-    .isMongoId(),
+    .trim()
+    .isLength({ min: 1, max: 64 })
+    .withMessage('seller must be a valid slug or id'),
   query('collection')
     .optional()
-    .isMongoId(),
+    .trim()
+    .isLength({ min: 1, max: 64 })
+    .withMessage('collection must be a valid slug or id'),
   query('status')
     .optional()
     .isIn(['draft', 'pending_review', 'approved', 'rejected', 'out_of_stock']),
@@ -197,7 +207,7 @@ export const productQueryValidation = [
     .isLength({ max: 100 }),
   query('sort')
     .optional()
-    .isIn(['newest', 'oldest', 'price_asc', 'price_desc', 'rating', 'popularity', 'name_asc', 'name_desc']),
+    .isIn(['newest', 'oldest', 'price-asc', 'price-desc', 'rating', 'popular', 'popularity', 'name_asc', 'name_desc']),
   query('inStock')
     .optional()
     .isBoolean(),

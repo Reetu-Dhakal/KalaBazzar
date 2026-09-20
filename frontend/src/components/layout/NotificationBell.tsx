@@ -15,7 +15,7 @@ function getNotificationIcon(type: Notification['type']) {
   return '🔔';
 }
 
-export function NotificationBell() {
+export function NotificationBell({ dark = false }: { dark?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } =
@@ -37,7 +37,10 @@ export function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg text-foreground hover:bg-accent transition-colors"
+        className={cn(
+          'relative p-2 rounded-lg transition-colors',
+          dark ? 'text-[#EDF2FA]/90 hover:bg-white/10' : 'text-foreground hover:bg-accent',
+        )}
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5" />

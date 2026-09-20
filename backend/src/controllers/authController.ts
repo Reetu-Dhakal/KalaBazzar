@@ -4,11 +4,12 @@ import { generateAccessToken, generateRefreshToken, generateEmailVerificationTok
 import { ApiError } from '../utils/ApiError';
 import { asyncHandler } from '../utils/ApiError';
 import { emailService } from '../services/emailService';
+import { notify } from '../services/notificationService';
 import { AuthRequest } from '../middleware/auth';
 import cloudinary from '../config/cloudinary';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, firstName, lastName, phone, role } = req.body;
+  const { email, password, firstName, lastName, phone } = req.body;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -16,40 +17,58 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const verificationToken = generateEmailVerificationToken();
-  
+
+  const canSendEmail = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+
   const user = await User.create({
     email,
     password,
     firstName,
     lastName,
     phone,
-    role: role || 'customer',
-    isEmailVerified: false,
-    emailVerificationToken: verificationToken,
-    emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    role: 'customer',
+    isEmailVerified: !canSendEmail,
+    emailVerificationToken: canSendEmail ? verificationToken : undefined,
+    emailVerificationExpires: canSendEmail ? new Date(Date.now() + 24 * 60 * 60 * 1000) : undefined,
   });
 
-  emailService.sendEmailVerification(email, verificationToken, firstName)
-    .catch(err => console.error('Failed to send verification email:', err));
+  if (canSendEmail) {
+    emailService.sendEmailVerification(email, verificationToken, firstName)
+      .catch(err => console.error('Failed to send verification email:', err));
+  }
+
+  const userPayload = {
+    _id: user._id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    isEmailVerified: user.isEmailVerified,
+  };
+
+  if (!canSendEmail) {
+    const accessToken = generateAccessToken(user._id.toString(), user.role);
+    const refreshToken = generateRefreshToken(user._id.toString());
+    await User.findByIdAndUpdate(user._id, { refreshToken });
+    res.status(201).json({
+      success: true,
+      message: 'Registration successful.',
+      data: { accessToken, user: userPayload },
+    });
+    return;
+  }
 
   res.status(201).json({
     success: true,
     message: 'Registration successful. Please login.',
-    data: {
-      user: {
-        _id: user._id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        isEmailVerified: user.isEmailVerified,
-      },
-    },
+    data: { user: userPayload },
   });
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
+
+  const canSendEmail = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
 
   const user = await User.findOne({ email }).select('+password');
   if (!user || !(await user.comparePassword(password))) {
@@ -57,7 +76,14 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (!user.isEmailVerified) {
-    throw ApiError.unauthorized('Please verify your email first');
+    if (canSendEmail) {
+      throw ApiError.unauthorized('Please verify your email first');
+    }
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+    console.log(`[Auth] Auto-verified ${user.email} (no SMTP configured)`);
   }
 
   const accessToken = generateAccessToken(user._id.toString(), user.role);
@@ -119,7 +145,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
     throw ApiError.unauthorized('Invalid refresh token');
   }
 
-  const user = await User.findById(decoded.id);
+  const user = await User.findById(decoded.id).select('+refreshToken');
   if (!user || user.refreshToken !== refreshToken) {
     throw ApiError.unauthorized('Invalid refresh token');
   }
@@ -166,6 +192,14 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
 
   emailService.sendWelcomeEmail(user.email, user.firstName)
     .catch(err => console.error('Failed to send welcome email:', err));
+
+  await notify(
+    user._id,
+    'welcome',
+    `Welcome to कलाbazzar, ${user.firstName}!`,
+    'Your account is now verified. Explore handmade crafts from artisans across Nepal.',
+    { priority: 'normal' },
+  );
 
   res.json({ success: true, message: 'Email verified successfully' });
 });

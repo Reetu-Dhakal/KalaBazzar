@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import { getAccessTokenSecret } from '../utils/tokenGenerator';
 
 export interface AuthRequest extends Request {
   user?: any;
@@ -15,7 +16,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET!) as { id: string };
+    const decoded = jwt.verify(accessToken, getAccessTokenSecret()) as { id: string };
     const user = await User.findById(decoded.id).select('-password -refreshToken');
     
     if (!user) {
@@ -61,7 +62,7 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET!) as { id: string };
+    const decoded = jwt.verify(accessToken, getAccessTokenSecret()) as { id: string };
     const user = await User.findById(decoded.id).select('-password -refreshToken');
     
     if (user) {

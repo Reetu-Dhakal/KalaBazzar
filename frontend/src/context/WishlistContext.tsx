@@ -24,7 +24,6 @@ interface WishlistContextType {
   removeFromWishlist: (productId: string) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
   clearWishlist: () => Promise<void>;
-  moveToCart: (productId: string) => Promise<void>;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -76,11 +75,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setItems([]);
   };
 
-  const moveToCart = async (productId: string) => {
-    await api.post('/wishlist/move-to-cart', { productId });
-    await fetchWishlist();
-  };
-
   return (
     <WishlistContext.Provider
       value={{
@@ -92,7 +86,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         removeFromWishlist,
         isInWishlist,
         clearWishlist,
-        moveToCart,
       }}
     >
       {children}

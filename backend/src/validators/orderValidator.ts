@@ -2,8 +2,9 @@ import { body, param, query } from 'express-validator';
 
 export const orderValidation = [
   body('items')
+    .optional()
     .isArray({ min: 1 })
-    .withMessage('At least one item required'),
+    .withMessage('Items must be a non-empty array when provided'),
   body('items.*.product')
     .isMongoId()
     .withMessage('Valid product ID required'),
@@ -14,6 +15,14 @@ export const orderValidation = [
     .optional()
     .isObject()
     .withMessage('Selected variants must be object'),
+  body('selectedProductIds')
+    .optional()
+    .isArray({ min: 1 })
+    .withMessage('Selected product IDs must be a non-empty array'),
+  body('selectedProductIds.*')
+    .optional()
+    .isMongoId()
+    .withMessage('Selected product IDs must be valid'),
   body('shippingAddress')
     .isObject()
     .withMessage('Shipping address required'),

@@ -79,9 +79,16 @@ export default function Register() {
     setIsLoading(true);
     try {
       const { acceptTerms: _, ...formData } = data;
-      await api.post('/auth/register', formData);
-      toast.success('Account created! Check your email to verify your account.');
-      navigate('/verify-email', { replace: true });
+      const res = await api.post('/auth/register', formData);
+      const accessToken = res.data?.data?.accessToken;
+      if (accessToken) {
+        localStorage.setItem('token', accessToken);
+        toast.success('Account created! You are now signed in.');
+        window.location.href = '/shop';
+      } else {
+        toast.success('Account created! Check your email to verify your account.');
+        navigate('/verify-email', { replace: true });
+      }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string; errors?: { field: string; message: string }[] } } };
       const validationErrors = axiosErr.response?.data?.errors;

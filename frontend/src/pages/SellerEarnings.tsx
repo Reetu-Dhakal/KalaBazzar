@@ -5,15 +5,6 @@ import {
   TrendingUp,
   CreditCard,
 } from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -28,7 +19,6 @@ interface EarningsData {
   averageOrderValue: number;
   totalOrders: number;
   pendingPayout: number;
-  earningsData: { date: string; earnings: number }[];
   recentOrders: Order[];
   pagination: PaginationMeta;
 }
@@ -76,7 +66,6 @@ export default function SellerEarnings() {
           averageOrderValue: stats.totalOrders > 0 ? Math.round(stats.totalRevenue / stats.totalOrders) : 0,
           totalOrders: stats.totalOrders || 0,
           pendingPayout: stats.totalRevenue || 0,
-          earningsData: stats.revenueData || [],
           recentOrders: stats.recentOrders || [],
           pagination: stats.pagination || { page: 1, limit: 10, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
         });
@@ -136,45 +125,6 @@ export default function SellerEarnings() {
           color="bg-amber-50 text-amber-600"
         />
       </div>
-
-      {/* Earnings Chart */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            Earnings (Last 30 Days)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data?.earningsData && data.earningsData.length > 0 ? (
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.earningsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E7E5E4" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(v: string) => {
-                      const d = new Date(v);
-                      return `${d.getMonth() + 1}/${d.getDate()}`;
-                    }}
-                  />
-                  <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => `Rs ${v}`} />
-                  <Tooltip
-                    formatter={(value: number) => [formatCurrency(value), 'Earnings']}
-                    labelFormatter={(label: string) => new Date(label).toLocaleDateString()}
-                  />
-                  <Bar dataKey="earnings" fill="#C0392B" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">
-              No earnings data yet
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Payout Info */}
       <Card className="mb-8">

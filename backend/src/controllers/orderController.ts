@@ -12,6 +12,7 @@ import { generateOrderNumber } from '../utils/helpers';
 import { getPaginationParams } from '../utils/pagination';
 import { OrderStatus, PaymentMethod, PaymentStatus, UserRole } from '../config/constants';
 import { emailService } from '../services/emailService';
+import { notify, notifyAll } from '../services/notificationService';
 import { createNotification } from './notificationController';
 import mongoose from 'mongoose';
 import { AuthRequest } from '../middleware/auth';
@@ -26,8 +27,51 @@ const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
   [OrderStatus.REFUNDED]: [],
 };
 
+const ORDER_STATUS_NOTIFICATIONS: Record<string, { type: any; title: string; message: string }> = {
+  [OrderStatus.CONFIRMED]: {
+    type: 'order_confirmed',
+    title: 'Order confirmed',
+    message: 'Your order has been confirmed and is being prepared.',
+  },
+  [OrderStatus.PROCESSING]: {
+    type: 'order_processing',
+    title: 'Order is being processed',
+    message: 'Your order is now being processed by the artisan.',
+  },
+  [OrderStatus.SHIPPED]: {
+    type: 'order_shipped',
+    title: 'Your order has shipped',
+    message: 'Your order is on its way. Track it from your order details.',
+  },
+  [OrderStatus.DELIVERED]: {
+    type: 'order_delivered',
+    title: 'Order delivered',
+    message: 'Your order has been delivered. We hope you love it!',
+  },
+  [OrderStatus.CANCELLED]: {
+    type: 'order_cancelled',
+    title: 'Order cancelled',
+    message: 'Your order has been cancelled.',
+  },
+  [OrderStatus.REFUNDED]: {
+    type: 'refund_completed',
+    title: 'Order refunded',
+    message: 'Your order has been refunded.',
+  },
+};
+
+const VALLEY_DESTINATIONS = ['kathmandu', 'lalitpur', 'bhaktapur', 'kirtipur', 'madhyapur thimi'];
+const NEARBY_DESTINATIONS = ['kavrepalanchok', 'kavre', 'dhading', 'nuwakot', 'makwanpur'];
+
+function getShippingCost(city: string, state: string): number {
+  const destination = `${city} ${state}`.toLowerCase().trim();
+  if (VALLEY_DESTINATIONS.some((place) => destination.includes(place))) return 100;
+  if (NEARBY_DESTINATIONS.some((place) => destination.includes(place))) return 200;
+  return 300;
+}
+
 export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { shippingAddress, paymentMethod, notes, couponCode } = req.body;
+  const { shippingAddress, paymentMethod, notes, couponCode, selectedProductIds } = req.body;
   const userId = req.user._id;
 
   if (!shippingAddress || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zipCode || !shippingAddress.phone || !shippingAddress.recipientName) {
@@ -43,7 +87,18 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     throw ApiError.badRequest('Cart is empty');
   }
 
-  const productIds = cart.items.map(item => item.product);
+  const selectedIds = Array.isArray(selectedProductIds) && selectedProductIds.length > 0
+    ? new Set(selectedProductIds.map((id: string) => id.toString()))
+    : null;
+  const orderCartItems = selectedIds
+    ? cart.items.filter(item => selectedIds.has(item.product.toString()))
+    : cart.items;
+
+  if (orderCartItems.length === 0) {
+    throw ApiError.badRequest('Select at least one cart item');
+  }
+
+  const productIds = orderCartItems.map(item => item.product);
   const products = await Product.find({ _id: { $in: productIds } });
 
   const productMap = new Map(products.map(p => [p._id.toString(), p]));
@@ -51,7 +106,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
   const orderItems = [];
   let subtotal = 0;
 
-  for (const cartItem of cart.items) {
+  for (const cartItem of orderCartItems) {
     const product = productMap.get(cartItem.product.toString());
     if (!product) {
       throw ApiError.badRequest(`Product not found: ${cartItem.product}`);
@@ -89,7 +144,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     });
   }
 
-  const shippingCost = subtotal >= 5000 ? 0 : 150;
+  const shippingCost = getShippingCost(shippingAddress.city, shippingAddress.state);
   const taxAmount = Math.round(subtotal * 0.13);
 
   let discountAmount = 0;
@@ -128,6 +183,8 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     exists = await Order.findOne({ orderNumber });
   }
 
+  const lowStockAlerts: any[] = [];
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -154,7 +211,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       }],
     }], { session });
 
-    for (const cartItem of cart.items) {
+    for (const cartItem of orderCartItems) {
       const product = await Product.findById(cartItem.product).session(session);
       if (!product) continue;
 
@@ -169,6 +226,14 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
           const deduct = Math.min(variant.inventory, remaining);
           variant.inventory -= deduct;
           remaining -= deduct;
+          if (variant.inventory <= 5) {
+            lowStockAlerts.push({
+              seller: product.seller,
+              product: product._id,
+              productName: product.name,
+              inventory: variant.inventory,
+            });
+          }
         }
         product.markModified('variants');
       }
@@ -177,7 +242,12 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       await product.save({ session });
     }
 
-    await Cart.deleteOne({ customer: userId }, { session });
+    if (selectedIds) {
+      cart.items = cart.items.filter(item => !selectedIds.has(item.product.toString()));
+      await cart.save({ session });
+    } else {
+      await Cart.deleteOne({ customer: userId }, { session });
+    }
 
     if (couponDoc) {
       couponDoc.usedCount += 1;
@@ -194,6 +264,39 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       customer!.firstName,
       totalAmount
     ).catch(err => console.error('Failed to send order confirmation email:', err));
+
+    const sellerIds = Array.from(new Set(orderItems.map((item: any) => item.seller.toString())));
+    const sellerLabels = new Map<string, string>();
+    orderItems.forEach((item: any) => {
+      const key = item.seller.toString();
+      sellerLabels.set(key, `${sellerLabels.get(key) ? sellerLabels.get(key) + ', ' : ''}${item.productSnapshot.name} (x${item.quantity})`);
+    });
+
+    await notifyAll(
+      sellerIds,
+      'order_placed',
+      'New order received',
+      `Great news! A customer just placed order ${orderNumber}. Items: ${Array.from(sellerLabels.values()).join('; ')}.`,
+      { relatedEntity: { type: 'order', id: order[0]._id }, priority: 'high' },
+    );
+
+    await notify(
+      userId,
+      'order_placed',
+      'Order placed successfully',
+      `Thank you! Your order ${orderNumber} (NPR ${totalAmount.toLocaleString()}) has been placed. We'll keep you updated.`,
+      { relatedEntity: { type: 'order', id: order[0]._id }, priority: 'high' },
+    );
+
+    for (const alert of lowStockAlerts) {
+      await notify(
+        alert.seller,
+        'low_stock',
+        `${alert.productName} is low on stock`,
+        `Only ${alert.inventory} left of "${alert.productName}". Consider restocking soon.`,
+        { relatedEntity: { type: 'product', id: alert.product }, priority: 'normal' },
+      );
+    }
 
     res.status(201).json(
       ApiResponse.created(order[0], 'Order created successfully')
@@ -327,6 +430,16 @@ export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Resp
     (order.customer as any).firstName
   ).catch(err => console.error('Failed to send status update email:', err));
 
+  const statusMeta = ORDER_STATUS_NOTIFICATIONS[status as string]
+    || { type: 'order_confirmed' as const, title: 'Order updated', message: `Your order ${order.orderNumber} status is now "${status}".` };
+  await notify(
+    (order.customer as any)._id,
+    statusMeta.type,
+    statusMeta.title,
+    statusMeta.message,
+    { relatedEntity: { type: 'order', id: order._id }, priority: ['shipped', 'delivered'].includes(status) ? 'high' : 'normal' },
+  );
+
   res.json(ApiResponse.success(updatedOrder, `Order status updated to "${status}"`));
 });
 
@@ -387,6 +500,17 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     await order.save({ session });
 
     await session.commitTransaction();
+
+    const cancelledSellerIds = Array.from(
+      new Set(order.items.map((item: any) => item.seller.toString()))
+    );
+    await notifyAll(
+      cancelledSellerIds,
+      'order_cancelled',
+      'Order cancelled',
+      `Order ${order.orderNumber} was cancelled by the customer${reason ? ` (Reason: ${reason})` : ''}.`,
+      { relatedEntity: { type: 'order', id: order._id }, priority: 'normal' },
+    );
 
     res.json(ApiResponse.success(order, 'Order cancelled successfully'));
   } catch (error) {
@@ -562,6 +686,9 @@ export const addTrackingNumber = asyncHandler(async (req: AuthRequest, res: Resp
     if (itemIndex < 0 || itemIndex >= order.items.length) {
       throw ApiError.badRequest('Invalid item index');
     }
+    if (order.items[itemIndex].seller.toString() !== user._id.toString()) {
+      throw ApiError.forbidden('You can only update tracking for your own items');
+    }
     (order.items[itemIndex] as any).trackingNumber = trackingNumber;
   } else {
     for (let i = 0; i < order.items.length; i++) {
@@ -572,6 +699,14 @@ export const addTrackingNumber = asyncHandler(async (req: AuthRequest, res: Resp
   }
 
   await order.save();
+
+  await notify(
+    (order.customer as any),
+    'order_shipped',
+    'Tracking number added',
+    `Your order ${order.orderNumber} now has tracking number: ${trackingNumber}.`,
+    { relatedEntity: { type: 'order', id: order._id }, priority: 'high' },
+  );
 
   res.json(ApiResponse.success(order, 'Tracking number added successfully'));
 });

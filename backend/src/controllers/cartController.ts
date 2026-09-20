@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Cart from '../models/Cart';
 import Product from '../models/Product';
+import SellerProfile from '../models/SellerProfile';
 import { ApiError, asyncHandler } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { AuthRequest } from '../middleware/auth';
@@ -11,7 +12,7 @@ export const getCart = asyncHandler(async (req: AuthRequest, res: Response) => {
 
   let cart = await Cart.findOne({ customer: userId }).populate({
     path: 'items.product',
-    select: 'name price images basePrice seller status slug',
+    select: 'name variants basePrice seller status slug',
     populate: { path: 'seller', select: 'firstName lastName' },
   });
 
@@ -19,12 +20,30 @@ export const getCart = asyncHandler(async (req: AuthRequest, res: Response) => {
     cart = await Cart.create({ customer: userId, items: [] });
   }
 
-  const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartData = cart.toObject();
+  const sellerIds = cartData.items
+    .map((item: any) => item.product?.seller?._id || item.product?.seller)
+    .filter(Boolean);
+  const sellerProfiles = await SellerProfile.find({ user: { $in: sellerIds } })
+    .select('user storeName slug logo')
+    .lean();
+  const sellerProfileMap = new Map(sellerProfiles.map((profile) => [profile.user.toString(), profile]));
+
+  cartData.items = cartData.items.map((item: any) => {
+    const seller = item.product?.seller;
+    const profile = seller ? sellerProfileMap.get(seller._id?.toString() || seller.toString()) : undefined;
+    if (seller && profile) {
+      item.product.seller = { ...seller, storeName: profile.storeName, storeSlug: profile.slug, logo: profile.logo };
+    }
+    return item;
+  });
+
+  const totalItems = cartData.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const subtotal = cartData.items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
 
   res.json(
     ApiResponse.success(
-      { cart: { ...cart.toObject(), subtotal, itemCount: totalItems } },
+      { cart: { ...cartData, subtotal, itemCount: totalItems } },
       'Cart fetched successfully'
     )
   );
@@ -218,13 +237,18 @@ export const removeFromCart = asyncHandler(async (req: AuthRequest, res: Respons
 
 export const clearCart = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user._id;
+  const { productIds } = req.body || {};
 
   const cart = await Cart.findOne({ customer: userId });
   if (!cart) {
     throw ApiError.notFound('Cart not found');
   }
 
-  cart.items = [];
+  if (Array.isArray(productIds) && productIds.length > 0) {
+    cart.items = cart.items.filter((item) => !productIds.includes(item.product.toString()));
+  } else {
+    cart.items = [];
+  }
   await cart.save();
 
   res.json(

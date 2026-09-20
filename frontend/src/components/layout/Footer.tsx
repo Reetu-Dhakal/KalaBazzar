@@ -49,38 +49,38 @@ export function Footer() {
 
   return (
     <footer>
-      <div className="bg-[#1C1917] text-white">
+      <div className="bg-[#EDF2FA] text-[#33415C]">
         <div className="container mx-auto px-4 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
             <div className="lg:col-span-2">
               <Link to="/" className="flex items-center gap-2.5 mb-4">
                 <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
                   <rect width="32" height="32" rx="8" fill="#FFFCF5" />
-                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#2D1810">K</text>
-                  <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
+                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#3E62A8">K</text>
+                  <circle cx="24" cy="9" r="2.5" fill="#D4A24E" />
                 </svg>
                 <span className="font-heading text-2xl font-bold">कलाbazzar</span>
               </Link>
-              <p className="text-sm text-white/70 leading-relaxed max-w-sm mb-6">
+              <p className="text-sm text-[#53617E] leading-relaxed max-w-sm mb-6">
                 Nepal&apos;s premier artisan marketplace connecting you with authentic handmade crafts.
                 Every purchase supports local artisans and preserves centuries-old traditions.
               </p>
               <div className="space-y-3">
                 <a
                   href={CONTACT.emailHref}
-                  className="flex items-center gap-3 text-sm text-white/70 hover:text-white transition-colors"
+                  className="flex items-center gap-3 text-sm text-[#53617E] hover:text-[#33415C] transition-colors"
                 >
                   <Mail className="h-4 w-4" />
                   {CONTACT.email}
                 </a>
                 <a
                   href={CONTACT.phoneHref}
-                  className="flex items-center gap-3 text-sm text-white/70 hover:text-white transition-colors"
+                  className="flex items-center gap-3 text-sm text-[#53617E] hover:text-[#33415C] transition-colors"
                 >
                   <Phone className="h-4 w-4" />
                   {CONTACT.phone}
                 </a>
-                <div className="flex items-start gap-3 text-sm text-white/70">
+                <div className="flex items-start gap-3 text-sm text-[#53617E]">
                   <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
                   <span>{CONTACT.address}</span>
                 </div>
@@ -94,7 +94,7 @@ export function Footer() {
                   <li key={link.to}>
                     <Link
                       to={link.to}
-                      className="text-sm text-white/70 hover:text-white transition-colors"
+                      className="text-sm text-[#53617E] hover:text-[#33415C] transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -110,7 +110,7 @@ export function Footer() {
                   <li key={link.to}>
                     <Link
                       to={link.to}
-                      className="text-sm text-white/70 hover:text-white transition-colors"
+                      className="text-sm text-[#53617E] hover:text-[#33415C] transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -121,7 +121,7 @@ export function Footer() {
 
             <div>
               <h4 className="font-heading text-lg font-semibold mb-4">Stay Connected</h4>
-              <p className="text-sm text-white/70 mb-4">
+              <p className="text-sm text-[#53617E] mb-4">
                 Subscribe to get updates on new artisans and exclusive offers.
               </p>
               <form onSubmit={handleNewsletterSubmit} className="space-y-3">
@@ -131,7 +131,7 @@ export function Footer() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Your email address"
-                    className="w-full h-10 pl-4 pr-12 rounded-lg bg-white/10 border border-white/20 text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-secondary"
+                    className="w-full h-10 pl-4 pr-12 rounded-lg bg-white border border-[#D9E2F3] text-sm placeholder:text-[#8A95AD] focus:outline-none focus:ring-2 focus:ring-secondary"
                     required
                   />
                   <button
@@ -150,7 +150,7 @@ export function Footer() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="h-9 w-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                    className="h-9 w-9 flex items-center justify-center rounded-lg bg-white border border-[#D9E2F3] hover:border-[#C9D5EE] transition-colors"
                     aria-label={social.label}
                   >
                     <social.icon className="h-4 w-4" />
@@ -160,8 +160,8 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="border-t border-white/20 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-white/60">
+          <div className="border-t border-[#D9E2F3] mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-[#6B7A96]">
               &copy; {new Date().getFullYear()} कलाbazzar. All rights reserved.
             </p>
           </div>

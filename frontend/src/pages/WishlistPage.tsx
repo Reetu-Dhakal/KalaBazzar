@@ -26,15 +26,15 @@ const staggerContainer = {
 
 export default function WishlistPage() {
   usePageTitle('Wishlist — कलाbazzar', 'Your saved products.');
-  const { items, isLoading, removeFromWishlist, clearWishlist, moveToCart } = useWishlist();
+  const { items, isLoading, removeFromWishlist, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
   const [movingItems, setMovingItems] = useState<Set<string>>(new Set());
 
   const handleMoveToCart = async (productId: string) => {
     setMovingItems((prev) => new Set(prev).add(productId));
     try {
-      await moveToCart(productId);
       await addToCart(productId);
+      await removeFromWishlist(productId);
       toast.success('Moved to cart');
     } catch {
       toast.error('Failed to move to cart');

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -56,8 +57,12 @@ export default function Login() {
         navigate(from || '/shop', { replace: true });
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Login failed. Please try again.';
+      const message = axios.isAxiosError(err)
+        ? (err.response?.data?.message as string) ||
+          'Login failed. Please try again.'
+        : err instanceof Error
+          ? err.message
+          : 'Login failed. Please try again.';
       toast.error(message);
     } finally {
       setIsLoading(false);

@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { createOrder, getMyOrders, getSellerOrders, getOrderById, updateOrderStatus, cancelOrder, requestRefund, reviewRefund, addTrackingNumber, getAllOrders, getOrderStats } from '../controllers/orderController';
 import { authenticate, authorize } from '../middleware/auth';
+import { validate } from '../middleware/validation';
+import { orderValidation } from '../validators/orderValidator';
 
 const router = Router();
 
-router.post('/', authenticate, createOrder);
+router.post('/', authenticate, validate(orderValidation), createOrder);
 router.get('/my-orders', authenticate, getMyOrders);
 router.get('/seller', authenticate, authorize('seller', 'admin'), getSellerOrders);
 router.get('/admin/stats', authenticate, authorize('admin'), getOrderStats);

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Eye, Star, ShoppingBag } from 'lucide-react';
+import { Heart, Eye, Star, ShoppingBag, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { Button } from '@/components/ui/Button';
@@ -121,6 +121,11 @@ export function ProductCard({ product }: ProductCardProps) {
       ? product.seller.storeName
       : '';
 
+  const regionName =
+    typeof product.region === 'object' && product.region
+      ? product.region.name
+      : '';
+
   return (
     <>
       <Link
@@ -198,6 +203,12 @@ export function ProductCard({ product }: ProductCardProps) {
           {sellerName && (
             <p className="text-xs text-muted-foreground mb-0.5">
               {sellerName}
+            </p>
+          )}
+          {regionName && (
+            <p className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-0.5">
+              <MapPin className="h-3 w-3 shrink-0" />
+              {regionName}
             </p>
           )}
           <h3 className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors text-sm leading-snug">

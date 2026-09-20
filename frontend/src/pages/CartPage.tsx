@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -9,6 +9,7 @@ import {
   Tag,
   X,
   PackageOpen,
+  Check,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/Button';
@@ -19,18 +20,15 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { formatCurrency } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
-const SHIPPING_THRESHOLD = 5000;
-const SHIPPING_COST = 250;
+const SHIPPING_COST = 100;
 
 export default function CartPage() {
   usePageTitle('Shopping Cart');
   const {
     items,
     totalItems,
-    subtotal,
     isLoading,
     appliedCoupon,
-    total,
     updateQuantity,
     removeFromCart,
     applyCoupon,
@@ -39,9 +37,46 @@ export default function CartPage() {
 
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
 
-  const shippingCost = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const freeShippingRemaining = SHIPPING_THRESHOLD - subtotal;
+  const selectedItems = useMemo(
+    () => items.filter((item) => {
+      const product = typeof item.product === 'string' ? null : item.product;
+      return product && selectedProductIds.has(product._id);
+    }),
+    [items, selectedProductIds],
+  );
+  const selectedTotalItems = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const selectedSubtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const shippingCost = SHIPPING_COST;
+  const allSelected = items.length > 0 && selectedItems.length === items.length;
+
+  const toggleProduct = (productId: string) => {
+    setSelectedProductIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(productId)) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    setSelectedProductIds(allSelected
+      ? new Set()
+      : new Set(items.map((item) => typeof item.product === 'string' ? item.product : item.product._id)));
+  };
+
+  const getStoreName = (product: NonNullable<typeof items[number]['product']>) => {
+    if (typeof product === 'string') return 'Artisan Store';
+    const seller = product.seller;
+    if (typeof seller === 'object' && 'storeName' in seller && seller.storeName) return seller.storeName;
+    if (typeof seller === 'object' && 'firstName' in seller) {
+      const sellerUser = seller as { firstName: string; lastName?: string };
+      return `${sellerUser.firstName} ${sellerUser.lastName || ''}`.trim();
+    }
+    return 'Artisan Store';
+  };
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -97,41 +132,32 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <nav className="flex items-center gap-1 text-sm text-muted-foreground mb-6">
-        <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-        <span className="mx-1">/</span>
-        <span className="text-foreground font-medium">Cart</span>
-      </nav>
-
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-heading text-foreground">
-          Shopping Cart ({totalItems} {totalItems === 1 ? 'item' : 'items'})
-        </h1>
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/shop">
-            <ArrowLeft className="h-4 w-4" />
-            Continue Shopping
-          </Link>
-        </Button>
-      </div>
-
-      {freeShippingRemaining > 0 && (
-        <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200">
-          <p className="text-sm text-green-800">
-            Add <span className="font-semibold">{formatCurrency(freeShippingRemaining)}</span> more for free shipping!
-          </p>
-          <div className="mt-2 h-2 bg-green-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-green-600 rounded-full transition-all"
-              style={{ width: `${Math.min((subtotal / SHIPPING_THRESHOLD) * 100, 100)}%` }}
-            />
+    <div className="min-h-[calc(100vh-4rem)] bg-background">
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:py-8">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Your basket</p>
+            <h1 className="font-heading text-3xl font-semibold text-foreground sm:text-4xl">Shopping Cart</h1>
           </div>
+          <Link to="/shop" className="hidden items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-secondary sm:flex">
+            <ArrowLeft className="h-4 w-4" />
+            Continue shopping
+          </Link>
         </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
+        <div className="space-y-3 lg:col-span-2">
+          <div className="flex items-center gap-3 bg-card px-4 py-3 text-sm shadow-sm">
+            <button
+              type="button"
+              onClick={toggleAll}
+              aria-label={allSelected ? 'Deselect all cart items' : 'Select all cart items'}
+              className={`flex h-5 w-5 items-center justify-center border ${allSelected ? 'border-primary bg-primary text-white' : 'border-border bg-white'}`}
+            >
+              {allSelected && <Check className="h-3.5 w-3.5" />}
+            </button>
+            <span>Select all ({items.length} {items.length === 1 ? 'item' : 'items'})</span>
+          </div>
           {items.map((item) => {
             const product = typeof item.product === 'string' ? null : item.product;
             if (!product) return null;
@@ -140,14 +166,27 @@ export default function CartPage() {
             const itemTotal = item.price * item.quantity;
 
             return (
-              <Card key={product._id}>
-                <CardContent className="p-4">
-                  <div className="flex gap-4">
+              <Card key={product._id} className="overflow-hidden rounded-none border-0 shadow-sm">
+                <div className="flex items-center gap-2 border-b border-border bg-card px-4 py-3 text-sm font-medium text-foreground">
+                  <ShoppingBag className="h-4 w-4 text-primary" />
+                  <button
+                    type="button"
+                    onClick={() => toggleProduct(product._id)}
+                    aria-label={`Select ${product.name}`}
+                    className={`flex h-5 w-5 items-center justify-center border ${selectedProductIds.has(product._id) ? 'border-primary bg-primary text-white' : 'border-border bg-white'}`}
+                  >
+                    {selectedProductIds.has(product._id) && <Check className="h-3.5 w-3.5" />}
+                  </button>
+                  {getStoreName(product)}
+                  <span className="text-muted-foreground">›</span>
+                </div>
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex gap-3 sm:gap-5">
                     <Link
                       to={`/shop/${product.slug}`}
-                      className="flex-shrink-0"
+                      className="shrink-0"
                     >
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden bg-accent">
+                      <div className="h-24 w-24 overflow-hidden border border-border bg-accent sm:h-32 sm:w-32">
                         {imageUrl ? (
                           <img
                             src={imageUrl}
@@ -167,21 +206,21 @@ export default function CartPage() {
                       <div className="flex items-start justify-between gap-2">
                         <Link
                           to={`/shop/${product.slug}`}
-                          className="font-medium text-foreground hover:text-primary transition-colors line-clamp-2"
+                          className="line-clamp-2 text-sm font-medium leading-5 text-foreground transition-colors hover:text-primary sm:text-base"
                         >
                           {product.name}
                         </Link>
                         <button
                           onClick={() => removeFromCart(product._id)}
-                          className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors flex-shrink-0"
+                          className="shrink-0 p-1.5 text-muted-foreground transition-colors hover:text-destructive"
                           aria-label="Remove item"
                         >
                           <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                         </button>
                       </div>
 
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {formatCurrency(item.price)} each
+                      <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                        Handmade piece · {formatCurrency(item.price)} each
                       </p>
 
                       {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
@@ -189,7 +228,7 @@ export default function CartPage() {
                           {Object.entries(item.selectedVariants).map(([key, value]) => (
                             <span
                               key={key}
-                              className="text-xs px-2 py-1 rounded-full bg-accent text-muted-foreground"
+                              className="bg-accent px-2 py-1 text-xs text-muted-foreground"
                             >
                               {key}: {value}
                             </span>
@@ -197,26 +236,26 @@ export default function CartPage() {
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center gap-1">
+                      <div className="mt-4 flex items-end justify-between gap-3">
+                        <div className="flex items-center border border-border bg-surface-alt">
                           <button
                             onClick={() => updateQuantity(product._id, item.quantity - 1)}
                             disabled={item.quantity <= 1}
-                            className="h-9 w-9 flex items-center justify-center rounded-lg border border-border hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             <Minus className="h-4 w-4" />
                           </button>
-                          <span className="w-12 text-center text-sm font-medium">
+                          <span className="w-9 text-center text-sm font-medium">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => updateQuantity(product._id, item.quantity + 1)}
-                            className="h-9 w-9 flex items-center justify-center rounded-lg border border-border hover:bg-accent transition-colors"
+                            className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:bg-accent"
                           >
                             <Plus className="h-4 w-4" />
                           </button>
                         </div>
-                        <p className="font-semibold text-foreground">
+                        <p className="text-base font-semibold text-primary sm:text-lg">
                           {formatCurrency(itemTotal)}
                         </p>
                       </div>
@@ -229,25 +268,21 @@ export default function CartPage() {
         </div>
 
         <div className="lg:col-span-1">
-          <Card className="sticky top-24">
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+          <Card className="sticky top-24 rounded-none border-0 shadow-sm">
+            <CardHeader className="border-b border-border p-5">
+              <CardTitle className="text-2xl">Order Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5 p-5">
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">{formatCurrency(subtotal)}</span>
+                  <span className="text-muted-foreground">
+                    Subtotal ({totalItems} {totalItems === 1 ? 'item' : 'items'})
+                  </span>
+                    <span className="font-medium">{formatCurrency(selectedSubtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className="font-medium">
-                    {shippingCost === 0 ? (
-                      <span className="text-green-600">Free</span>
-                    ) : (
-                      formatCurrency(shippingCost)
-                    )}
-                  </span>
+                  <span className="text-muted-foreground">Shipping Fee</span>
+                  <span className="font-medium">{formatCurrency(shippingCost)}</span>
                 </div>
 
                 {appliedCoupon && (
@@ -268,11 +303,11 @@ export default function CartPage() {
                   </div>
                 )}
 
-                <div className="border-t border-border pt-3">
+                <div className="border-t border-border pt-4">
                   <div className="flex justify-between">
                     <span className="font-semibold text-foreground">Total</span>
-                    <span className="font-bold text-lg text-foreground">
-                      {formatCurrency(total + shippingCost)}
+                    <span className="text-lg font-semibold text-primary">
+                      {formatCurrency(Math.max(0, selectedSubtotal - (appliedCoupon?.discountAmount || 0)) + shippingCost)}
                     </span>
                   </div>
                 </div>
@@ -281,28 +316,30 @@ export default function CartPage() {
               {!appliedCoupon && (
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Coupon code"
+                    placeholder="Enter Voucher Code"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
                     className="h-10"
                   />
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     onClick={handleApplyCoupon}
                     isLoading={isApplyingCoupon}
                     disabled={!couponCode.trim()}
                   >
-                    Apply
+                    APPLY
                   </Button>
                 </div>
               )}
 
-              <Button className="w-full" size="lg" asChild>
-                <Link to="/checkout">Proceed to Checkout</Link>
+              <Button className="w-full rounded-none bg-primary text-base font-semibold hover:bg-primary/90" size="lg" asChild disabled={selectedItems.length === 0}>
+                <Link to={selectedItems.length ? `/checkout?selected=${selectedItems.map((item) => typeof item.product === 'string' ? item.product : item.product._id).join(',')}` : '/cart'}>
+                  PROCEED TO CHECKOUT ({selectedTotalItems})
+                </Link>
               </Button>
 
-              <Button variant="ghost" className="w-full" asChild>
+              <Button variant="ghost" className="w-full sm:hidden" asChild>
                 <Link to="/shop">
                   <ArrowLeft className="h-4 w-4" />
                   Continue Shopping
@@ -310,6 +347,7 @@ export default function CartPage() {
               </Button>
             </CardContent>
           </Card>
+        </div>
         </div>
       </div>
     </div>

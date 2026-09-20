@@ -11,7 +11,6 @@ import {
   Package,
   Store,
   LogOut,
-  Settings,
   LayoutDashboard,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -19,17 +18,15 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
 import { NotificationBell } from './NotificationBell';
-import { CartDrawer } from './CartDrawer';
 import { cn } from '@/lib/utils';
 import { navigateAndScroll } from '@/lib/scrollTo';
 import api from '@/lib/api';
 import type { Product } from '@/types';
 
-const guestNavSections = ['features', 'about', 'faq', 'contact'];
+const guestNavSections = ['features'];
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -54,9 +51,6 @@ export function Navbar() {
   const guestLinks = [
     { label: 'Home', section: 'hero' },
     { label: 'Features', section: 'features' },
-    { label: 'About', section: 'about' },
-    { label: 'FAQ', section: 'faq' },
-    { label: 'Contact', section: 'contact' },
   ];
 
   const handleGuestNav = (section: string) => {
@@ -174,8 +168,8 @@ export function Navbar() {
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-border/50 transition-all duration-300 ease-in-out',
-          isScrolled && !isHidden && 'shadow-sm',
+          'sticky top-0 z-50 transition-all duration-300 ease-in-out bg-[#1A2340] border-b border-white/10 shadow-md',
+          isScrolled && !isHidden && 'shadow-lg shadow-black/20',
           isHidden && '-translate-y-full',
         )}
       >
@@ -184,11 +178,11 @@ export function Navbar() {
             <div className="flex items-center gap-8">
               <Link to={isAuthenticated && role === 'admin' ? '/admin/dashboard' : isAuthenticated && role === 'seller' ? '/seller/dashboard' : '/'} className="flex items-center gap-2.5 shrink-0">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                  <rect width="32" height="32" rx="8" fill="#2D1810" />
-                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFCF5">K</text>
-                  <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
+                  <rect width="32" height="32" rx="8" fill="#3E62A8" />
+                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFFFF">K</text>
+                  <circle cx="24" cy="9" r="2.5" fill="#D4A24E" />
                 </svg>
-                <span className="font-heading text-xl font-bold text-primary hidden sm:block">
+                <span className="font-heading text-xl font-bold hidden sm:block text-white">
                   कलाbazzar
                 </span>
               </Link>
@@ -201,8 +195,8 @@ export function Navbar() {
                     className={cn(
                       'px-3 py-2 text-sm font-medium rounded-lg transition-colors',
                       activeSection === link.section
-                        ? 'text-primary bg-primary/10'
-                        : 'text-foreground hover:text-primary hover:bg-accent',
+                        ? 'text-gold-300 bg-white/10'
+                        : 'text-white/85 hover:text-gold-300 hover:bg-white/10',
                     )}
                   >
                     {link.label}
@@ -212,7 +206,7 @@ export function Navbar() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
+                    className="px-3 py-2 text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -224,13 +218,13 @@ export function Navbar() {
               <div ref={searchRef} className="relative flex-1 max-w-md hidden sm:block">
                 <form onSubmit={handleSearchSubmit}>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => handleSearch(e.target.value)}
                       placeholder="Search handmade crafts..."
-                      className="w-full h-10 pl-10 pr-4 rounded-lg border border-border/60 bg-surface text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                      className="w-full h-10 pl-10 pr-4 rounded-lg border text-sm placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-400/60 transition-colors bg-white/10 border-white/20 text-white"
                     />
                   </div>
                 </form>
@@ -284,12 +278,12 @@ export function Navbar() {
             )}
 
             <div className="flex items-center gap-1">
-              <NotificationBell />
+              <NotificationBell dark />
 
               {showWishlist && (
                 <button
                   onClick={() => navigate('/wishlist')}
-                  className="relative p-2 rounded-lg text-foreground hover:bg-accent transition-colors hidden sm:flex"
+                  className="relative p-2 rounded-lg transition-colors hidden sm:flex text-white/90 hover:text-white hover:bg-white/10"
                   aria-label="Wishlist"
                 >
                   <Heart className="h-5 w-5" />
@@ -302,9 +296,9 @@ export function Navbar() {
               )}
 
               {showCart && (
-                <button
-                  onClick={() => setIsCartOpen(true)}
-                  className="relative p-2 rounded-lg text-foreground hover:bg-accent transition-colors"
+                <Link
+                  to="/cart"
+                  className="relative p-2 rounded-lg transition-colors text-white/90 hover:text-white hover:bg-white/10"
                   aria-label="Cart"
                 >
                   <ShoppingCart className="h-5 w-5" />
@@ -313,14 +307,14 @@ export function Navbar() {
                       {totalItems}
                     </span>
                   )}
-                </button>
+                </Link>
               )}
 
               {isAuthenticated ? (
                 <div ref={userMenuRef} className="relative hidden md:block">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-white/10"
                   >
                     {user?.avatar ? (
                       <img
@@ -329,14 +323,14 @@ export function Navbar() {
                         className="h-7 w-7 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-xs font-semibold text-primary">
+                      <div className="h-7 w-7 rounded-full flex items-center justify-center bg-white/15">
+                        <span className="text-xs font-semibold text-white">
                           {user?.firstName?.[0]}
                           {user?.lastName?.[0]}
                         </span>
                       </div>
                     )}
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    <ChevronDown className="h-3.5 w-3.5 text-white/70" />
                   </button>
 
                   {isUserMenuOpen && (
@@ -393,12 +387,12 @@ export function Navbar() {
                               My Orders
                             </Link>
                             <Link
-                              to="/seller/settings"
+                              to="/seller/profile"
                               onClick={() => setIsUserMenuOpen(false)}
                               className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
                             >
-                              <Settings className="h-4 w-4 text-muted-foreground" />
-                              Store Settings
+                              <Store className="h-4 w-4 text-muted-foreground" />
+                              Shop Profile
                             </Link>
                           </>
                         )}
@@ -447,13 +441,13 @@ export function Navbar() {
                 <div className="hidden md:flex items-center gap-2">
                   <Link
                     to="/login"
-                    className="px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
+                    className="px-4 py-2 text-sm font-medium transition-colors text-white/90 hover:text-gold-300"
                   >
                     Login
                   </Link>
                   <Link
                     to="/register"
-                    className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                    className="px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-gold-500 text-[#1A2340] hover:bg-gold-400"
                   >
                     Register
                   </Link>
@@ -462,7 +456,7 @@ export function Navbar() {
 
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-lg text-foreground hover:bg-accent transition-colors md:hidden"
+                className="p-2 rounded-lg text-white hover:bg-white/10 transition-colors md:hidden"
                 aria-label="Toggle menu"
               >
                 {isMobileMenuOpen ? (
@@ -478,13 +472,13 @@ export function Navbar() {
             <div className="sm:hidden pb-3">
               <form onSubmit={handleSearchSubmit}>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                     placeholder="Search handmade crafts..."
-                    className="w-full h-10 pl-10 pr-4 rounded-lg border border-border/60 bg-surface text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full h-10 pl-10 pr-4 rounded-lg border bg-white/10 border-white/20 text-white text-sm placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-400/60"
                   />
                 </div>
               </form>
@@ -493,7 +487,7 @@ export function Navbar() {
         </nav>
 
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-card">
+          <div className="md:hidden border-t border-white/10 bg-[#1A2340]">
             <div className="container mx-auto px-4 py-4 space-y-2">
               {!isAuthenticated && guestLinks.map((link) => (
                 <button
@@ -502,8 +496,8 @@ export function Navbar() {
                   className={cn(
                     'block w-full text-left px-4 py-2.5 text-sm font-medium rounded-lg transition-colors',
                     activeSection === link.section
-                      ? 'text-primary bg-primary/10'
-                      : 'text-foreground hover:text-primary hover:bg-accent',
+                      ? 'text-gold-300 bg-white/10'
+                      : 'text-white/85 hover:text-gold-300 hover:bg-white/10',
                   )}
                 >
                   {link.label}
@@ -514,7 +508,7 @@ export function Navbar() {
                   key={link.to}
                   to={link.to}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-4 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
+                  className="block px-4 py-2.5 text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 >
                   {link.label}
                 </Link>
@@ -524,12 +518,12 @@ export function Navbar() {
                 <Link
                   to="/wishlist"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <Heart className="h-4 w-4" />
                   Wishlist
                   {wishlistCount > 0 && (
-                    <span className="ml-auto text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                    <span className="ml-auto text-xs bg-gold-500 text-[#1A2340] px-2 py-0.5 rounded-full">
                       {wishlistCount}
                     </span>
                   )}
@@ -538,18 +532,18 @@ export function Navbar() {
 
               {isAuthenticated ? (
                 <>
-                  <div className="border-t border-border my-2 pt-2">
+                  <div className="border-t border-white/10 my-2 pt-2">
                     <div className="px-4 py-2">
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-sm font-medium text-white">
                         {user?.firstName} {user?.lastName}
                       </p>
-                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                      <p className="text-xs text-white/60">{user?.email}</p>
                     </div>
                   </div>
                   <Link
                     to="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                   >
                     <User className="h-4 w-4" />
                     Profile
@@ -558,7 +552,7 @@ export function Navbar() {
                     <Link
                       to="/orders"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                     >
                       <Package className="h-4 w-4" />
                       My Orders
@@ -569,7 +563,7 @@ export function Navbar() {
                       <Link
                         to="/seller/dashboard"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       >
                         <Store className="h-4 w-4" />
                         Seller Dashboard
@@ -577,7 +571,7 @@ export function Navbar() {
                       <Link
                         to="/seller/products"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       >
                         <Package className="h-4 w-4" />
                         My Products
@@ -585,18 +579,18 @@ export function Navbar() {
                       <Link
                         to="/seller/orders"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       >
                         <Package className="h-4 w-4" />
                         My Orders
                       </Link>
                       <Link
-                        to="/seller/settings"
+                        to="/seller/profile"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       >
-                        <Settings className="h-4 w-4" />
-                        Store Settings
+                        <Store className="h-4 w-4" />
+                        Shop Profile
                       </Link>
                     </>
                   )}
@@ -605,7 +599,7 @@ export function Navbar() {
                       <Link
                         to="/admin/dashboard"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       >
                         <LayoutDashboard className="h-4 w-4" />
                         Admin Dashboard
@@ -613,7 +607,7 @@ export function Navbar() {
                       <Link
                         to="/admin/sellers"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       >
                         <Store className="h-4 w-4" />
                         Manage Sellers
@@ -621,7 +615,7 @@ export function Navbar() {
                       <Link
                         to="/admin/orders"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover rounded-lg transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       >
                         <Package className="h-4 w-4" />
                         Manage Orders
@@ -633,25 +627,25 @@ export function Navbar() {
                       handleLogout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/5 rounded-lg transition-colors w-full"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-white/10 rounded-lg transition-colors w-full"
                   >
                     <LogOut className="h-4 w-4" />
                     Logout
                   </button>
                 </>
               ) : (
-                <div className="border-t border-border my-2 pt-2 flex gap-2 px-4">
+                <div className="border-t border-white/10 my-2 pt-2 flex gap-2 px-4">
                   <Link
                     to="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 text-sm font-medium border border-border rounded-lg hover:bg-accent transition-colors"
+                    className="flex-1 text-center px-4 py-2.5 text-sm font-medium border border-white/20 text-white/90 rounded-lg hover:bg-white/10 transition-colors"
                   >
                     Login
                   </Link>
                   <Link
                     to="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                    className="flex-1 text-center px-4 py-2.5 text-sm font-medium bg-gold-500 text-[#1A2340] rounded-lg hover:bg-gold-400 transition-colors"
                   >
                     Register
                   </Link>
@@ -661,8 +655,6 @@ export function Navbar() {
           </div>
         )}
       </header>
-
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 }

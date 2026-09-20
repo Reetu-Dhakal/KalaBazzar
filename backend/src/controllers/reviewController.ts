@@ -7,6 +7,7 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../utils/ApiError';
 import { getPaginationParams } from '../utils/pagination';
 import { AuthRequest } from '../middleware/auth';
+import { notify } from '../services/notificationService';
 
 export const createReview = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user._id;
@@ -56,6 +57,17 @@ export const createReview = asyncHandler(async (req: AuthRequest, res: Response)
   });
 
   await Review.calculateAverageRating(productId);
+
+  const product = await Product.findById(productId).select('seller name');
+  if (product) {
+    await notify(
+      product.seller,
+      'review_received',
+      'You received a new review',
+      `Your product "${product.name}" received a ${ratingNum}-star review from a verified purchase.`,
+      { relatedEntity: { type: 'review', id: review._id }, priority: 'normal' },
+    );
+  }
 
   res.status(201).json(
     ApiResponse.created(review, 'Review created successfully')

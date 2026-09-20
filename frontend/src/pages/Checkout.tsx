@@ -1,17 +1,14 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
-  CreditCard,
   Truck,
   MapPin,
-  Tag,
-  X,
   ChevronRight,
-  Banknote,
-  Smartphone,
+  User,
+  ShoppingBag,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -22,7 +19,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { formatCurrency } from '@/lib/utils';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import type { PaymentMethod, ShippingAddress } from '@/types';
+import type { ShippingAddress } from '@/types';
 
 const checkoutSchema = z.object({
   recipientName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -31,46 +28,31 @@ const checkoutSchema = z.object({
   state: z.string().min(2, 'State is required'),
   zipCode: z.string().min(4, 'Zip code is required'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-  notes: z.string().optional(),
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
-const SHIPPING_THRESHOLD = 5000;
-const SHIPPING_COST = 250;
+const VALLEY_CITIES = ['kathmandu', 'lalitpur', 'bhaktapur', 'kirtipur', 'madhyapur thimi'];
+const NEARBY_DISTRICTS = ['kavrepalanchok', 'kavre', 'dhading', 'nuwakot', 'makwanpur'];
 
-const PAYMENT_METHODS: { value: PaymentMethod; label: string; description: string; icon: typeof Banknote }[] = [
-  {
-    value: 'cod',
-    label: 'Cash on Delivery',
-    description: 'Pay when your order arrives at your doorstep',
-    icon: Banknote,
-  },
-  {
-    value: 'khalti',
-    label: 'Khalti',
-    description: 'Pay instantly using Khalti digital wallet',
-    icon: Smartphone,
-  },
-  {
-    value: 'esewa',
-    label: 'eSewa',
-    description: 'Pay instantly using eSewa digital wallet',
-    icon: Smartphone,
-  },
-];
+function getShippingCost(city: string, state: string): number {
+  const destination = `${city} ${state}`.toLowerCase().trim();
+  if (VALLEY_CITIES.some((place) => destination.includes(place))) return 100;
+  if (NEARBY_DISTRICTS.some((place) => destination.includes(place))) return 200;
+  return 300;
+}
 
 export default function Checkout() {
   usePageTitle('Checkout');
   const navigate = useNavigate();
-  const { items, subtotal, appliedCoupon, clearCart } = useCart();
+  const [searchParams] = useSearchParams();
+  const { items, appliedCoupon } = useCart();
   const { user } = useAuth();
+  const savedAddresses = user?.addresses || [];
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [couponCode, setCouponCode] = useState('');
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [localCoupon, setLocalCoupon] = useState<{
     code: string;
     discountType: 'percentage' | 'fixed';
@@ -79,10 +61,20 @@ export default function Checkout() {
   } | null>(null);
 
   const activeCoupon = appliedCoupon || localCoupon;
+  const selectedProductIds = searchParams.get('selected')?.split(',').filter(Boolean) || [];
+  const selectedItems = selectedProductIds.length > 0
+    ? items.filter((item) => {
+      const productId = typeof item.product === 'string' ? item.product : item.product._id;
+      return selectedProductIds.includes(productId);
+    })
+    : items;
+  const selectedIds = selectedItems.map((item) => typeof item.product === 'string' ? item.product : item.product._id);
+  const selectedSubtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
     reset,
   } = useForm<CheckoutFormData>({
@@ -94,13 +86,29 @@ export default function Checkout() {
       state: '',
       zipCode: '',
       phone: user?.phone || '',
-      notes: '',
     },
   });
 
-  const shippingCost = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+  useEffect(() => {
+    const defaultIndex = savedAddresses.findIndex((address) => address.isDefault);
+    const addressIndex = defaultIndex >= 0 ? defaultIndex : savedAddresses.length > 0 ? 0 : -1;
+    if (addressIndex >= 0) {
+      const address = savedAddresses[addressIndex];
+      setSelectedAddressIndex(addressIndex);
+      reset({
+        recipientName: user ? `${user.firstName} ${user.lastName}` : '',
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        zipCode: address.zipCode,
+        phone: user?.phone || '',
+      });
+    }
+  }, [reset, savedAddresses, user]);
+
+  const shippingCost = getShippingCost(watch('city'), watch('state'));
   const discountAmount = activeCoupon?.discountAmount || 0;
-  const grandTotal = Math.max(0, subtotal + shippingCost - discountAmount);
+  const grandTotal = Math.max(0, selectedSubtotal + shippingCost - discountAmount);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -115,8 +123,8 @@ export default function Checkout() {
   };
 
   const onSubmit = async (formData: CheckoutFormData) => {
-    if (items.length === 0) {
-      toast.error('Your cart is empty');
+    if (selectedItems.length === 0) {
+      toast.error('Select at least one cart item');
       return;
     }
 
@@ -130,45 +138,19 @@ export default function Checkout() {
       phone: formData.phone,
     };
 
-    setIsPlacingOrder(true);
-    try {
-      const payload = {
+    navigate(`/payment/select?selected=${selectedIds.join(',')}`, {
+      state: {
         shippingAddress,
-        paymentMethod,
-        notes: formData.notes || undefined,
         couponCode: activeCoupon?.code || undefined,
-      };
+        discountAmount,
+      },
+    });
+  };
 
-      const { data } = await api.post('/orders', payload);
-      const orderId = data.data._id || data.data.order?._id || data.data.orderId;
-
-      if (paymentMethod === 'khalti' || paymentMethod === 'esewa') {
-        const paymentData = await api.post('/payment/initiate', {
-          orderId,
-          paymentMethod,
-        });
-        const payment = paymentData.data?.data;
-        const redirectUrl = payment?.redirectUrl;
-        if (payment?.alreadyPaid) {
-          await clearCart();
-          navigate(`/order-success/${orderId}`);
-          return;
-        }
-        if (redirectUrl) {
-          window.location.href = redirectUrl;
-          return;
-        }
-      }
-
-      await clearCart();
-      toast.success('Order placed successfully!');
-      navigate(`/order-success/${orderId}`);
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to place order';
-      toast.error(message);
-    } finally {
-      setIsPlacingOrder(false);
+  const handleInvalidSubmit = () => {
+    toast.error('Please complete your shipping address before continuing');
+    if (savedAddresses.length > 0 && selectedAddressIndex === null) {
+      setShowManualEntry(true);
     }
   };
 
@@ -184,31 +166,26 @@ export default function Checkout() {
     );
   }
 
-  const savedAddresses = user?.addresses || [];
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <nav className="flex items-center gap-1 text-sm text-muted-foreground mb-6">
-        <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-        <ChevronRight className="h-3.5 w-3.5" />
-        <Link to="/cart" className="hover:text-foreground transition-colors">Cart</Link>
-        <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium">Checkout</span>
-      </nav>
+    <div className="min-h-[calc(100vh-4rem)] bg-background">
+      <div className="container mx-auto px-4 py-5 sm:px-6 lg:py-7">
+        <nav className="mb-5 flex items-center gap-1 text-xs text-muted-foreground">
+          <Link to="/" className="transition-colors hover:text-foreground">Home</Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <Link to="/cart" className="transition-colors hover:text-foreground">Cart</Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span className="font-medium text-foreground">Checkout</span>
+        </nav>
 
-      <h1 className="text-3xl font-heading text-foreground mb-8">Checkout</h1>
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Shipping Address
-                </CardTitle>
+      <form onSubmit={handleSubmit(onSubmit, handleInvalidSubmit)}>
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(320px,0.9fr)]">
+          <div className="space-y-4">
+            <Card className="rounded-none border-0 shadow-sm">
+              <CardHeader className="flex-row items-center justify-between border-b border-border bg-card px-4 py-3 sm:px-5">
+                <CardTitle className="text-lg font-sans font-medium">Shipping Address</CardTitle>
+                <button type="button" className="text-sm font-medium text-sky-600 hover:underline">EDIT</button>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-5">
                 {savedAddresses.length > 0 && !showManualEntry && (
                   <div className="space-y-3">
                     {savedAddresses.map((addr, index) => (
@@ -283,203 +260,133 @@ export default function Checkout() {
                         ← Back to saved addresses
                       </Button>
                     )}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Input
-                        label="Recipient Name"
-                        placeholder="Full name"
-                        error={errors.recipientName?.message}
-                        {...register('recipientName')}
-                      />
-                      <Input
-                        label="Phone Number"
-                        placeholder="98XXXXXXXX"
-                        error={errors.phone?.message}
-                        {...register('phone')}
-                      />
-                    </div>
-                    <Input
-                      label="Street Address"
-                      placeholder="Street address, apartment, suite, etc."
-                      error={errors.street?.message}
-                      {...register('street')}
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <Input
-                        label="City"
-                        placeholder="City"
-                        error={errors.city?.message}
-                        {...register('city')}
-                      />
-                      <Input
-                        label="State / Province"
-                        placeholder="State"
-                        error={errors.state?.message}
-                        {...register('state')}
-                      />
-                      <Input
-                        label="Zip Code"
-                        placeholder="Zip code"
-                        error={errors.zipCode?.message}
-                        {...register('zipCode')}
-                      />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Tag className="h-5 w-5" />
-                  Coupon Code
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {activeCoupon ? (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-                    <div className="flex items-center gap-2">
-                      <Tag className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium text-green-800">
-                        {activeCoupon.code} —{' '}
-                        {activeCoupon.discountType === 'percentage'
-                          ? `${activeCoupon.discountValue}% off`
-                          : `${formatCurrency(activeCoupon.discountValue)} off`}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setLocalCoupon(null)}
-                      className="text-green-600 hover:text-green-800"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter coupon code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleApplyCoupon())}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleApplyCoupon}
-                      disabled={!couponCode.trim()}
-                    >
-                      Apply
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Payment Method
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {PAYMENT_METHODS.map((method) => {
-                    const Icon = method.icon;
-                    return (
-                      <label
-                        key={method.value}
-                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-colors ${
-                          paymentMethod === method.value
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="payment"
-                          checked={paymentMethod === method.value}
-                          onChange={() => setPaymentMethod(method.value)}
-                          className="accent-primary"
+                    <div className="rounded-xl border border-border bg-background p-4">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+                        <User className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">Contact Information</span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          Who will receive the order
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Input
+                          label="Full Name"
+                          placeholder="Full name"
+                          error={errors.recipientName?.message}
+                          {...register('recipientName')}
                         />
-                        <Icon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{method.label}</p>
-                          <p className="text-xs text-muted-foreground">{method.description}</p>
-                        </div>
-                      </label>
-                    );
-                  })}
+                        <Input
+                          label="Mobile Number"
+                          placeholder="98XXXXXXXX"
+                          error={errors.phone?.message}
+                          {...register('phone')}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-border bg-background p-4">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">Address Details</span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          Delivery location
+                        </span>
+                      </div>
+                      <Input
+                        label="Detailed Address"
+                        placeholder="Street address, house/building, apartment, suite, etc."
+                        error={errors.street?.message}
+                        {...register('street')}
+                      />
+                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <Input
+                          label="City"
+                          placeholder="City"
+                          error={errors.city?.message}
+                          {...register('city')}
+                        />
+                        <Input
+                          label="District"
+                          placeholder="District"
+                          error={errors.state?.message}
+                          {...register('state')}
+                        />
+                        <Input
+                          label="Postal Code"
+                          placeholder="Postal code"
+                          error={errors.zipCode?.message}
+                          {...register('zipCode')}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-none border-0 shadow-sm">
+              <CardHeader className="flex-row items-center justify-between border-b border-border bg-card px-4 py-3 sm:px-5">
+                <CardTitle className="text-base font-sans font-semibold">Package 1 of 1</CardTitle>
+                <span className="text-xs text-muted-foreground">Shipped by <strong className="text-foreground">{selectedItems.length > 0 && typeof selectedItems[0].product !== 'string' && typeof selectedItems[0].product.seller === 'object' && 'storeName' in selectedItems[0].product.seller ? selectedItems[0].product.seller.storeName : 'Artisan Store'}</strong></span>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-5">
+                <p className="mb-3 text-sm font-medium text-foreground">Delivery or Pickup</p>
+                <div className="mb-5 flex max-w-xs items-start gap-3 border border-sky-400 bg-sky-50/40 p-4">
+                  <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-xs text-white">✓</div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{formatCurrency(shippingCost)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Standard Delivery</p>
+                    <p className="mt-5 text-xs text-muted-foreground">Delivery fee based on your location</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <textarea
-                  placeholder="Delivery instructions (optional)"
-                  rows={3}
-                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 resize-none"
-                  {...register('notes')}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="lg:col-span-1">
-            <Card className="sticky top-24">
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {items.map((item) => {
+                <div className="divide-y divide-border">
+                  {selectedItems.map((item) => {
                     const product = typeof item.product === 'string' ? null : item.product;
                     if (!product) return null;
                     const imageUrl = product.variants?.[0]?.images?.[0] || '';
                     return (
-                      <div key={product._id} className="flex gap-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-accent flex-shrink-0">
-                          {imageUrl ? (
-                            <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full" />
-                          )}
+                      <div key={product._id} className="flex gap-3 py-4 first:pt-0 last:pb-0">
+                        <div className="h-20 w-20 shrink-0 overflow-hidden border border-border bg-accent">
+                          {imageUrl ? <img src={imageUrl} alt={product.name} className="h-full w-full object-cover" /> : <ShoppingBag className="m-auto h-7 w-7 text-muted-foreground/40" />}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {product.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Qty: {item.quantity} × {formatCurrency(item.price)}
-                          </p>
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-2 text-sm font-medium text-foreground">{product.name}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">Qty: {item.quantity}</p>
                         </div>
-                        <p className="text-sm font-medium text-foreground flex-shrink-0">
-                          {formatCurrency(item.price * item.quantity)}
-                        </p>
+                        <p className="shrink-0 text-sm font-medium text-primary">{formatCurrency(item.price * item.quantity)}</p>
                       </div>
                     );
                   })}
                 </div>
+              </CardContent>
+            </Card>
 
-                <div className="border-t border-border pt-3 space-y-2">
+          </div>
+
+          <div className="lg:col-span-1">
+            <Card className="sticky top-24 rounded-none border-0 shadow-sm">
+              <CardHeader className="border-b border-border px-4 py-3 sm:px-5">
+                <CardTitle className="text-xl font-sans font-medium">Promotion</CardTitle>
+                <div className="mt-3 flex gap-2">
+                  <Input placeholder="Enter Store/Daraz Code" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} className="h-11 rounded-none" />
+                  <Button type="button" variant="secondary" onClick={handleApplyCoupon} disabled={!couponCode.trim()} className="h-11 rounded-none bg-sky-500 px-5 text-white hover:bg-sky-600">APPLY</Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 p-4 sm:p-5">
+                <div className="flex items-center justify-between border-b border-border pb-5">
+                  <span className="font-sans text-lg font-medium">Invoice and Contact Info</span>
+                  <button type="button" className="text-sm font-medium text-sky-600 hover:underline">Edit</button>
+                </div>
+                <div>
+                  <h3 className="mb-4 font-sans text-lg font-medium">Order Detail</h3>
+                  <div className="space-y-4 text-sm">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span>{formatCurrency(subtotal)}</span>
+                    <span className="text-muted-foreground">Items Total ({selectedItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+                    <span>{formatCurrency(selectedSubtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span>
-                      {shippingCost === 0 ? (
-                        <span className="text-green-600">Free</span>
-                      ) : (
-                        formatCurrency(shippingCost)
-                      )}
-                    </span>
+                    <span className="text-muted-foreground">Delivery Fee</span>
+                    <span>{formatCurrency(shippingCost)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-sm">
@@ -487,34 +394,27 @@ export default function Checkout() {
                       <span className="text-green-600">-{formatCurrency(discountAmount)}</span>
                     </div>
                   )}
-                  <div className="border-t border-border pt-2">
+                  <div className="border-t border-border pt-4">
                     <div className="flex justify-between">
                       <span className="font-semibold text-foreground">Total</span>
-                      <span className="font-bold text-lg text-foreground">
+                      <span className="text-lg font-semibold text-primary">
                         {formatCurrency(grandTotal)}
                       </span>
                     </div>
+                  </div>
                   </div>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full rounded-none bg-primary text-base font-semibold hover:bg-primary/90"
                   size="lg"
-                  isLoading={isPlacingOrder}
-                  disabled={isPlacingOrder}
                 >
-                  {isPlacingOrder ? (
-                    <>Processing...</>
-                  ) : (
-                    <>
-                      <Truck className="h-5 w-5" />
-                      Place Order
-                    </>
-                  )}
+                  <Truck className="h-5 w-5" />
+                  Proceed to Pay
                 </Button>
 
-                <p className="text-xs text-center text-muted-foreground">
+                <p className="text-center text-xs text-muted-foreground">
                   By placing this order, you agree to our terms and conditions.
                 </p>
               </CardContent>
@@ -522,6 +422,7 @@ export default function Checkout() {
           </div>
         </div>
       </form>
+      </div>
     </div>
   );
 }

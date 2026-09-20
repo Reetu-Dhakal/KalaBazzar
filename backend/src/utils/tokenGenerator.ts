@@ -1,10 +1,16 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
+export const getAccessTokenSecret = (): string => {
+  const secret = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET;
+  if (!secret) throw new Error('JWT access secret is not configured');
+  return secret;
+};
+
 export const generateAccessToken = (userId: string, role: string): string => {
   return jwt.sign(
     { id: userId, role },
-    process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET!,
+    getAccessTokenSecret(),
     { expiresIn: '15m' }
   );
 };
@@ -19,7 +25,7 @@ export const generateRefreshToken = (userId: string): string => {
 
 export const verifyAccessToken = (token: string): { id: string; role: string } | null => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET!) as { id: string; role: string };
+    return jwt.verify(token, getAccessTokenSecret()) as { id: string; role: string };
   } catch {
     return null;
   }

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 64" role="img" aria-label="Khalti by IME">
+  <text x="8" y="39" fill="#d5223b" font-family="Arial,sans-serif" font-size="34" font-weight="700">khalti</text>
+  <path d="M140 10l25-8-8 24-7-8-10 8 5-12z" fill="#d5223b"/>
+  <text x="80" y="57" fill="#222" font-family="Arial,sans-serif" font-size="13">by </text>
+  <text x="102" y="57" fill="#d5223b" font-family="Georgia,serif" font-size="16" font-weight="700">IME</text>
+</svg>

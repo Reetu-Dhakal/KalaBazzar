@@ -27,31 +27,24 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { isAuthenticated } = useAuth();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const authFailedRef = useRef(false);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const fetchNotifications = useCallback(async () => {
-    if (!isAuthenticated || authFailedRef.current) return;
+    if (!isAuthenticated) return;
 
     try {
       const { data } = await api.get('/notifications', { params: { limit: 50 } });
       setNotifications(data.data || []);
     } catch {
-      authFailedRef.current = true;
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+      // transient error — the next poll will retry
     }
   }, [isAuthenticated]);
 
   useEffect(() => {
-    authFailedRef.current = false;
-
     if (isAuthenticated) {
       fetchNotifications();
-      intervalRef.current = setInterval(fetchNotifications, 30000);
+      intervalRef.current = setInterval(fetchNotifications, 15000);
     }
 
     return () => {

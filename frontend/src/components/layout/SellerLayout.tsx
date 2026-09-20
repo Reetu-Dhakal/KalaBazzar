@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import api from '@/lib/api';
 import {
   LayoutDashboard,
   Package,
   ShoppingCart,
   Wallet,
-  Settings,
   Store,
+  Globe,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -20,13 +21,23 @@ const navItems = [
   { to: '/seller/products', label: 'Products', icon: Package },
   { to: '/seller/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/seller/earnings', label: 'Earnings', icon: Wallet },
-  { to: '/seller/settings', label: 'Settings', icon: Settings },
+  { to: '/seller/profile', label: 'Shop Profile', icon: Store },
 ];
 
 export function SellerLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [storeSlug, setStoreSlug] = useState<string | null>(null);
   const location = useLocation();
+
+  useEffect(() => {
+    api
+      .get('/sellers/application/status')
+      .then(({ data }) => {
+        if (data?.data?.slug) setStoreSlug(data.data.slug);
+      })
+      .catch(() => undefined);
+  }, []);
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -41,9 +52,9 @@ export function SellerLayout() {
           {!collapsed && (
             <div className="flex items-center gap-2">
               <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                <rect width="32" height="32" rx="8" fill="#8B4513" />
-                <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFDF8">K</text>
-                <circle cx="24" cy="9" r="2.5" fill="#C0392B" />
+                <rect width="32" height="32" rx="8" fill="#3E62A8" />
+                <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFFFF">K</text>
+                <circle cx="24" cy="9" r="2.5" fill="#D4A24E" />
               </svg>
               <span className="font-heading text-lg font-bold text-primary">Seller Panel</span>
             </div>
@@ -82,14 +93,14 @@ export function SellerLayout() {
         </nav>
         <div className="p-2 border-t border-border">
           <Link
-            to="/store"
+            to={storeSlug ? `/store/${storeSlug}` : '/seller/profile'}
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-accent hover:text-foreground',
               collapsed && 'justify-center px-2',
             )}
             title={collapsed ? 'View Store' : undefined}
           >
-            <Store className="h-5 w-5 shrink-0" />
+            <Globe className="h-5 w-5 shrink-0" />
             {!collapsed && <span>View Store</span>}
           </Link>
         </div>

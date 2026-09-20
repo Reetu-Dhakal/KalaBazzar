@@ -29,10 +29,6 @@ export const registerValidation = [
     .trim()
     .matches(/^(\+977|0)?[1-9]\d{9}$/)
     .withMessage('Valid Nepali phone number required'),
-  body('role')
-    .optional()
-    .isIn(['customer', 'seller'])
-    .withMessage('Invalid role'),
 ];
 
 export const loginValidation = [

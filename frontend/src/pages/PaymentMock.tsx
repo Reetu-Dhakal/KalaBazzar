@@ -43,7 +43,10 @@ export default function PaymentMock() {
         result,
       });
       if (result === 'success') {
-        await clearCart().catch(() => {});
+        const selectedProductIds = order?.items.map((item) =>
+          typeof item.product === 'string' ? item.product : item.product._id,
+        );
+        await clearCart(selectedProductIds).catch(() => {});
         toast.success('Payment successful!');
         navigate(`/order-success/${orderId}`);
       } else {

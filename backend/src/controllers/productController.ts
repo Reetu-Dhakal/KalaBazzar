@@ -3,34 +3,75 @@ import mongoose from 'mongoose';
 import Product from '../models/Product';
 import Review from '../models/Review';
 import SellerProfile from '../models/SellerProfile';
+import Category from '../models/Category';
+import Craft from '../models/Craft';
+import Region from '../models/Region';
+import Collection from '../models/Collection';
+import User from '../models/User';
+import { notify, notifyAll } from '../services/notificationService';
 import { ApiError, asyncHandler } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { AuthRequest } from '../middleware/auth';
 import { generateSlug, generateUniqueSlug } from '../utils/helpers';
 import { getPaginationParams, getSortObject } from '../utils/pagination';
 import { ProductStatus, SellerStatus } from '../config/constants';
-
 const SORT_MAP: Record<string, Record<string, 1 | -1>> = {
   newest: { createdAt: -1 },
+  oldest: { createdAt: 1 },
   'price-asc': { basePrice: 1 },
   'price-desc': { basePrice: -1 },
   rating: { 'analytics.averageRating': -1 },
   popular: { 'analytics.purchases': -1, 'analytics.views': -1 },
+  popularity: { 'analytics.purchases': -1, 'analytics.views': -1 },
+  name_asc: { name: 1 },
+  name_desc: { name: -1 },
+};
+
+const isMongoId = (value: unknown): value is string =>
+  typeof value === 'string' && mongoose.isValidObjectId(value);
+
+const resolveSlugId = async (
+  Model: any,
+  value: string,
+): Promise<mongoose.Types.ObjectId | null | undefined> => {
+  if (isMongoId(value)) return new mongoose.Types.ObjectId(value);
+  const doc = await Model.findOne({ slug: value }, { _id: 1 }).lean();
+  return doc ? (doc._id as mongoose.Types.ObjectId) : null;
 };
 
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, skip } = getPaginationParams(req);
-  const { search, category, craft, region, seller, minPrice, maxPrice, sort } = req.query;
+  const { search, category, craft, region, seller, collection, minPrice, maxPrice, sort } = req.query;
 
-  const filter: any = { isActive: { $ne: false } };
+  const [categoryId, craftId, regionId, sellerId, collectionId] = await Promise.all([
+    category ? resolveSlugId(Category, category as string) : Promise.resolve(undefined),
+    craft ? resolveSlugId(Craft, craft as string) : Promise.resolve(undefined),
+    region ? resolveSlugId(Region, region as string) : Promise.resolve(undefined),
+    seller ? resolveSlugId(SellerProfile, seller as string) : Promise.resolve(undefined),
+    collection ? resolveSlugId(Collection, collection as string) : Promise.resolve(undefined),
+  ]);
+
+  if ([categoryId, craftId, regionId, sellerId, collectionId].some((id) => id === null)) {
+    res.json(ApiResponse.paginated([], 'Products retrieved', page, limit, 0));
+    return;
+  }
+
+  const filter: any = {
+    isActive: { $ne: false },
+    status: ProductStatus.APPROVED,
+  };
 
   if (search) {
     filter.$text = { $search: search as string };
   }
-  if (category) filter.category = category;
-  if (craft) filter.craft = craft;
-  if (region) filter.region = region;
-  if (seller) filter.seller = seller;
+  if (categoryId) {
+    const subcategories = await Category.find({ ancestors: categoryId }).select('_id').lean();
+    filter.category = { $in: [categoryId, ...subcategories.map((c: any) => c._id)] };
+  }
+  if (craftId) filter.craft = craftId;
+  if (regionId) filter.region = regionId;
+  if (sellerId) filter.seller = sellerId;
+  if (collectionId) filter.collections = collectionId;
   if (minPrice || maxPrice) {
     filter.basePrice = {};
     if (minPrice) filter.basePrice.$gte = parseFloat(minPrice as string);
@@ -73,7 +114,11 @@ export const getFeaturedProducts = asyncHandler(async (req: Request, res: Respon
 export const getProductBySlug = asyncHandler(async (req: Request, res: Response) => {
   const { slug } = req.params;
 
-  const product = await Product.findOne({ slug, isActive: { $ne: false } })
+  const product = await Product.findOne({
+    slug,
+    isActive: { $ne: false },
+    status: ProductStatus.APPROVED,
+  })
     .populate('seller', 'storeName slug logo region description')
     .populate('category', 'name slug')
     .populate('craft', 'name slug')
@@ -188,6 +233,15 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
     status: ProductStatus.DRAFT,
   });
 
+  const admins = await User.find({ role: 'admin' }).select('_id').lean();
+  await notifyAll(
+    admins.map((admin: any) => admin._id),
+    'product_under_review',
+    'New product awaiting review',
+    `"${product.name}" was submitted by a seller and is awaiting review.`,
+    { relatedEntity: { type: 'product', id: product._id }, priority: 'normal' },
+  );
+
   res.status(201).json(ApiResponse.created(product, 'Product created successfully'));
 });
 
@@ -245,6 +299,17 @@ export const updateProduct = asyncHandler(async (req: AuthRequest, res: Response
     runValidators: true,
   });
 
+  const lowStockVariants = (updated?.variants || []).filter((v: any) => v.inventory <= 5);
+  if (lowStockVariants.length > 0) {
+    await notify(
+      req.user._id,
+      'low_stock',
+      `${updated!.name} is running low on stock`,
+      `Only ${lowStockVariants.map((v: any) => v.inventory).join(', ')} units left. Consider restocking.`,
+      { relatedEntity: { type: 'product', id: updated!._id }, priority: 'normal' },
+    );
+  }
+
   res.json(ApiResponse.success(updated, 'Product updated successfully'));
 });
 
@@ -292,6 +357,15 @@ export const publishProduct = asyncHandler(async (req: AuthRequest, res: Respons
   product.status = ProductStatus.APPROVED;
   product.publishedAt = new Date();
   await product.save();
+
+  const admins = await User.find({ role: 'admin' }).select('_id').lean();
+  await notifyAll(
+    admins.map((admin: any) => admin._id),
+    'product_under_review',
+    'Product published for review',
+    `"${product.name}" was published by a seller.`,
+    { relatedEntity: { type: 'product', id: product._id }, priority: 'normal' },
+  );
 
   res.json(ApiResponse.success(product, 'Product published successfully'));
 });
@@ -374,6 +448,14 @@ export const addProductReview = asyncHandler(async (req: AuthRequest, res: Respo
       'analytics.reviewCount': stats[0].count,
     });
   }
+
+  await notify(
+    product.seller,
+    'review_received',
+    'You received a new review',
+    `Your product "${product.name}" received a ${rating}-star review from ${req.user.firstName}.`,
+    { relatedEntity: { type: 'review', id: review._id }, priority: 'normal' },
+  );
 
   res.status(201).json(ApiResponse.created(review, 'Review added successfully'));
 });

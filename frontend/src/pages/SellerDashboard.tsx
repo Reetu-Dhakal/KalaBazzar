@@ -7,19 +7,9 @@ import {
   Star,
   Plus,
   Eye,
-  Settings,
+  Store,
   AlertTriangle,
-  TrendingUp,
 } from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -36,7 +26,6 @@ interface DashboardStats {
   averageRating: number;
   recentOrders: Order[];
   lowStockProducts: Product[];
-  revenueData: { date: string; revenue: number }[];
 }
 
 function StatCard({
@@ -149,46 +138,7 @@ export default function SellerDashboard() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        {/* Revenue Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Revenue (Last 30 Days)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats?.revenueData && stats.revenueData.length > 0 ? (
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E7E5E4" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(v: string) => {
-                        const d = new Date(v);
-                        return `${d.getMonth() + 1}/${d.getDate()}`;
-                      }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => `Rs ${v}`} />
-                    <Tooltip
-                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                      labelFormatter={(label: string) => new Date(label).toLocaleDateString()}
-                    />
-                    <Bar dataKey="revenue" fill="#8B4513" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">
-                No revenue data yet
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Low Stock Alerts */}
         <Card>
           <CardHeader>
@@ -227,7 +177,6 @@ export default function SellerDashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
 
       {/* Recent Orders */}
       <Card>
@@ -298,6 +247,7 @@ export default function SellerDashboard() {
           )}
         </CardContent>
       </Card>
+      </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
@@ -320,11 +270,11 @@ export default function SellerDashboard() {
           </Link>
         </Button>
         <Button asChild variant="outline" className="h-auto py-4 justify-start gap-3">
-          <Link to="/seller/settings">
-            <Settings className="h-5 w-5 text-primary" />
+          <Link to="/seller/profile">
+            <Store className="h-5 w-5 text-primary" />
             <div className="text-left">
-              <p className="font-medium">Edit Store</p>
-              <p className="text-xs text-muted-foreground">Update your store settings</p>
+              <p className="font-medium">Shop Profile</p>
+              <p className="text-xs text-muted-foreground">View and edit your social-style shop page</p>
             </div>
           </Link>
         </Button>
