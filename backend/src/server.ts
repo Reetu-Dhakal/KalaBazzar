@@ -5,7 +5,7 @@ import { connectDB } from './config/db';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT || 5000);
 
 connectDB().then(async () => {
   const db = mongoose.connection.db;
@@ -15,7 +15,7 @@ connectDB().then(async () => {
     try { await db.collection('orders').dropIndex('invoiceNumber_1'); } catch {}
   }
 
-  app.listen(PORT, () => {
+  app.listen(PORT, '127.0.0.1', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   });

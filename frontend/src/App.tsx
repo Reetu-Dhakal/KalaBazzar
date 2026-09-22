@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AdminRoute } from '@/components/auth/AdminRoute';
@@ -8,13 +8,12 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 import { SellerLayout } from '@/components/layout/SellerLayout';
 import { PagePalette } from '@/components/layout/PagePalette';
 
-const Home = lazy(() => import('@/pages/Home'));
+const Shop = lazy(() => import('@/pages/Shop'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const VerifyEmail = lazy(() => import('@/pages/VerifyEmail'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
-const Shop = lazy(() => import('@/pages/Shop'));
 const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
 const CartPage = lazy(() => import('@/pages/CartPage'));
 const Checkout = lazy(() => import('@/pages/Checkout'));
@@ -63,19 +62,19 @@ export default function App() {
   return (
     <Suspense fallback={<Spinner />}>
       <Routes>
+        <Route path="/login" element={<PagePalette palette="palette-auth"><Login /></PagePalette>} />
+        <Route path="/register" element={<PagePalette palette="palette-auth"><Register /></PagePalette>} />
+        <Route path="/verify-email" element={<PagePalette palette="palette-auth"><VerifyEmail /></PagePalette>} />
+        <Route path="/forgot-password" element={<PagePalette palette="palette-auth"><ForgotPassword /></PagePalette>} />
+        <Route path="/reset-password/:token" element={<PagePalette palette="palette-auth"><ResetPassword /></PagePalette>} />
+
         <Route element={<Layout />}>
-          <Route path="/" element={<PagePalette palette="palette-home"><Home /></PagePalette>} />
-          <Route path="/shop" element={<PagePalette palette="palette-shop"><Shop /></PagePalette>} />
+          <Route path="/" element={<PagePalette palette="palette-shop"><Shop /></PagePalette>} />
+          <Route path="/shop" element={<Navigate to="/" replace />} />
           <Route path="/shop/:slug" element={<PagePalette palette="palette-product"><ProductDetail /></PagePalette>} />
           <Route path="/store/:slug" element={<PagePalette palette="palette-store"><StorePage /></PagePalette>} />
           <Route path="/category/:slug" element={<PagePalette palette="palette-shop"><CategoryPage /></PagePalette>} />
           <Route path="/recently-viewed" element={<PagePalette palette="palette-soft"><RecentlyViewed /></PagePalette>} />
-
-          <Route path="/login" element={<PagePalette palette="palette-auth"><Login /></PagePalette>} />
-          <Route path="/register" element={<PagePalette palette="palette-auth"><Register /></PagePalette>} />
-          <Route path="/verify-email" element={<PagePalette palette="palette-auth"><VerifyEmail /></PagePalette>} />
-          <Route path="/forgot-password" element={<PagePalette palette="palette-auth"><ForgotPassword /></PagePalette>} />
-          <Route path="/reset-password/:token" element={<PagePalette palette="palette-auth"><ResetPassword /></PagePalette>} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="/cart" element={<PagePalette palette="palette-cart"><CartPage /></PagePalette>} />

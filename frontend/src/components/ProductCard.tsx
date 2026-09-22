@@ -132,8 +132,8 @@ export function ProductCard({ product }: ProductCardProps) {
         to={`/shop/${product.slug}`}
         className="group block"
       >
-        <div className="relative overflow-hidden rounded-xl bg-card border border-border shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
-          <div className="aspect-square overflow-hidden bg-accent/50">
+        <div className="relative overflow-hidden border border-border/70 bg-card transition-colors duration-200 group-hover:border-primary/50">
+            <div className="aspect-square overflow-hidden bg-accent/50">
             <img
               src={firstImage || getFallbackImage(product.name)}
               alt={product.name}

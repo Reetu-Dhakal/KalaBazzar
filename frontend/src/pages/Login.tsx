@@ -9,6 +9,7 @@ import { Mail, Lock, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useAuth } from '@/context/AuthContext';
+import { AuthShell } from '@/components/auth/AuthShell';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
@@ -70,12 +71,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <AuthShell>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
       >
         <Card variant="elevated">
           <CardHeader className="text-center">
@@ -156,6 +156,6 @@ export default function Login() {
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+    </AuthShell>
   );
 }

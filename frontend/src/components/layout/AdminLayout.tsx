@@ -46,18 +46,16 @@ export function AdminLayout() {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col border-r border-border bg-white transition-all duration-300 sticky top-0 h-screen',
+          'hidden lg:flex flex-col border-r border-border bg-card transition-all duration-300 sticky top-0 h-screen',
           collapsed ? 'w-16' : 'w-60',
         )}
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                <rect width="32" height="32" rx="8" fill="#3E62A8" />
-                <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFFFF">K</text>
-                <circle cx="24" cy="9" r="2.5" fill="#D4A24E" />
-              </svg>
+              <span className="flex h-7 w-7 items-center justify-center bg-[#7A1F2B] font-heading text-base font-bold text-[#FFF7E6]">
+                A
+              </span>
               <span className="font-heading text-lg font-bold text-primary">Admin Panel</span>
             </div>
           )}

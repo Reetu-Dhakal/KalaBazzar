@@ -1,23 +1,19 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Search,
-  SlidersHorizontal,
-  X,
-  ChevronRight,
+  ChevronDown,
   PackageSearch,
   Store,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ProductCard } from '@/components/ProductCard';
-import { formatCurrency } from '@/lib/utils';
+import { Footer } from '@/components/layout/Footer';
+import { cn } from '@/lib/utils';
 import api from '@/lib/api';
-import type { Product, Category, Craft, Region, PaginationMeta } from '@/types';
+import type { Product, Category, PaginationMeta } from '@/types';
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest' },
@@ -27,7 +23,7 @@ const SORT_OPTIONS = [
   { value: 'popular', label: 'Most Popular' },
 ];
 
-const LIMIT = 12;
+const LIMIT = 100;
 
 function ShopSkeleton() {
   return (
@@ -51,10 +47,8 @@ function ShopSkeleton() {
 
 export default function Shop() {
   usePageTitle();
+  const [shopByCategoryOpen, setShopByCategoryOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const search = searchParams.get('search') || '';
@@ -83,31 +77,12 @@ export default function Shop() {
 
   const clearAllFilters = useCallback(() => {
     setSearchParams(new URLSearchParams());
-    setSearchInput('');
   }, [setSearchParams]);
 
-  const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
+  const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       const { data } = await api.get('/categories?includeProductCount=true');
-      return data.data || [];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: craftsData, isLoading: isLoadingCrafts } = useQuery({
-    queryKey: ['crafts'],
-    queryFn: async () => {
-      const { data } = await api.get('/crafts');
-      return data.data || [];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: regionsData, isLoading: isLoadingRegions } = useQuery({
-    queryKey: ['regions'],
-    queryFn: async () => {
-      const { data } = await api.get('/regions');
       return data.data || [];
     },
     staleTime: 5 * 60 * 1000,
@@ -141,53 +116,23 @@ export default function Shop() {
   const pagination = productsQuery.data?.pagination;
 
   const categories: Category[] = categoriesData || [];
-  const crafts: Craft[] = craftsData || [];
-  const regions: Region[] = regionsData || [];
 
-  const groupedBySeller = useMemo(() => {
+  const groupedByCategory = useMemo(() => {
     if (category || search || craft || region || minPrice || maxPrice) {
       return null;
     }
-    const map = new Map<string, { sellerName: string; items: Product[] }>();
+    const map = new Map<string, { categoryName: string; items: Product[] }>();
     for (const p of products) {
-      const sellerName = typeof p.seller === 'object' && p.seller
-        ? (p.seller as { storeName?: string; firstName?: string }).storeName || (p.seller as { firstName?: string }).firstName || 'Unknown Seller'
-        : 'Unknown Seller';
-      const key = typeof p.seller === 'object' && p.seller ? (p.seller as { _id: string })._id : 'unknown';
-      if (!map.has(key)) map.set(key, { sellerName, items: [] });
+      const categoryValue = typeof p.category === 'object' && p.category ? p.category : null;
+      const key = categoryValue ? categoryValue._id : String(p.category || 'featured');
+      const categoryName = categoryValue?.name
+        || categories.find((item) => item.slug === String(p.category || ''))?.name
+        || 'Featured collection';
+      if (!map.has(key)) map.set(key, { categoryName, items: [] });
       map.get(key)!.items.push(p);
     }
     return Array.from(map.values());
-  }, [products, category, search, craft, region, minPrice, maxPrice]);
-
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (search) count++;
-    if (category) count++;
-    if (craft) count++;
-    if (region) count++;
-    if (minPrice) count++;
-    if (maxPrice) count++;
-    return count;
-  }, [search, category, craft, region, minPrice, maxPrice]);
-
-  const getCategoryLabel = (slug: string) =>
-    categories.find((c) => c.slug === slug)?.name || slug;
-  const getCraftLabel = (slug: string) =>
-    crafts.find((c) => c.slug === slug)?.name || slug;
-  const getRegionLabel = (slug: string) =>
-    regions.find((r) => r.slug === slug)?.name || slug;
-
-  useEffect(() => {
-    if (searchInput === search) return;
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    searchTimeoutRef.current = setTimeout(() => {
-      updateParams('search', searchInput.trim());
-    }, 300);
-    return () => {
-      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    };
-  }, [searchInput, search, updateParams]);
+  }, [products, category, search, craft, region, minPrice, maxPrice, categories]);
 
   const totalPages = pagination?.totalPages || 1;
 
@@ -208,151 +153,83 @@ export default function Shop() {
     return pages;
   }, [page, totalPages]);
 
-  const FilterContent = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Category</h3>
-        <div className="space-y-1.5">
-          {isLoadingCategories
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-8 w-full" />
-              ))
-            : categories.map((cat) => (
-                <button
-                  key={cat._id}
-                  onClick={() => updateParams('category', cat.slug === category ? '' : cat.slug)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-left ${
-                    category === cat.slug
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
-                  }`}
-                >
-                  <span className="truncate">{cat.name}</span>
-                  {cat.productCount > 0 && (
-                    <span className="text-xs text-muted-foreground ml-2 shrink-0">
-                      ({cat.productCount})
-                    </span>
-                  )}
-                </button>
-              ))}
-        </div>
-      </div>
-
-      <div className="border-t border-border pt-6">
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Craft</h3>
-        <div className="space-y-1.5">
-          {isLoadingCrafts
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-8 w-full" />
-              ))
-            : crafts.map((c) => (
-                <button
-                  key={c._id}
-                  onClick={() => updateParams('craft', c.slug === craft ? '' : c.slug)}
-                  className={`w-full flex items-center px-3 py-2 rounded-lg text-sm transition-colors text-left ${
-                    craft === c.slug
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
-                  }`}
-                >
-                  <span className="truncate">{c.name}</span>
-                </button>
-              ))}
-        </div>
-      </div>
-
-      <div className="border-t border-border pt-6">
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Region</h3>
-        <div className="space-y-1.5">
-          {isLoadingRegions
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-8 w-full" />
-              ))
-            : regions.map((r) => (
-                <button
-                  key={r._id}
-                  onClick={() => updateParams('region', r.slug === region ? '' : r.slug)}
-                  className={`w-full flex items-center px-3 py-2 rounded-lg text-sm transition-colors text-left ${
-                    region === r.slug
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-surface-hover hover:text-foreground'
-                  }`}
-                >
-                  <span className="truncate">{r.name}</span>
-                </button>
-              ))}
-        </div>
-      </div>
-
-      <div className="border-t border-border pt-6">
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Price Range</h3>
-        <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            placeholder="Min"
-            value={minPrice}
-            onChange={(e) => updateParams('minPrice', e.target.value)}
-            className="h-9 text-xs"
-            min="0"
-          />
-          <span className="text-muted-foreground">–</span>
-          <Input
-            type="number"
-            placeholder="Max"
-            value={maxPrice}
-            onChange={(e) => updateParams('maxPrice', e.target.value)}
-            className="h-9 text-xs"
-            min="0"
-          />
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-foreground font-medium">Shop</span>
-          </nav>
+      <div className="container mx-auto px-4 py-5 sm:py-8">
+        <div className="relative mb-5 overflow-hidden border border-[#D9B45B]/70 bg-[#4A1018]">
+          <img
+            src="/festival-banner.jpg"
+            alt="Festive artisan marketplace"
+            className="h-[clamp(9rem,18vw,14rem)] w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-[#4A1018]/45" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="mx-auto flex max-w-2xl flex-col items-center px-6 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#F5D88A] sm:text-xs">
+                ✦ Handcrafted Heritage
+              </p>
+              <h2 className="mt-1.5 font-heading text-xl font-bold leading-tight text-[#FFF7E6] sm:text-3xl md:text-4xl">
+                Festive Artisan Collection
+                <em className="mt-1 block text-base italic text-[#E3C36F] sm:text-lg">Celebrating Nepal&apos;s artisans</em>
+              </h2>
+              <p className="mt-1 hidden text-xs text-[#F8E7C1]/90 sm:block sm:text-sm">
+                Authentic handmade crafts for your festive home — every piece carries a story.
+              </p>
+              <Link
+                to="/shop"
+                className="mt-3 inline-flex items-center gap-2 rounded-md bg-[#C9972F] px-4 py-2 text-xs font-semibold text-[#4A1018] transition-colors hover:bg-[#D9B45B] sm:text-sm"
+              >
+                Shop Handmade Goods →
+              </Link>
+            </div>
+          </div>
         </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="mb-5 flex flex-col gap-3 border-b border-border/70 pb-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-heading text-foreground">Shop</h1>
-            <p className="text-muted-foreground mt-1">
-              {pagination
-                ? `Showing ${products.length} of ${pagination.total} products`
-                : 'Browse our collection'}
-            </p>
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">Handmade marketplace</p>
+            <div className="relative mt-2 inline-block">
+              <button
+                type="button"
+                onClick={() => setShopByCategoryOpen((o) => !o)}
+                aria-expanded={shopByCategoryOpen}
+                className="flex h-11 w-60 cursor-pointer items-center justify-between rounded-md border border-border/70 bg-card px-4 text-sm font-semibold text-foreground shadow-sm transition-colors hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                Shop by Category
+                <ChevronDown
+                  className={cn('h-4 w-4 text-muted-foreground transition-transform', shopByCategoryOpen && 'rotate-180')}
+                />
+              </button>
+              {shopByCategoryOpen && (
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-[60vh] w-60 overflow-y-auto rounded-md border border-border bg-card py-1 shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateParams('category', '');
+                      setShopByCategoryOpen(false);
+                    }}
+                    className="block w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-foreground transition-colors hover:bg-surface-hover"
+                  >
+                    All products
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat._id}
+                      type="button"
+                      onClick={() => {
+                        updateParams('category', cat.slug);
+                        setShopByCategoryOpen(false);
+                      }}
+                      className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-foreground/80 transition-colors hover:bg-surface-hover hover:text-foreground"
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="relative flex-1 sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 rounded-lg border border-border/60 bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-              />
-              {searchInput && (
-                <button
-                  onClick={() => {
-                    setSearchInput('');
-                    updateParams('search', '');
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-
             <select
               value={sort}
               onChange={(e) => updateParams('sort', e.target.value)}
@@ -365,97 +242,10 @@ export default function Shop() {
               ))}
             </select>
 
-            <Button
-              variant="outline"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setShowMobileFilters(true)}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary text-[10px] text-primary-foreground flex items-center justify-center font-bold">
-                  {activeFilterCount}
-                </span>
-              )}
-            </Button>
           </div>
         </div>
 
-        {activeFilterCount > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="text-xs text-muted-foreground">Active filters:</span>
-            {search && (
-              <Badge variant="secondary" className="gap-1">
-                Search: {search}
-                <button onClick={() => { setSearchInput(''); updateParams('search', ''); }}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {category && (
-              <Badge variant="secondary" className="gap-1">
-                {getCategoryLabel(category)}
-                <button onClick={() => updateParams('category', '')}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {craft && (
-              <Badge variant="secondary" className="gap-1">
-                {getCraftLabel(craft)}
-                <button onClick={() => updateParams('craft', '')}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {region && (
-              <Badge variant="secondary" className="gap-1">
-                {getRegionLabel(region)}
-                <button onClick={() => updateParams('region', '')}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {(minPrice || maxPrice) && (
-              <Badge variant="secondary" className="gap-1">
-                {minPrice && maxPrice
-                  ? `${formatCurrency(Number(minPrice))} – ${formatCurrency(Number(maxPrice))}`
-                  : minPrice
-                  ? `From ${formatCurrency(Number(minPrice))}`
-                  : `Up to ${formatCurrency(Number(maxPrice))}`}
-                <button onClick={() => { updateParams('minPrice', ''); updateParams('maxPrice', ''); }}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            <button
-              onClick={clearAllFilters}
-              className="text-xs text-primary hover:underline ml-1"
-            >
-              Clear all
-            </button>
-          </div>
-        )}
-
-        <div className="flex gap-8">
-          <aside className="hidden lg:block w-64 shrink-0">
-            <div className="sticky top-24">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-heading text-lg font-semibold text-foreground">Filters</h2>
-                {activeFilterCount > 0 && (
-                  <button
-                    onClick={clearAllFilters}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Clear all
-                  </button>
-                )}
-              </div>
-              <FilterContent />
-            </div>
-          </aside>
-
-          <main className="flex-1 min-w-0">
+        <main>
             {productsQuery.isLoading ? (
               <ShopSkeleton />
             ) : products.length === 0 ? (
@@ -472,17 +262,24 @@ export default function Shop() {
                 </Button>
               </div>
             ) : (
-              groupedBySeller ? (
-                <div className="space-y-10">
-                  {groupedBySeller.map((group) => (
-                    <div key={group.sellerName}>
-                      <div className="flex items-center gap-3 mb-4">
-                        <Store className="h-5 w-5 text-primary" />
-                        <h2 className="font-heading text-xl font-semibold text-foreground">{group.sellerName}</h2>
-                        <span className="text-sm text-muted-foreground">({group.items.length})</span>
-                        <div className="flex-1 h-px bg-border" />
+              groupedByCategory ? (
+                <div className="space-y-9">
+                  {groupedByCategory.map((group) => (
+                    <div key={group.categoryName}>
+                      <div className="mb-3 flex items-center justify-between gap-3 bg-[#F3F3F3] px-4 py-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                        <Store className="h-4 w-4 text-primary" />
+                          <h2 className="truncate text-sm font-semibold uppercase tracking-[0.08em] text-foreground">{group.categoryName}</h2>
+                          <span className="shrink-0 text-xs text-muted-foreground">{group.items.length} items</span>
+                        </div>
+                        <div className="hidden shrink-0 items-center gap-5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:flex">
+                          <button onClick={() => updateParams('sort', 'popular')} className="hover:text-primary">Best selling</button>
+                          <button onClick={() => updateParams('sort', 'newest')} className="hover:text-primary">New collection</button>
+                          <button onClick={() => updateParams('sort', 'rating')} className="hover:text-primary">Top rated</button>
+                          <button onClick={() => updateParams('category', group.categoryName)} className="hover:text-primary">View all</button>
+                        </div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                         {group.items.map((product: Product) => (
                           <ProductCard key={product._id} product={product} />
                         ))}
@@ -491,7 +288,7 @@ export default function Shop() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {products.map((product: Product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}
@@ -536,47 +333,9 @@ export default function Shop() {
                 </Button>
               </div>
             )}
-          </main>
-        </div>
+        </main>
       </div>
-
-      {showMobileFilters && (
-        <>
-          <div
-            className="fixed inset-0 z-50 bg-black/50 lg:hidden"
-            onClick={() => setShowMobileFilters(false)}
-          />
-          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-card shadow-xl lg:hidden overflow-y-auto">
-            <div className="sticky top-0 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
-              <h2 className="font-heading text-lg font-semibold">Filters</h2>
-              <button
-                onClick={() => setShowMobileFilters(false)}
-                className="p-1.5 rounded-lg hover:bg-accent transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-4">
-              <FilterContent />
-              <div className="mt-6 flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => { clearAllFilters(); setShowMobileFilters(false); }}
-                >
-                  Clear All
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => setShowMobileFilters(false)}
-                >
-                  Show Results
-                </Button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <Footer className="shop-footer" />
     </div>
   );
 }

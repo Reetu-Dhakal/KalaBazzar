@@ -21,13 +21,14 @@ import { NotificationBell } from './NotificationBell';
 import { cn } from '@/lib/utils';
 import { navigateAndScroll } from '@/lib/scrollTo';
 import api from '@/lib/api';
-import type { Product } from '@/types';
+import type { Category, Product } from '@/types';
 
 const guestNavSections = ['features'];
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -47,6 +48,10 @@ export function Navbar() {
 
   const role = user?.role;
   const activeSection = useScrollSpy(guestNavSections, 100);
+  const isShopPage =
+    location.pathname === '/' ||
+    location.pathname === '/shop' ||
+    location.pathname.startsWith('/category/');
 
   const guestLinks = [
     { label: 'Home', section: 'hero' },
@@ -85,6 +90,13 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isShopPage) return;
+    api.get('/categories').then(({ data }) => {
+      setCategories(data.data || []);
+    }).catch(() => setCategories([]));
+  }, [isShopPage]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -168,27 +180,23 @@ export function Navbar() {
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 transition-all duration-300 ease-in-out bg-[#1A2340] border-b border-white/10 shadow-md',
+          'site-navbar sticky top-0 z-50 transition-all duration-300 ease-in-out border-b border-white/10 shadow-md',
+          isShopPage && 'shop-navbar',
           isScrolled && !isHidden && 'shadow-lg shadow-black/20',
-          isHidden && '-translate-y-full',
+          isHidden && !isShopPage && '-translate-y-full',
         )}
       >
         <nav className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 gap-4">
             <div className="flex items-center gap-8">
-              <Link to={isAuthenticated && role === 'admin' ? '/admin/dashboard' : isAuthenticated && role === 'seller' ? '/seller/dashboard' : '/'} className="flex items-center gap-2.5 shrink-0">
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                  <rect width="32" height="32" rx="8" fill="#3E62A8" />
-                  <text x="7" y="23" fontFamily="Georgia, serif" fontSize="20" fontWeight="bold" fill="#FFFFFF">K</text>
-                  <circle cx="24" cy="9" r="2.5" fill="#D4A24E" />
-                </svg>
-                <span className="font-heading text-xl font-bold hidden sm:block text-white">
+              <Link to={isAuthenticated && role === 'admin' ? '/admin/dashboard' : isAuthenticated && role === 'seller' ? '/seller/dashboard' : '/'} className="shrink-0">
+                <span className="font-heading text-xl font-bold text-white sm:text-2xl">
                   कलाbazzar
                 </span>
               </Link>
 
               <div className="hidden md:flex items-center gap-1">
-                {!isAuthenticated && guestLinks.map((link) => (
+                {!isAuthenticated && !isShopPage && guestLinks.map((link) => (
                   <button
                     key={link.section}
                     onClick={() => handleGuestNav(link.section)}
@@ -215,16 +223,19 @@ export function Navbar() {
             </div>
 
             {showSearch && (
-              <div ref={searchRef} className="relative flex-1 max-w-md hidden sm:block">
+              <div ref={searchRef} className={cn('relative mx-auto flex-1 hidden sm:block', isShopPage ? 'shop-navbar-search' : 'max-w-sm')}>
                 <form onSubmit={handleSearchSubmit}>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A1F2B]" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => handleSearch(e.target.value)}
                       placeholder="Search handmade crafts..."
-                      className="w-full h-10 pl-10 pr-4 rounded-lg border text-sm placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-400/60 transition-colors bg-white/10 border-white/20 text-white"
+                      className={cn(
+                        'w-full h-10 pl-10 rounded-md border bg-[#FFFDF8] text-sm text-[#4A1018] placeholder:text-[#85645A] focus:outline-none transition-colors',
+                        isShopPage ? 'border-[#E2E2E2] pr-4 focus:border-[#222] focus:ring-2 focus:ring-black/10' : 'border-[#E5CFA6] pr-4 focus:ring-2 focus:ring-[#C9972F]/40 focus:border-[#C9972F]',
+                      )}
                     />
                   </div>
                 </form>
@@ -438,18 +449,18 @@ export function Navbar() {
                   )}
                 </div>
               ) : (
-                <div className="hidden md:flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-6">
                   <Link
                     to="/login"
-                    className="px-4 py-2 text-sm font-medium transition-colors text-white/90 hover:text-gold-300"
+                    className="text-sm font-medium transition-colors text-white/90 hover:text-gold-300"
                   >
                     Login
                   </Link>
                   <Link
                     to="/register"
-                    className="px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-gold-500 text-[#1A2340] hover:bg-gold-400"
+                    className="text-sm font-medium transition-colors text-white/90 hover:text-gold-300"
                   >
-                    Register
+                    Sign up
                   </Link>
                 </div>
               )}
@@ -472,13 +483,13 @@ export function Navbar() {
             <div className="sm:hidden pb-3">
               <form onSubmit={handleSearchSubmit}>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A1F2B]" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                     placeholder="Search handmade crafts..."
-                    className="w-full h-10 pl-10 pr-4 rounded-lg border bg-white/10 border-white/20 text-white text-sm placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-400/60"
+                    className="w-full h-9 pl-10 pr-4 rounded-md border border-[#E5CFA6] bg-[#FFFDF8] text-[#4A1018] text-sm placeholder:text-[#85645A] focus:outline-none focus:ring-2 focus:ring-[#C9972F]/40 focus:border-[#C9972F]"
                   />
                 </div>
               </form>
@@ -489,7 +500,7 @@ export function Navbar() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-white/10 bg-[#1A2340]">
             <div className="container mx-auto px-4 py-4 space-y-2">
-              {!isAuthenticated && guestLinks.map((link) => (
+              {!isAuthenticated && !isShopPage && guestLinks.map((link) => (
                 <button
                   key={link.section}
                   onClick={() => handleGuestNav(link.section)}
@@ -513,6 +524,29 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+
+              {isShopPage && showSearch && (
+                <div className="border-t border-white/10 pt-2">
+                  <p className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">Categories</p>
+                  <Link
+                    to="/shop"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                  >
+                    All Categories
+                  </Link>
+                  {categories.map((category) => (
+                    <Link
+                      key={category._id}
+                      to={`/shop?category=${category.slug}`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block rounded-lg px-4 py-2.5 text-sm text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
 
               {showWishlist && (
                 <Link
@@ -634,20 +668,20 @@ export function Navbar() {
                   </button>
                 </>
               ) : (
-                <div className="border-t border-white/10 my-2 pt-2 flex gap-2 px-4">
+                <div className="border-t border-white/10 my-2 pt-2 flex gap-6 px-4">
                   <Link
                     to="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 text-sm font-medium border border-white/20 text-white/90 rounded-lg hover:bg-white/10 transition-colors"
+                    className="px-4 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
                   >
                     Login
                   </Link>
                   <Link
                     to="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex-1 text-center px-4 py-2.5 text-sm font-medium bg-gold-500 text-[#1A2340] rounded-lg hover:bg-gold-400 transition-colors"
+                    className="px-4 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
                   >
-                    Register
+                    Sign up
                   </Link>
                 </div>
               )}

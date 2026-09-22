@@ -46,9 +46,9 @@ function Eyebrow({ children, centered = false }: { children: React.ReactNode; ce
         centered ? 'justify-center' : ''
       }`}
     >
-      <span className="h-px w-8 bg-gradient-to-r from-transparent to-gold-500/70" />
+      <span className="h-px w-8 bg-linear-to-r from-transparent to-gold-500/70" />
       <span className="shrink-0">✦ {children} ✦</span>
-      <span className="h-px w-8 bg-gradient-to-l from-transparent to-gold-500/70" />
+      <span className="h-px w-8 bg-linear-to-l from-transparent to-gold-500/70" />
     </p>
   );
 }
@@ -56,9 +56,9 @@ function Eyebrow({ children, centered = false }: { children: React.ReactNode; ce
 function Ornament() {
   return (
     <div className="flex items-center justify-center gap-3 text-gold-500">
-      <span className="h-px w-14 bg-gradient-to-r from-transparent to-gold-500/50" />
+      <span className="h-px w-14 bg-linear-to-r from-transparent to-gold-500/50" />
       <span className="text-gold-400">✦</span>
-      <span className="h-px w-14 bg-gradient-to-l from-transparent to-gold-500/50" />
+      <span className="h-px w-14 bg-linear-to-l from-transparent to-gold-500/50" />
     </div>
   );
 }
@@ -469,7 +469,7 @@ export default function Home() {
               <div className="scrollbar-hide -mx-4 flex gap-6 overflow-x-auto snap-x snap-mandatory px-4 pb-4">
                 {Array.from({ length: 12 }).map((_, i) => (
                   <div key={i} className="w-44 shrink-0 sm:w-64">
-                    <div className="aspect-[3/4] animate-pulse rounded-t-[999px] rounded-b-2xl bg-[#E3E9F4]" />
+                    <div className="aspect-3/4 animate-pulse rounded-t-[999px] rounded-b-2xl bg-[#E3E9F4]" />
                   </div>
                 ))}
               </div>
@@ -480,7 +480,7 @@ export default function Home() {
                     <motion.div key={cat._id} variants={fadeInUp} className="w-44 shrink-0 snap-start sm:w-64">
                       <Link
                         to={`/shop?category=${cat.slug}`}
-                        className="group relative block aspect-[3/4] overflow-hidden rounded-t-[999px] rounded-b-2xl border border-[#DDE4EF] transition-colors duration-300 hover:border-gold-500/50"
+                        className="group relative block aspect-3/4 overflow-hidden rounded-t-[999px] rounded-b-2xl border border-[#DDE4EF] transition-colors duration-300 hover:border-gold-500/50"
                       >
                         <img
                           src={cat.image || categoryImages[cat.slug] || fallbackCategoryImage}
@@ -488,7 +488,7 @@ export default function Home() {
                           loading="lazy"
                           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#1F2937]/85 via-[#1F2937]/20 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-[#1F2937]/85 via-[#1F2937]/20 to-transparent" />
                         <div className="absolute bottom-0 inset-x-0 p-4 text-center">
                           <p className="mb-2 text-gold-400 opacity-0 transition-all duration-300 group-hover:opacity-100">✦</p>
                           <h3 className="font-heading text-lg leading-tight text-[#EDF2FA] transition-colors group-hover:text-gold-300">

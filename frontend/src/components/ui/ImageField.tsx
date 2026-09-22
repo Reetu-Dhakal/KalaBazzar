@@ -69,7 +69,7 @@ export default function ImageField({
             <button
               type="button"
               onClick={() => onChange('')}
-              className="absolute top-2 right-2 rounded-full bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-2 right-2 bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
               title="Remove image"
             >
               <X className="h-4 w-4" />

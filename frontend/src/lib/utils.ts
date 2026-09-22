@@ -52,20 +52,20 @@ export function generateOrderNumber(): string {
 
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    pending: 'bg-amber-50 text-amber-700 border border-amber-200/60',
-    confirmed: 'bg-blue-50 text-blue-700 border border-blue-200/60',
-    processing: 'bg-indigo-50 text-indigo-700 border border-indigo-200/60',
-    shipped: 'bg-purple-50 text-purple-700 border border-purple-200/60',
-    delivered: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
-    cancelled: 'bg-red-50 text-red-700 border border-red-200/60',
-    refunded: 'bg-gray-50 text-gray-700 border border-gray-200/60',
-    paid: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
-    failed: 'bg-red-50 text-red-700 border border-red-200/60',
-    approved: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
-    rejected: 'bg-red-50 text-red-700 border border-red-200/60',
-    suspended: 'bg-orange-50 text-orange-700 border border-orange-200/60',
-    draft: 'bg-gray-50 text-gray-700 border border-gray-200/60',
-    out_of_stock: 'bg-red-50 text-red-700 border border-red-200/60',
+    pending: 'bg-amber-50 text-amber-700 border border-amber-200',
+    confirmed: 'bg-red-50 text-[#7A1F2B] border border-red-200',
+    processing: 'bg-gold-100 text-gold-700 border border-gold-200',
+    shipped: 'bg-red-50 text-[#7A1F2B] border border-red-200',
+    delivered: 'bg-green-50 text-green-700 border border-green-200',
+    cancelled: 'bg-red-50 text-red-700 border border-red-200',
+    refunded: 'bg-gray-50 text-gray-700 border border-gray-200',
+    paid: 'bg-green-50 text-green-700 border border-green-200',
+    failed: 'bg-red-50 text-red-700 border border-red-200',
+    approved: 'bg-green-50 text-green-700 border border-green-200',
+    rejected: 'bg-red-50 text-red-700 border border-red-200',
+    suspended: 'bg-amber-50 text-amber-700 border border-amber-200',
+    draft: 'bg-gray-50 text-gray-700 border border-gray-200',
+    out_of_stock: 'bg-red-50 text-red-700 border border-red-200',
   };
-  return colors[status] || 'bg-gray-50 text-gray-700 border border-gray-200/60';
+  return colors[status] || 'bg-gray-50 text-gray-700 border border-gray-200';
 }

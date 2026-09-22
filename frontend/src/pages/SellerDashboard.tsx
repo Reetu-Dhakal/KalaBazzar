@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Package,
-  ShoppingCart,
-  DollarSign,
-  Star,
-  Plus,
-  Eye,
-  Store,
-  AlertTriangle,
-} from 'lucide-react';
+import { Package, ShoppingCart, DollarSign, Star, Plus, AlertTriangle } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -32,27 +23,19 @@ function StatCard({
   icon: Icon,
   label,
   value,
-  color,
 }: {
   icon: React.ElementType;
   label: string;
   value: string | number;
-  color: string;
 }) {
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-lg ${color}`}>
-            <Icon className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold text-foreground">{value}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="border border-border bg-card p-5">
+      <div className="flex items-center gap-3">
+        <Icon className="h-5 w-5 text-primary" />
+        <p className="text-sm text-muted-foreground">{label}</p>
+      </div>
+      <p className="mt-3 font-heading text-3xl text-foreground">{value}</p>
+    </div>
   );
 }
 
@@ -62,14 +45,13 @@ function DashboardSkeleton() {
       <Skeleton className="h-8 w-64" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 rounded-xl" />
+          <Skeleton key={i} className="h-28" />
         ))}
       </div>
-      <div className="grid lg:grid-cols-3 gap-6">
-        <Skeleton className="h-80 rounded-xl lg:col-span-2" />
-        <Skeleton className="h-80 rounded-xl" />
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Skeleton className="h-80 lg:col-span-1" />
+        <Skeleton className="h-80" />
       </div>
-      <Skeleton className="h-64 rounded-xl" />
     </div>
   );
 }
@@ -100,7 +82,7 @@ export default function SellerDashboard() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-heading text-foreground">Seller Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Welcome back! Here's your store overview.</p>
+          <p className="text-muted-foreground mt-1">Your store at a glance.</p>
         </div>
         <Button asChild>
           <Link to="/seller/products/new">
@@ -110,54 +92,29 @@ export default function SellerDashboard() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          icon={Package}
-          label="Total Products"
-          value={stats?.totalProducts ?? 0}
-          color="bg-blue-50 text-blue-600"
-        />
-        <StatCard
-          icon={ShoppingCart}
-          label="Total Orders"
-          value={stats?.totalOrders ?? 0}
-          color="bg-purple-50 text-purple-600"
-        />
-        <StatCard
-          icon={DollarSign}
-          label="Total Revenue"
-          value={formatCurrency(stats?.totalRevenue ?? 0)}
-          color="bg-emerald-50 text-emerald-600"
-        />
-        <StatCard
-          icon={Star}
-          label="Average Rating"
-          value={stats?.averageRating?.toFixed(1) ?? '0.0'}
-          color="bg-amber-50 text-amber-600"
-        />
+        <StatCard icon={Package} label="Total Products" value={stats?.totalProducts ?? 0} />
+        <StatCard icon={ShoppingCart} label="Total Orders" value={stats?.totalOrders ?? 0} />
+        <StatCard icon={DollarSign} label="Total Revenue" value={formatCurrency(stats?.totalRevenue ?? 0)} />
+        <StatCard icon={Star} label="Average Rating" value={stats?.averageRating?.toFixed(1) ?? '0.0'} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Low Stock Alerts */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Low Stock Alerts
+              <AlertTriangle className="h-5 w-5 text-secondary" />
+              Low Stock
             </CardTitle>
           </CardHeader>
           <CardContent>
             {stats?.lowStockProducts && stats.lowStockProducts.length > 0 ? (
-              <div className="space-y-3">
+              <div className="divide-y divide-border border-t border-border">
                 {stats.lowStockProducts.map((product) => {
                   const stock = product.variants?.[0]?.inventory ?? 0;
                   return (
-                    <div
-                      key={product._id}
-                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                    >
-                      <div className="min-w-0">
+                    <div key={product._id} className="flex items-center justify-between py-3">
+                      <div className="min-w-0 pr-4">
                         <p className="text-sm font-medium truncate">{product.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {stock === 0 ? 'Out of stock' : `${stock} left`}
@@ -178,106 +135,64 @@ export default function SellerDashboard() {
           </CardContent>
         </Card>
 
-      {/* Recent Orders */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Orders</CardTitle>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/seller/orders">View All</Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {stats?.recentOrders && stats.recentOrders.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left text-xs font-medium text-muted-foreground pb-3">
-                      Order #
-                    </th>
-                    <th className="text-left text-xs font-medium text-muted-foreground pb-3">
-                      Customer
-                    </th>
-                    <th className="text-left text-xs font-medium text-muted-foreground pb-3">
-                      Total
-                    </th>
-                    <th className="text-left text-xs font-medium text-muted-foreground pb-3">
-                      Status
-                    </th>
-                    <th className="text-left text-xs font-medium text-muted-foreground pb-3">
-                      Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.recentOrders.map((order) => (
-                    <tr key={order._id} className="border-b border-border last:border-0">
-                      <td className="py-3">
-                        <Link
-                          to={`/seller/orders`}
-                          className="text-sm font-medium text-primary hover:underline"
-                        >
-                          {order.orderNumber}
-                        </Link>
-                      </td>
-                      <td className="py-3 text-sm text-foreground">
-                        {typeof order.customer === 'object' && order.customer
-                          ? `${order.customer.firstName} ${order.customer.lastName}`
-                          : 'Customer'}
-                      </td>
-                      <td className="py-3 text-sm font-medium">{formatCurrency(order.totalAmount)}</td>
-                      <td className="py-3">
-                        <Badge className={getStatusColor(order.status)}>
-                          {order.status}
-                        </Badge>
-                      </td>
-                      <td className="py-3 text-sm text-muted-foreground">
-                        {formatDate(order.createdAt)}
-                      </td>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Recent Orders</CardTitle>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/seller/orders">View All</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {stats?.recentOrders && stats.recentOrders.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left text-xs font-medium text-muted-foreground pb-3">Order #</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground pb-3">Customer</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground pb-3">Total</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground pb-3">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground pb-3">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No orders yet</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-        <Button asChild variant="outline" className="h-auto py-4 justify-start gap-3">
-          <Link to="/seller/products/new">
-            <Plus className="h-5 w-5 text-primary" />
-            <div className="text-left">
-              <p className="font-medium">Add Product</p>
-              <p className="text-xs text-muted-foreground">Create a new listing</p>
-            </div>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto py-4 justify-start gap-3">
-          <Link to="/seller/orders">
-            <Eye className="h-5 w-5 text-primary" />
-            <div className="text-left">
-              <p className="font-medium">View Orders</p>
-              <p className="text-xs text-muted-foreground">Manage customer orders</p>
-            </div>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto py-4 justify-start gap-3">
-          <Link to="/seller/profile">
-            <Store className="h-5 w-5 text-primary" />
-            <div className="text-left">
-              <p className="font-medium">Shop Profile</p>
-              <p className="text-xs text-muted-foreground">View and edit your social-style shop page</p>
-            </div>
-          </Link>
-        </Button>
+                  </thead>
+                  <tbody>
+                    {stats.recentOrders.map((order) => (
+                      <tr key={order._id} className="border-b border-border last:border-0">
+                        <td className="py-3">
+                          <Link
+                            to="/seller/orders"
+                            className="text-sm font-medium text-primary hover:underline"
+                          >
+                            {order.orderNumber}
+                          </Link>
+                        </td>
+                        <td className="py-3 text-sm text-foreground">
+                          {typeof order.customer === 'object' && order.customer
+                            ? `${order.customer.firstName} ${order.customer.lastName}`
+                            : 'Customer'}
+                        </td>
+                        <td className="py-3 text-sm font-medium">{formatCurrency(order.totalAmount)}</td>
+                        <td className="py-3">
+                          <Badge className={getStatusColor(order.status)}>
+                            {order.status}
+                          </Badge>
+                        </td>
+                        <td className="py-3 text-sm text-muted-foreground">
+                          {formatDate(order.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                <p>No orders yet</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
