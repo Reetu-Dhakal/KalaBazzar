@@ -106,7 +106,7 @@ export default function ImageField({
           <Input
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="...or paste image URL"
+            placeholder="...or paste image URL (https://...)"
             className="h-9 text-xs"
           />
         </div>

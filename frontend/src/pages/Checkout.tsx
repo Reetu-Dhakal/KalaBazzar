@@ -108,7 +108,8 @@ export default function Checkout() {
 
   const shippingCost = getShippingCost(watch('city'), watch('state'));
   const discountAmount = activeCoupon?.discountAmount || 0;
-  const grandTotal = Math.max(0, selectedSubtotal + shippingCost - discountAmount);
+  const taxAmount = Math.round((selectedSubtotal * 13) / 100);
+  const grandTotal = Math.max(0, selectedSubtotal + shippingCost + taxAmount - discountAmount);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -387,6 +388,10 @@ export default function Checkout() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Delivery Fee</span>
                     <span>{formatCurrency(shippingCost)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax (13%)</span>
+                    <span>{formatCurrency(taxAmount)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-sm">

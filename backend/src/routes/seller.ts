@@ -2,6 +2,8 @@ import { Router } from 'express';
 import {
   applyAsSeller,
   getSellerApplicationStatus,
+  submitSellerApplication,
+  getMySellerApplication,
   updateSellerProfile,
   updatePayoutDetails,
   getSellerDashboardStats,
@@ -15,6 +17,7 @@ import { authenticate, authorize } from '../middleware/auth';
 import { validate } from '../middleware/validation';
 import {
   sellerApplicationValidation,
+  sellerApplicationV2Validation,
   updateSellerProfileValidation,
   payoutValidation,
   sellerIdValidation,
@@ -26,6 +29,8 @@ const router = Router();
 
 router.post('/apply', authenticate, validate(sellerApplicationValidation), applyAsSeller);
 router.get('/application/status', authenticate, getSellerApplicationStatus);
+router.post('/application', authenticate, validate(sellerApplicationV2Validation), submitSellerApplication);
+router.get('/application', authenticate, getMySellerApplication);
 
 router.put('/profile', authenticate, authorize('seller'), validate(updateSellerProfileValidation), updateSellerProfile);
 router.put('/payout', authenticate, authorize('seller'), validate(payoutValidation), updatePayoutDetails);

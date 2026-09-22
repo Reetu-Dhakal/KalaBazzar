@@ -25,7 +25,8 @@ export const registerValidation = [
     .isLength({ min: 2, max: 50 })
     .withMessage('Last name must be 2-50 characters'),
   body('phone')
-    .optional({ values: 'falsy' })
+    .notEmpty()
+    .withMessage('Phone number is required')
     .trim()
     .matches(/^(\+977|0)?[1-9]\d{9}$/)
     .withMessage('Valid Nepali phone number required'),

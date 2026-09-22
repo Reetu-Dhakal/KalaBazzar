@@ -2,15 +2,19 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import User from '../models/User';
 import SellerProfile from '../models/SellerProfile';
+import SellerApplication from '../models/SellerApplication';
 import Product from '../models/Product';
 import Order from '../models/Order';
 import Coupon from '../models/Coupon';
+import Craft from '../models/Craft';
+import Region from '../models/Region';
 import { ApiError, asyncHandler } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { AuthRequest } from '../middleware/auth';
 import { getPaginationParams, getSortObject } from '../utils/pagination';
-import { UserRole, SellerStatus, OrderStatus, PaymentStatus } from '../config/constants';
+import { UserRole, SellerStatus, SellerApplicationStatus, OrderStatus, PaymentStatus } from '../config/constants';
 import { emailService } from '../services/emailService';
+import { notify } from '../services/notificationService';
 import { generateSlug, generateUniqueSlug } from '../utils/helpers';
 
 const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -37,6 +41,7 @@ export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Resp
     totalOrders,
     revenueResult,
     pendingSellers,
+    pendingSellerApplications,
     recentOrders,
     ordersByStatus,
     revenueSeries,
@@ -50,6 +55,7 @@ export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Resp
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]),
     SellerProfile.countDocuments({ status: SellerStatus.PENDING }),
+    SellerApplication.countDocuments({ status: SellerApplicationStatus.PENDING }),
     Order.find()
       .sort({ createdAt: -1 })
       .limit(10)
@@ -108,6 +114,7 @@ export const getDashboardStats = asyncHandler(async (req: AuthRequest, res: Resp
     totalOrders,
     totalRevenue,
     pendingSellers,
+    pendingSellerApplications,
     recentOrders,
     ordersByStatus: ordersByStatusMap,
     revenueByMonth,
@@ -344,6 +351,168 @@ export const rejectSellerApplication = asyncHandler(async (req: AuthRequest, res
 
   res.json(ApiResponse.success(profile, 'Seller application rejected'));
 });
+
+export const getSellerApplicationsV2 = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { page, limit, skip, sortBy, sortOrder } = getPaginationParams(req);
+  const { status, search } = req.query;
+
+  const filter: any = {};
+
+  if (status) {
+    filter.status = status;
+  }
+
+  if (search) {
+    filter.shopName = { $regex: search, $options: 'i' };
+  }
+
+  const [applications, total] = await Promise.all([
+    SellerApplication.find(filter)
+      .sort(getSortObject(sortBy, sortOrder))
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'firstName lastName email phone avatar')
+      .populate('reviewedBy', 'firstName lastName')
+      .lean(),
+    SellerApplication.countDocuments(filter),
+  ]);
+
+  res.json(
+    ApiResponse.paginated(applications, 'Seller applications retrieved successfully', page, limit, total)
+  );
+});
+
+export const approveSellerApplicationV2 = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+
+  const application = await SellerApplication.findById(id).populate('user', 'firstName lastName email');
+  if (!application) {
+    throw ApiError.notFound('Seller application not found');
+  }
+
+  if (application.status !== SellerApplicationStatus.PENDING) {
+    throw ApiError.badRequest('Application is not pending and cannot be approved');
+  }
+
+  application.status = SellerApplicationStatus.APPROVED;
+  application.reviewedBy = req.user._id;
+  application.reviewedAt = new Date();
+  await application.save();
+
+  const user = application.user as any;
+
+  await User.findByIdAndUpdate(user._id, { role: UserRole.SELLER });
+
+  const region = await matchRegion(application.workshopLocation);
+  const craftIds = await matchCrafts(application.craftCategory);
+
+  const baseSlug = generateSlug(application.shopName);
+  const slug = await generateUniqueSlug(baseSlug, async (s) => {
+    const exists = await SellerProfile.findOne({ slug: s });
+    return !!exists;
+  });
+
+  const profileData: any = {
+    user: user._id,
+    storeName: application.shopName,
+    slug,
+    description: application.bio,
+    region: region ? region._id : undefined,
+    crafts: craftIds,
+    socialLinks: { website: application.portfolioLink },
+    payoutDetails: application.panNumber ? { panNumber: application.panNumber } : {},
+    verificationPath: 'marketplace',
+    status: SellerStatus.APPROVED,
+    reviewedBy: req.user._id,
+    reviewedAt: new Date(),
+  };
+
+  if (application.samplePhotos && application.samplePhotos.length > 0) {
+    profileData.logo = application.samplePhotos[0];
+  }
+
+  const existingProfile = await SellerProfile.findOne({ user: user._id });
+  if (existingProfile) {
+    delete profileData.slug;
+    await SellerProfile.findByIdAndUpdate(existingProfile._id, profileData, { new: true, runValidators: true });
+  } else {
+    await SellerProfile.create(profileData);
+  }
+
+  await notify(
+    user._id,
+    'seller_approved',
+    'Seller application approved',
+    `Congratulations! Your shop "${application.shopName}" has been approved. You can now start selling on कलाbazzar.`,
+    { relatedEntity: { type: 'seller', id: application._id }, priority: 'high' },
+  );
+
+  emailService.sendSellerApprovalEmail(user.email, user.firstName, 'approved')
+    .catch(err => console.error('Failed to send seller approval email:', err));
+
+  res.json(ApiResponse.success(application, 'Seller approved successfully'));
+});
+
+export const rejectSellerApplicationV2 = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+
+  if (!reason || !reason.trim()) {
+    throw ApiError.badRequest('Rejection reason / note is required');
+  }
+
+  const application = await SellerApplication.findById(id).populate('user', 'firstName lastName email');
+  if (!application) {
+    throw ApiError.notFound('Seller application not found');
+  }
+
+  if (application.status !== SellerApplicationStatus.PENDING) {
+    throw ApiError.badRequest('Application is not pending and cannot be rejected');
+  }
+
+  application.status = SellerApplicationStatus.REJECTED;
+  application.adminNote = reason.trim();
+  application.reviewedBy = req.user._id;
+  application.reviewedAt = new Date();
+  await application.save();
+
+  const user = application.user as any;
+
+  await notify(
+    user._id,
+    'seller_rejected',
+    'Seller application rejected',
+    `Your application for "${application.shopName}" was not approved. Reason: ${reason.trim()}`,
+    { relatedEntity: { type: 'seller', id: application._id }, priority: 'high' },
+  );
+
+  emailService.sendSellerApprovalEmail(user.email, user.firstName, 'rejected', reason.trim())
+    .catch(err => console.error('Failed to send seller rejection email:', err));
+
+  res.json(ApiResponse.success(application, 'Seller application rejected'));
+});
+
+async function matchRegion(location: string): Promise<any | null> {
+  const locationLower = (location || '').toLowerCase();
+  const region = await Region.findOne({
+    $or: [
+      { name: { $regex: locationLower, $options: 'i' } },
+      { districts: { $regex: locationLower, $options: 'i' } },
+    ],
+  }).lean();
+
+  if (region) return region;
+
+  return Region.findOne().sort({ sortOrder: 1 }).lean();
+}
+
+async function matchCrafts(craftCategory: string): Promise<mongoose.Types.ObjectId[]> {
+  if (!craftCategory) return [];
+  const crafts = await Craft.find({ name: { $regex: `^${craftCategory}$`, $options: 'i' } })
+    .select('_id')
+    .lean();
+  return crafts.map((c) => c._id);
+}
 
 export const getAllOrders = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { page, limit, skip, sortBy, sortOrder } = getPaginationParams(req);

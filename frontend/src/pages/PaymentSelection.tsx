@@ -46,7 +46,8 @@ export default function PaymentSelection() {
   const shippingCost = ['kathmandu', 'lalitpur', 'bhaktapur', 'kirtipur', 'madhyapur thimi'].some((place) => destination.includes(place)) ? 100
     : ['kavrepalanchok', 'kavre', 'dhading', 'nuwakot', 'makwanpur'].some((place) => destination.includes(place)) ? 200 : 300;
   const discountAmount = state?.discountAmount || 0;
-  const total = Math.max(0, subtotal + shippingCost - discountAmount);
+  const taxAmount = Math.round((subtotal * 13) / 100);
+  const total = Math.max(0, subtotal + shippingCost + taxAmount - discountAmount);
 
   if (!state?.shippingAddress || selectedItems.length === 0) {
     return (
@@ -88,7 +89,11 @@ export default function PaymentSelection() {
       toast.success('Order placed successfully!');
       navigate(`/order-success/${orderId}`);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'Failed to place order');
+      const axiosErr = error as { response?: { data?: { message?: string } } };
+      toast.error(
+        axiosErr.response?.data?.message ||
+        (error instanceof Error ? error.message : 'Failed to place order'),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -162,11 +167,26 @@ export default function PaymentSelection() {
                   <span className="text-muted-foreground">Delivery Fee</span>
                   <span className="font-medium">{formatCurrency(shippingCost)}</span>
                 </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Tax (13%)</span>
+                  <span className="font-medium">{formatCurrency(taxAmount)}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">Discount</span>
+                    <span className="font-medium text-green-600">-{formatCurrency(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="border-t border-border pt-5">
                   <div className="flex justify-between gap-4">
                     <span className="text-lg font-medium text-foreground">Total Amount</span>
                     <span className="text-2xl font-semibold text-primary">{formatCurrency(total)}</span>
                   </div>
+                  {paymentMethod === 'cod' && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Pay <strong className="text-foreground">{formatCurrency(total)}</strong> in cash when your order is delivered.
+                    </p>
+                  )}
                 </div>
               </div>
               <Button

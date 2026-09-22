@@ -1,5 +1,48 @@
 import { body, param, query } from 'express-validator';
 
+export const sellerApplicationV2Validation = [
+  body('shopName')
+    .trim()
+    .isLength({ min: 3, max: 150 })
+    .withMessage('Shop/Brand name must be 3-150 characters'),
+  body('craftCategory')
+    .trim()
+    .notEmpty()
+    .withMessage('Craft category is required')
+    .isLength({ max: 100 })
+    .withMessage('Craft category max 100 characters'),
+  body('workshopLocation')
+    .trim()
+    .notEmpty()
+    .withMessage('Workshop/Studio location is required')
+    .isLength({ max: 200 })
+    .withMessage('Workshop location max 200 characters'),
+  body('bio')
+    .optional()
+    .trim()
+    .isLength({ max: 2000 })
+    .withMessage('Bio max 2000 characters'),
+  body('portfolioLink')
+    .trim()
+    .isURL()
+    .withMessage('Portfolio/Store link must be a valid URL'),
+  body('panNumber')
+    .optional()
+    .trim()
+    .toUpperCase()
+    .matches(/^[A-Z]{5}[0-9]{4}[A-Z]$/)
+    .withMessage('Invalid PAN number format (e.g., ABCDE1234F)'),
+  body('samplePhotos')
+    .optional()
+    .isArray({ min: 1, max: 3 })
+    .withMessage('Upload between 1 and 3 sample photos'),
+  body('samplePhotos.*')
+    .optional()
+    .customSanitizer((value: unknown) => (typeof value === 'string' ? value.trim() : value))
+    .matches(/^https?:\/\/\S+$/i)
+    .withMessage('Sample photos must be valid image URLs starting with http:// or https://'),
+];
+
 export const sellerApplicationValidation = [
   body('storeName')
     .trim()

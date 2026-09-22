@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -38,6 +38,16 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const autoSelected = useRef(false);
+
+  useEffect(() => {
+    if (!autoSelected.current && items.length > 0) {
+      autoSelected.current = true;
+      setSelectedProductIds(
+        new Set(items.map((item) => typeof item.product === 'string' ? item.product : item.product._id)),
+      );
+    }
+  }, [items]);
 
   const selectedItems = useMemo(
     () => items.filter((item) => {
@@ -333,11 +343,25 @@ export default function CartPage() {
                 </div>
               )}
 
-              <Button className="w-full rounded-none bg-primary text-base font-semibold hover:bg-primary/90" size="lg" asChild disabled={selectedItems.length === 0}>
-                <Link to={selectedItems.length ? `/checkout?selected=${selectedItems.map((item) => typeof item.product === 'string' ? item.product : item.product._id).join(',')}` : '/cart'}>
-                  PROCEED TO CHECKOUT ({selectedTotalItems})
-                </Link>
-              </Button>
+              {selectedItems.length === 0 ? (
+                <Button
+                  className="w-full rounded-none bg-primary text-base font-semibold hover:bg-primary/90"
+                  size="lg"
+                  disabled
+                >
+                  PROCEED TO CHECKOUT
+                </Button>
+              ) : (
+                <Button
+                  className="w-full rounded-none bg-primary text-base font-semibold hover:bg-primary/90"
+                  size="lg"
+                  asChild
+                >
+                  <Link to={`/checkout?selected=${selectedItems.map((item) => typeof item.product === 'string' ? item.product : item.product._id).join(',')}`}>
+                    PROCEED TO CHECKOUT ({selectedTotalItems})
+                  </Link>
+                </Button>
+              )}
 
               <Button variant="ghost" className="w-full sm:hidden" asChild>
                 <Link to="/shop">

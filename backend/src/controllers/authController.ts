@@ -7,13 +7,69 @@ import { emailService } from '../services/emailService';
 import { notify } from '../services/notificationService';
 import { AuthRequest } from '../middleware/auth';
 import cloudinary from '../config/cloudinary';
+import SellerApplication from '../models/SellerApplication';
+import { SellerApplicationStatus } from '../config/constants';
+
+async function getSellerApplicationStatus(userId: string): Promise<SellerApplicationStatus | null> {
+  const app = await SellerApplication.findOne({ user: userId })
+    .select('status')
+    .sort({ createdAt: -1 })
+    .lean();
+  return app ? (app.status as SellerApplicationStatus) : null;
+}
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { email, password, firstName, lastName, phone } = req.body;
 
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email }).select('+password');
   if (existingUser) {
-    throw ApiError.conflict('Email already registered');
+    const canSendEmail = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+    const passwordMatches = await existingUser.comparePassword(password);
+
+    if (passwordMatches && (existingUser.isEmailVerified || !canSendEmail)) {
+      const accessToken = generateAccessToken(existingUser._id.toString(), existingUser.role);
+      const refreshToken = generateRefreshToken(existingUser._id.toString());
+      await User.findByIdAndUpdate(existingUser._id, { refreshToken });
+
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 15 * 60 * 1000,
+      });
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.json({
+        success: true,
+        message: 'Welcome back! You are now signed in.',
+        data: {
+          accessToken,
+          user: {
+            _id: existingUser._id,
+            email: existingUser.email,
+            firstName: existingUser.firstName,
+            lastName: existingUser.lastName,
+            role: existingUser.role,
+            isEmailVerified: existingUser.isEmailVerified,
+            sellerApplication: await getSellerApplicationStatus(existingUser._id.toString()),
+          },
+        },
+      });
+      return;
+    }
+
+    throw ApiError.conflict(
+      passwordMatches
+        ? 'Email already registered. Please verify your email first.'
+        : 'Email already registered. Please sign in instead.',
+    );
   }
 
   const verificationToken = generateEmailVerificationToken();
@@ -44,6 +100,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     lastName: user.lastName,
     role: user.role,
     isEmailVerified: user.isEmailVerified,
+    sellerApplication: await getSellerApplicationStatus(user._id.toString()),
   };
 
   if (!canSendEmail) {
@@ -118,6 +175,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
         lastName: user.lastName,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
+        sellerApplication: await getSellerApplicationStatus(user._id.toString()),
       },
     },
   });
@@ -170,7 +228,27 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.json({ success: true, message: 'Token refreshed', data: { accessToken: newAccessToken } });
+  res.json({
+    success: true,
+    message: 'Token refreshed',
+    data: {
+      accessToken: newAccessToken,
+      user: {
+        _id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        fullName: user.getFullName(),
+        phone: user.phone,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        avatar: user.avatar,
+        addresses: user.addresses,
+        createdAt: user.createdAt,
+        sellerApplication: await getSellerApplicationStatus(user._id.toString()),
+      },
+    },
+  });
 });
 
 export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
@@ -303,6 +381,7 @@ export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
         avatar: user.avatar,
         addresses: user.addresses,
         createdAt: user.createdAt,
+        sellerApplication: await getSellerApplicationStatus(user._id.toString()),
       },
     },
   });

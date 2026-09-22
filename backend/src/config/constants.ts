@@ -16,6 +16,14 @@ export const SellerStatus = {
 
 export type SellerStatus = typeof SellerStatus[keyof typeof SellerStatus];
 
+export const SellerApplicationStatus = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+} as const;
+
+export type SellerApplicationStatus = typeof SellerApplicationStatus[keyof typeof SellerApplicationStatus];
+
 export const ProductStatus = {
   DRAFT: 'draft',
   PENDING_REVIEW: 'pending_review',

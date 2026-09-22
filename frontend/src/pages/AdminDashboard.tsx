@@ -17,6 +17,7 @@ interface DashboardStats {
   totalOrders: number;
   totalRevenue: number;
   pendingSellers: number;
+  pendingSellerApplications: number;
   recentOrders: Order[];
   ordersByStatus: Record<string, number>;
 }
@@ -122,6 +123,14 @@ export default function AdminDashboard() {
             <Link to="/admin/sellers">
               <Clock className="h-4 w-4" />
               {stats?.pendingSellers} Pending Sellers
+            </Link>
+          </Button>
+        )}
+        {(stats?.pendingSellerApplications ?? 0) > 0 && (
+          <Button asChild variant="outline" size="sm" className="border-gold-500 text-gold-700">
+            <Link to="/admin/seller-applications">
+              <Clock className="h-4 w-4" />
+              {stats?.pendingSellerApplications} New Applications
             </Link>
           </Button>
         )}

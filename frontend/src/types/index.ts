@@ -35,6 +35,7 @@ export interface User {
   phone?: string;
   role: UserRole;
   isEmailVerified: boolean;
+  sellerApplication?: SellerApplicationStatus | null;
   avatar?: string;
   addresses: Address[];
   createdAt: string;
@@ -550,10 +551,9 @@ export interface RegisterFormData {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
   password: string;
   confirmPassword: string;
-  phone?: string;
-  role?: 'customer' | 'seller';
 }
 
 export interface ProductFormData {
@@ -654,22 +654,33 @@ export interface HomepageSettings {
   updatedAt: string;
 }
 
+export type SellerApplicationStatus = 'pending' | 'approved' | 'rejected';
+
+export interface SellerApplication {
+  _id: string;
+  user: User | string;
+  shopName: string;
+  craftCategory: string;
+  workshopLocation: string;
+  bio?: string;
+  portfolioLink: string;
+  panNumber?: string;
+  samplePhotos?: string[];
+  status: SellerApplicationStatus;
+  adminNote?: string;
+  reviewedBy?: { _id: string; firstName: string; lastName: string } | string;
+  appliedAt: string;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SellerApplicationFormData {
-  description?: string;
-  region: string;
-  crafts: string[];
-  verificationPath: VerificationPath;
-  verificationDocuments: {
-    district: string;
-    yearsOfExperience: number;
-    specialization: string[];
-    craftStory?: string;
-    workshopPhotos?: File[];
-    makingVideo?: string;
-    idDocument?: File;
-    panDocument?: File;
-    vatDocument?: File;
-  };
-  payoutDetails: PayoutDetails;
-  socialLinks?: SocialLinks;
+  shopName: string;
+  craftCategory: string;
+  workshopLocation: string;
+  bio?: string;
+  portfolioLink: string;
+  panNumber?: string;
+  samplePhotos?: string[];
 }

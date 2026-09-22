@@ -14,7 +14,7 @@ import { OrderStatus, PaymentMethod, PaymentStatus, UserRole } from '../config/c
 import { emailService } from '../services/emailService';
 import { notify, notifyAll } from '../services/notificationService';
 import { createNotification } from './notificationController';
-import mongoose from 'mongoose';
+import { startTransaction } from '../utils/transaction';
 import { AuthRequest } from '../middleware/auth';
 
 const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -185,8 +185,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 
   const lowStockAlerts: any[] = [];
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const { session, inTransaction } = await startTransaction();
 
   try {
     const order = await Order.create([{
@@ -209,7 +208,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
         note: 'Order placed',
         updatedBy: userId,
       }],
-    }], { session });
+    }], { session: session ?? undefined });
 
     for (const cartItem of orderCartItems) {
       const product = await Product.findById(cartItem.product).session(session);
@@ -239,22 +238,22 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       }
 
       product.analytics.purchases += cartItem.quantity;
-      await product.save({ session });
+      await product.save({ session: session ?? undefined });
     }
 
     if (selectedIds) {
       cart.items = cart.items.filter(item => !selectedIds.has(item.product.toString()));
-      await cart.save({ session });
+      await cart.save({ session: session ?? undefined });
     } else {
-      await Cart.deleteOne({ customer: userId }, { session });
+      await Cart.deleteOne({ customer: userId }, { session: session ?? undefined });
     }
 
     if (couponDoc) {
       couponDoc.usedCount += 1;
-      await couponDoc.save({ session });
+      await couponDoc.save({ session: session ?? undefined });
     }
 
-    await session.commitTransaction();
+    if (inTransaction && session) await session.commitTransaction();
 
     const customer = await User.findById(userId);
 
@@ -302,10 +301,10 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       ApiResponse.created(order[0], 'Order created successfully')
     );
   } catch (error) {
-    await session.abortTransaction();
+    if (inTransaction && session) await session.abortTransaction();
     throw error;
   } finally {
-    session.endSession();
+    session?.endSession();
   }
 });
 
@@ -461,8 +460,7 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     throw ApiError.badRequest('Order can only be cancelled when status is pending or confirmed');
   }
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const { session, inTransaction } = await startTransaction();
 
   try {
     for (const item of order.items) {
@@ -485,7 +483,7 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       }
 
       product.analytics.purchases = Math.max(0, product.analytics.purchases - item.quantity);
-      await product.save({ session });
+      await product.save({ session: session ?? undefined });
     }
 
     order.statusHistory.push({
@@ -497,9 +495,9 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     order.status = OrderStatus.CANCELLED;
     order.cancelledAt = new Date();
     order.cancellationReason = reason;
-    await order.save({ session });
+    await order.save({ session: session ?? undefined });
 
-    await session.commitTransaction();
+    if (inTransaction && session) await session.commitTransaction();
 
     const cancelledSellerIds = Array.from(
       new Set(order.items.map((item: any) => item.seller.toString()))
@@ -514,10 +512,10 @@ export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 
     res.json(ApiResponse.success(order, 'Order cancelled successfully'));
   } catch (error) {
-    await session.abortTransaction();
+    if (inTransaction && session) await session.abortTransaction();
     throw error;
   } finally {
-    session.endSession();
+    session?.endSession();
   }
 });
 

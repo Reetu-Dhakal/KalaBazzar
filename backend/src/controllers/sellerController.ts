@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import SellerProfile from '../models/SellerProfile';
+import SellerApplication from '../models/SellerApplication';
 import Product from '../models/Product';
 import User from '../models/User';
 import Order from '../models/Order';
@@ -9,7 +10,7 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { AuthRequest } from '../middleware/auth';
 import { generateSlug, generateUniqueSlug } from '../utils/helpers';
 import { getPaginationParams, getSortObject } from '../utils/pagination';
-import { SellerStatus, UserRole, ProductStatus } from '../config/constants';
+import { SellerStatus, SellerApplicationStatus, UserRole, ProductStatus } from '../config/constants';
 import { emailService } from '../services/emailService';
 import { notify, notifyAll } from '../services/notificationService';
 
@@ -132,6 +133,76 @@ export const getSellerApplicationStatus = asyncHandler(async (req: AuthRequest, 
   }
 
   res.json(ApiResponse.success(profile, 'Seller application status retrieved'));
+});
+
+export const submitSellerApplication = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user._id;
+  const {
+    shopName,
+    craftCategory,
+    workshopLocation,
+    bio,
+    portfolioLink,
+    panNumber,
+    samplePhotos,
+  } = req.body;
+
+  const approvedProfile = await SellerProfile.findOne({
+    user: userId,
+    status: SellerStatus.APPROVED,
+  });
+  if (approvedProfile) {
+    throw ApiError.conflict('You are already an approved seller');
+  }
+
+  const pendingApplication = await SellerApplication.findOne({
+    user: userId,
+    status: SellerApplicationStatus.PENDING,
+  });
+  if (pendingApplication) {
+    throw ApiError.conflict('You already have an application under review');
+  }
+
+  const application = await SellerApplication.create({
+    user: userId,
+    shopName,
+    craftCategory,
+    workshopLocation,
+    bio,
+    portfolioLink,
+    panNumber: panNumber || undefined,
+    samplePhotos: samplePhotos || [],
+    status: SellerApplicationStatus.PENDING,
+    appliedAt: new Date(),
+  });
+
+  emailService.sendSellerApplicationReceived(req.user.email, req.user.firstName)
+    .catch(err => console.error('Failed to send seller application email:', err));
+
+  const admins = await User.find({ role: UserRole.ADMIN }).select('_id').lean();
+  await notifyAll(
+    admins.map((admin: any) => admin._id),
+    'seller_application_submitted',
+    'New seller application',
+    `${req.user.firstName} ${req.user.lastName} applied to become a seller (Shop: ${shopName}).`,
+    { relatedEntity: { type: 'seller', id: application._id }, priority: 'high' },
+  );
+
+  res.status(201).json(
+    ApiResponse.created(application, 'Seller application submitted successfully')
+  );
+});
+
+export const getMySellerApplication = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const application = await SellerApplication.findOne({ user: req.user._id })
+    .sort({ createdAt: -1 })
+    .populate('reviewedBy', 'firstName lastName');
+
+  if (!application) {
+    throw ApiError.notFound('No seller application found');
+  }
+
+  res.json(ApiResponse.success(application, 'Seller application retrieved'));
 });
 
 export const updateSellerProfile = asyncHandler(async (req: AuthRequest, res: Response) => {

@@ -20,6 +20,10 @@ const routeMeta: Record<string, { title: string; description: string }> = {
     title: 'Register — कलाbazzar',
     description: 'Create a new कलाbazzar account.',
   },
+  '/seller/register': {
+    title: 'Create Seller Account — कलाbazzar',
+    description: 'Register a seller account to start selling on कलाbazzar.',
+  },
   '/forgot-password': {
     title: 'Forgot Password — कलाbazzar',
     description: 'Reset your कलाbazzar account password.',
@@ -75,6 +79,10 @@ const routeMeta: Record<string, { title: string; description: string }> = {
   '/admin/sellers': {
     title: 'Manage Sellers — कलाbazzar',
     description: 'Review and manage seller applications.',
+  },
+  '/admin/seller-applications': {
+    title: 'Seller Applications — कलाbazzar',
+    description: 'Review new seller applications and activate approved shops.',
   },
   '/admin/users': {
     title: 'Manage Users — कलाbazzar',

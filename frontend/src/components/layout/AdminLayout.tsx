@@ -17,6 +17,7 @@ import {
   Image,
   Layers,
   Home,
+  ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
@@ -25,6 +26,7 @@ const navItems = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/sellers', label: 'Sellers', icon: Shield },
+  { to: '/admin/seller-applications', label: 'Applications', icon: ClipboardList },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
   { to: '/admin/coupons', label: 'Coupons', icon: Tag },

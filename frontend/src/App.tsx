@@ -11,6 +11,7 @@ import { PagePalette } from '@/components/layout/PagePalette';
 const Shop = lazy(() => import('@/pages/Shop'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
+const SellerRegister = lazy(() => import('@/pages/SellerRegister'));
 const VerifyEmail = lazy(() => import('@/pages/VerifyEmail'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
@@ -35,6 +36,7 @@ const SellerEarnings = lazy(() => import('@/pages/SellerEarnings'));
 const StorePage = lazy(() => import('@/pages/StorePage'));
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
 const AdminSellers = lazy(() => import('@/pages/AdminSellers'));
+const AdminSellerApplications = lazy(() => import('@/pages/AdminSellerApplications'));
 const AdminUsers = lazy(() => import('@/pages/AdminUsers'));
 const AdminOrders = lazy(() => import('@/pages/AdminOrders'));
 const AdminReviews = lazy(() => import('@/pages/AdminReviews'));
@@ -64,6 +66,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<PagePalette palette="palette-auth"><Login /></PagePalette>} />
         <Route path="/register" element={<PagePalette palette="palette-auth"><Register /></PagePalette>} />
+        <Route path="/seller/register" element={<PagePalette palette="palette-auth"><SellerRegister /></PagePalette>} />
         <Route path="/verify-email" element={<PagePalette palette="palette-auth"><VerifyEmail /></PagePalette>} />
         <Route path="/forgot-password" element={<PagePalette palette="palette-auth"><ForgotPassword /></PagePalette>} />
         <Route path="/reset-password/:token" element={<PagePalette palette="palette-auth"><ResetPassword /></PagePalette>} />
@@ -104,6 +107,7 @@ export default function App() {
             <Route element={<AdminLayout />}>
               <Route path="/admin/dashboard" element={<PagePalette palette="palette-admin"><AdminDashboard /></PagePalette>} />
               <Route path="/admin/sellers" element={<PagePalette palette="palette-admin"><AdminSellers /></PagePalette>} />
+              <Route path="/admin/seller-applications" element={<PagePalette palette="palette-admin"><AdminSellerApplications /></PagePalette>} />
               <Route path="/admin/users" element={<PagePalette palette="palette-admin"><AdminUsers /></PagePalette>} />
               <Route path="/admin/orders" element={<PagePalette palette="palette-admin"><AdminOrders /></PagePalette>} />
               <Route path="/admin/reviews" element={<PagePalette palette="palette-admin"><AdminReviews /></PagePalette>} />

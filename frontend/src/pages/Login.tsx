@@ -13,7 +13,7 @@ import { AuthShell } from '@/components/auth/AuthShell';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import type { LoginFormData } from '@/types';
+import type { LoginFormData, User } from '@/types';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -21,6 +21,15 @@ const loginSchema = z.object({
 });
 
 type LoginSchema = z.infer<typeof loginSchema>;
+
+function getRedirectPath(user: User, from?: string): string {
+  if (user.role === 'admin') return '/admin/dashboard';
+  if (user.role === 'seller') return '/seller/dashboard';
+  if (user.sellerApplication === 'pending' || user.sellerApplication === 'rejected') {
+    return '/seller/apply';
+  }
+  return from || '/shop';
+}
 
 export default function Login() {
   usePageTitle();
@@ -31,9 +40,8 @@ export default function Login() {
 
   const from = (location.state as { from?: string })?.from;
 
-  if (isAuthenticated) {
-    const target = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'seller' ? '/seller/dashboard' : from || '/shop';
-    navigate(target, { replace: true });
+  if (isAuthenticated && user) {
+    navigate(getRedirectPath(user, from), { replace: true });
     return null;
   }
 
@@ -50,13 +58,7 @@ export default function Login() {
     try {
       const user = await login(data as LoginFormData);
       toast.success('Welcome back!');
-      if (user?.role === 'admin') {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (user?.role === 'seller') {
-        navigate('/seller/dashboard', { replace: true });
-      } else {
-        navigate(from || '/shop', { replace: true });
-      }
+      navigate(getRedirectPath(user, from), { replace: true });
     } catch (err: unknown) {
       const message = axios.isAxiosError(err)
         ? (err.response?.data?.message as string) ||

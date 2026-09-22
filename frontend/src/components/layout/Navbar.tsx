@@ -28,6 +28,7 @@ const guestNavSections = ['features'];
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isSignupMenuOpen, setIsSignupMenuOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -44,6 +45,7 @@ export function Navbar() {
 
   const searchRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const signupMenuRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const role = user?.role;
@@ -81,6 +83,7 @@ export function Navbar() {
       } else if (currentY > lastScrollY.current + 5) {
         setIsHidden(true);
         setIsUserMenuOpen(false);
+        setIsSignupMenuOpen(false);
         setIsSearchOpen(false);
       } else if (currentY < lastScrollY.current - 5) {
         setIsHidden(false);
@@ -105,6 +108,9 @@ export function Navbar() {
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
+      }
+      if (signupMenuRef.current && !signupMenuRef.current.contains(event.target as Node)) {
+        setIsSignupMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -371,6 +377,16 @@ export function Navbar() {
                             My Orders
                           </Link>
                         )}
+                        {(role === 'customer' && (user?.sellerApplication === 'pending' || user?.sellerApplication === 'rejected')) && (
+                          <Link
+                            to="/seller/apply"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-surface-hover transition-colors"
+                          >
+                            <Store className="h-4 w-4 text-muted-foreground" />
+                            Seller Application
+                          </Link>
+                        )}
                         {role === 'seller' && (
                           <>
                             <Link
@@ -456,12 +472,41 @@ export function Navbar() {
                   >
                     Login
                   </Link>
-                  <Link
-                    to="/register"
-                    className="text-sm font-medium transition-colors text-white/90 hover:text-gold-300"
-                  >
-                    Sign up
-                  </Link>
+                  <div ref={signupMenuRef} className="relative">
+                    <button
+                      onClick={() => setIsSignupMenuOpen(!isSignupMenuOpen)}
+                      className="flex items-center gap-1 text-sm font-medium transition-colors text-white/90 hover:text-gold-300"
+                    >
+                      Sign up
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                    {isSignupMenuOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50 animate-scale-in">
+                        <Link
+                          to="/register"
+                          onClick={() => setIsSignupMenuOpen(false)}
+                          className="flex items-start gap-3 px-4 py-3 text-sm text-foreground hover:bg-surface-hover transition-colors"
+                        >
+                          <User className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                          <span>
+                            <span className="block font-medium">Sign up as Customer</span>
+                            <span className="block text-xs text-muted-foreground">Shop and order crafts</span>
+                          </span>
+                        </Link>
+                        <Link
+                          to="/seller/register"
+                          onClick={() => setIsSignupMenuOpen(false)}
+                          className="flex items-start gap-3 px-4 py-3 text-sm text-foreground hover:bg-surface-hover transition-colors border-t border-border"
+                        >
+                          <Store className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                          <span>
+                            <span className="block font-medium">Become a Seller</span>
+                            <span className="block text-xs text-muted-foreground">Sell your crafts to the world</span>
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -592,6 +637,16 @@ export function Navbar() {
                       My Orders
                     </Link>
                   )}
+                  {(role === 'customer' && (user?.sellerApplication === 'pending' || user?.sellerApplication === 'rejected')) && (
+                    <Link
+                      to="/seller/apply"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <Store className="h-4 w-4" />
+                      Seller Application
+                    </Link>
+                  )}
                   {role === 'seller' && (
                     <>
                       <Link
@@ -668,20 +723,32 @@ export function Navbar() {
                   </button>
                 </>
               ) : (
-                <div className="border-t border-white/10 my-2 pt-2 flex gap-6 px-4">
+                <div className="border-t border-white/10 my-2 pt-2 px-4">
                   <Link
                     to="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="px-4 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
+                    className="block px-4 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
                   >
                     Login
                   </Link>
+                  <p className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-[0.18em] text-gold-300">
+                    Sign up
+                  </p>
                   <Link
                     to="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="px-4 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
                   >
-                    Sign up
+                    <User className="h-4 w-4" />
+                    Sign up as Customer
+                  </Link>
+                  <Link
+                    to="/seller/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
+                  >
+                    <Store className="h-4 w-4" />
+                    Become a Seller
                   </Link>
                 </div>
               )}
