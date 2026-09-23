@@ -80,77 +80,6 @@ async function seedUsers() {
 async function seedCategories() {
   console.log('\nSeeding categories...');
 
-  const handicrafts = await Category.create({
-    name: 'Handicrafts',
-    slug: 'handicrafts',
-    description: 'Traditional Nepali handicrafts made by skilled artisans',
-    level: 0,
-    sortOrder: 1,
-    seo: { title: 'Handicrafts - कलाbazzar', description: 'Discover authentic Nepali handicrafts' },
-  });
-  log('Category: Handicrafts');
-
-  const metalWork = await Category.create({
-    name: 'Metal Work',
-    slug: 'metal-work',
-    description: 'Traditional Nepali metalwork including repousse and casting',
-    parent: handicrafts._id,
-    ancestors: [handicrafts._id],
-    level: 1,
-    sortOrder: 2,
-  });
-  log('Category: Metal Work');
-
-  const textiles = await Category.create({
-    name: 'Textiles',
-    slug: 'textiles',
-    description: 'Handwoven and hand-dyed Nepali textiles',
-    parent: handicrafts._id,
-    ancestors: [handicrafts._id],
-    level: 1,
-    sortOrder: 3,
-  });
-  log('Category: Textiles');
-
-  const paintings = await Category.create({
-    name: 'Paintings',
-    slug: 'paintings',
-    description: 'Traditional Nepali paintings and art',
-    level: 0,
-    sortOrder: 3,
-  });
-  log('Category: Paintings');
-
-  const sculptures = await Category.create({
-    name: 'Sculptures',
-    slug: 'sculptures',
-    description: 'Handcrafted stone, wood, and metal sculptures',
-    level: 0,
-    sortOrder: 5,
-    seo: { title: 'Sculptures - कलाbazzar', description: 'Authentic Nepali handcrafted sculptures' },
-  });
-  log('Category: Sculptures');
-
-  const homeDecor = await Category.create({
-    name: 'Home Decor',
-    slug: 'home-decor',
-    description: 'Beautiful handcrafted items for your home',
-    level: 0,
-    sortOrder: 7,
-    seo: { title: 'Home Decor - कलाbazzar', description: 'Handcrafted Nepali home decoration items' },
-  });
-  log('Category: Home Decor');
-
-  const musicalInstruments = await Category.create({
-    name: 'Musical Instruments',
-    slug: 'musical-instruments',
-    description: 'Traditional Nepali musical instruments',
-    level: 0,
-    sortOrder: 8,
-    seo: { title: 'Musical Instruments - कलाbazzar', description: 'Traditional Nepali musical instruments' },
-  });
-  log('Category: Musical Instruments');
-
   const loktaPaperProducts = await Category.create({
     name: 'Lokta Paper Products',
     slug: 'lokta-paper-products',
@@ -181,15 +110,15 @@ async function seedCategories() {
   });
   log('Category: Handmade Jewelry');
 
-  const hempBagsAccessories = await Category.create({
-    name: 'Hemp Bags & Accessories',
-    slug: 'hemp-bags-accessories',
-    description: 'Eco-friendly hemp bags and accessories woven by artisans',
+  const bagsAccessories = await Category.create({
+    name: 'Bag & Accessory',
+    slug: 'bags-accessories',
+    description: 'Handmade bags and accessories crafted by artisans',
     level: 0,
     sortOrder: 12,
-    seo: { title: 'Hemp Bags & Accessories - कलाbazzar', description: 'Eco-friendly hemp bags and accessories woven by artisans' },
+    seo: { title: 'Bag & Accessory - कलाbazzar', description: 'Handmade bags and accessories crafted by artisans' },
   });
-  log('Category: Hemp Bags & Accessories');
+  log('Category: Bag & Accessory');
 
   const woolenKnittedItems = await Category.create({
     name: 'Woolen/Knitted Items',
@@ -341,11 +270,8 @@ async function seedCategories() {
     }
   }
 
-  return {
-    handicrafts, metalWork, textiles,
-    paintings,
-    sculptures, homeDecor, musicalInstruments,
-    loktaPaperProducts, feltProducts, handmadeJewelry, hempBagsAccessories,
+return {
+    loktaPaperProducts, feltProducts, handmadeJewelry, bagsAccessories,
     woolenKnittedItems, singingBowlsBells, prayerFlagsBuddhistItems, handmadeRopeIncense,
     bohoPatchworkClothing, kanthaQuilts, woodenCrafts, brassItems,
     scentedCandlesDiyas, handmadeSoap, thangkaPaintings, embroideredItems, potteryCategory,

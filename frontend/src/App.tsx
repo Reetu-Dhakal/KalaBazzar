@@ -9,6 +9,7 @@ import { SellerLayout } from '@/components/layout/SellerLayout';
 import { PagePalette } from '@/components/layout/PagePalette';
 
 const Shop = lazy(() => import('@/pages/Shop'));
+const Offers = lazy(() => import('@/pages/Offers'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const SellerRegister = lazy(() => import('@/pages/SellerRegister'));
@@ -73,6 +74,7 @@ export default function App() {
 
         <Route element={<Layout />}>
           <Route path="/" element={<PagePalette palette="palette-shop"><Shop /></PagePalette>} />
+          <Route path="/offers" element={<PagePalette palette="palette-shop"><Offers /></PagePalette>} />
           <Route path="/shop" element={<Navigate to="/" replace />} />
           <Route path="/shop/:slug" element={<PagePalette palette="palette-product"><ProductDetail /></PagePalette>} />
           <Route path="/store/:slug" element={<PagePalette palette="palette-store"><StorePage /></PagePalette>} />

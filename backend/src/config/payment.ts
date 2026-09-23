@@ -1,7 +1,7 @@
-export type PaymentMode = 'mock' | 'live';
+export type PaymentMode = 'off' | 'mock' | 'live';
 
 export const paymentConfig = {
-  mode: (process.env.PAYMENT_MODE || 'mock') as PaymentMode,
+  mode: (process.env.PAYMENT_MODE || 'off') as PaymentMode,
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   backendUrl: process.env.BACKEND_URL || 'http://localhost:5000',
   khalti: {

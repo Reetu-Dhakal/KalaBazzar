@@ -5,6 +5,10 @@ export interface ICartItem {
   quantity: number;
   selectedVariants?: Record<string, string>;
   price: number;
+  customization?: {
+    note?: string;
+    designImage?: string;
+  };
   addedAt: Date;
 }
 
@@ -23,6 +27,10 @@ const cartItemSchema = new Schema<ICartItem>({
   quantity: { type: Number, required: true, min: 1, default: 1 },
   selectedVariants: { type: Schema.Types.Mixed, default: {} },
   price: { type: Number, required: true, min: 0 },
+  customization: {
+    note: { type: String, maxlength: 1000 },
+    designImage: { type: String },
+  },
   addedAt: { type: Date, default: Date.now },
 }, { _id: false });
 

@@ -7,6 +7,8 @@ import Category from '../models/Category';
 import Craft from '../models/Craft';
 import Region from '../models/Region';
 import Collection from '../models/Collection';
+import Cart from '../models/Cart';
+import Wishlist from '../models/Wishlist';
 import User from '../models/User';
 import { notify, notifyAll } from '../services/notificationService';
 import { ApiError, asyncHandler } from '../utils/ApiError';
@@ -37,6 +39,32 @@ const resolveSlugId = async (
   if (isMongoId(value)) return new mongoose.Types.ObjectId(value);
   const doc = await Model.findOne({ slug: value }, { _id: 1 }).lean();
   return doc ? (doc._id as mongoose.Types.ObjectId) : null;
+};
+
+const resolveCustomCategory = async (customCategory?: string) => {
+  if (!customCategory || !customCategory.trim()) return undefined;
+  const name = customCategory.trim();
+  const existing = await Category.findOne({ name });
+  if (existing) return existing._id;
+  const slug = await generateUniqueSlug(generateSlug(name), async (s) => {
+    const exists = await Category.findOne({ slug: s }, { _id: 1 });
+    return !!exists;
+  });
+  const created = await Category.create({ name, slug, isActive: true });
+  return created._id;
+};
+
+const resolveCustomCraft = async (customCraft?: string) => {
+  if (!customCraft || !customCraft.trim()) return undefined;
+  const name = customCraft.trim();
+  const existing = await Craft.findOne({ name });
+  if (existing) return existing._id;
+  const slug = await generateUniqueSlug(generateSlug(name), async (s) => {
+    const exists = await Craft.findOne({ slug: s }, { _id: 1 });
+    return !!exists;
+  });
+  const created = await Craft.create({ name, slug, isActive: true });
+  return created._id;
 };
 
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
@@ -182,11 +210,18 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
     variants, basePrice, compareAtPrice, tags, materials, dimensions,
     careInstructions, isHandmade, isCustomizable, customOptions,
     shippingClass, processingTime, seo, collections, isFeatured,
+    customCategory, customCraft,
   } = req.body;
 
-  if (!name || !description || !category || !craft || !region) {
+  const hasCategory = category || (customCategory && customCategory.trim());
+  const hasCraft = craft || (customCraft && customCraft.trim());
+
+  if (!name || !description || !hasCategory || !hasCraft || !region) {
     throw ApiError.badRequest('Name, description, category, craft, and region are required');
   }
+
+  const resolvedCategory = (await resolveCustomCategory(customCategory)) || category;
+  const resolvedCraft = (await resolveCustomCraft(customCraft)) || craft;
 
   const baseSlug = generateSlug(name);
   const slug = await generateUniqueSlug(baseSlug, async (s) => {
@@ -212,8 +247,8 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
     description,
     shortDescription,
     story,
-    category,
-    craft,
+    category: resolvedCategory,
+    craft: resolvedCraft,
     region,
     variants: finalVariants,
     basePrice: basePrice || 0,
@@ -276,6 +311,20 @@ export const updateProduct = asyncHandler(async (req: AuthRequest, res: Response
     }
   }
 
+  if (req.body.customCategory && req.body.customCategory.trim()) {
+    const resolvedCategory = await resolveCustomCategory(req.body.customCategory);
+    if (resolvedCategory) {
+      updates.category = resolvedCategory;
+    }
+  }
+
+  if (req.body.customCraft && req.body.customCraft.trim()) {
+    const resolvedCraft = await resolveCustomCraft(req.body.customCraft);
+    if (resolvedCraft) {
+      updates.craft = resolvedCraft;
+    }
+  }
+
   if (req.body.images && Array.isArray(req.body.images)) {
     if (updates.variants && updates.variants.length > 0) {
       updates.variants[0].images = req.body.images;
@@ -329,7 +378,13 @@ export const deleteProduct = asyncHandler(async (req: AuthRequest, res: Response
     throw ApiError.forbidden('You can only delete your own products');
   }
 
-  await Product.findByIdAndUpdate(id, { isActive: false });
+  await Promise.all([
+    Product.findByIdAndDelete(id),
+    Cart.updateMany({ 'items.product': id }, { $pull: { items: { product: id } } }),
+    Wishlist.updateMany({ 'items.product': id }, { $pull: { items: { product: id } } }),
+    Collection.updateMany({ products: id }, { $pull: { products: id } }),
+    Review.deleteMany({ product: id }),
+  ]);
 
   res.json(ApiResponse.success(null, 'Product deleted successfully'));
 });

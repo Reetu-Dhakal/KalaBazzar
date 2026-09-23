@@ -52,8 +52,11 @@ export const initiatePayment = asyncHandler(async (req: AuthRequest, res: Respon
   }
 
   if (!isLivePayment()) {
-    const redirectUrl = `${paymentConfig.clientUrl}/payment/mock/${paymentMethod}/${order._id}`;
-    return res.json(ApiResponse.success({ gateway: 'mock', redirectUrl, orderId: order._id }, 'Payment initiated'));
+    if (paymentConfig.mode === 'mock') {
+      const redirectUrl = `${paymentConfig.clientUrl}/payment/mock/${paymentMethod}/${order._id}`;
+      return res.json(ApiResponse.success({ gateway: 'mock', redirectUrl, orderId: order._id }, 'Payment initiated'));
+    }
+    return res.json(ApiResponse.success({ offline: true, orderId: order._id }, 'Payment not required (offline mode)'));
   }
 
   if (paymentMethod === PaymentMethod.KHALTI) {

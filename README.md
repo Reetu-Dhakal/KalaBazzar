@@ -149,7 +149,7 @@ KalaBazzar/
 - **Secondary:** `#C89B3C` — Gold
 - **Background:** `#FBEED3` — Warm cream
 - **Text:** `#3A2A1F` — Dark brown
-- **Fonts:** Cormorant Garamond (headings) + Poppins (body)
+- **Fonts:** Lora (headings) + Poppins (body)
 
 ## Key Routes
 
@@ -176,7 +176,7 @@ KalaBazzar/
 
 ## Payment Gateways
 
-- **COD** — no gateway call, paymentStatus stays 'Pending'
+- **COD / Card** — no gateway call, order placed, paymentStatus stays 'Pending'
 - **Khalti** — `POST /api/payment/initiate` → real ePayment v2 initiate (returns `pidx` + payment URL) → redirect → `POST /api/payment/verify` does server-side lookup before marking paid
 - **eSewa** — initiate returns an auto-submitting signed ePay v2 form → `GET /api/payment/esewa/callback` verifies the response signature + status API → redirects to order success
-- Set `PAYMENT_MODE=live` with `KHALTI_SECRET_KEY` / `ESEWA_MERCHANT_CODE` / `ESEWA_SECRET_KEY` to use real gateways; default `mock` mode simulates payment at `/payment/mock/:method/:orderId`
+- `PAYMENT_MODE=off` (default): Card/eSewa/Khalti orders are placed directly with paymentStatus 'Pending' (no gateway, no redirect). `PAYMENT_MODE=mock` simulates payment at `/payment/mock/:method/:orderId`. Set `PAYMENT_MODE=live` with `KHALTI_SECRET_KEY` / `ESEWA_MERCHANT_CODE` / `ESEWA_SECRET_KEY` to use real gateways.

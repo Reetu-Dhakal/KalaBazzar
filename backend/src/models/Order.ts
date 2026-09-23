@@ -8,6 +8,10 @@ export interface IOrderItem extends Document {
   price: number;
   total: number;
   selectedVariants?: Record<string, string>;
+  customization?: {
+    note?: string;
+    designImage?: string;
+  };
   productSnapshot: {
     name: string;
     slug: string;
@@ -87,6 +91,10 @@ const orderItemSchema = new Schema<IOrderItem>({
   price: { type: Number, required: true, min: 0 },
   total: { type: Number, required: true, min: 0 },
   selectedVariants: { type: Schema.Types.Mixed, default: {} },
+  customization: {
+    note: { type: String, maxlength: 1000 },
+    designImage: { type: String },
+  },
   productSnapshot: {
     name: { type: String, required: true },
     slug: { type: String, required: true },

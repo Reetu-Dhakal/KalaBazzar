@@ -2,7 +2,7 @@ export type UserRole = 'guest' | 'customer' | 'seller' | 'admin';
 export type SellerStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 export type ProductStatus = 'draft' | 'pending_review' | 'approved' | 'rejected' | 'out_of_stock';
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
-export type PaymentMethod = 'cod' | 'khalti' | 'esewa';
+export type PaymentMethod = 'cod' | 'card' | 'khalti' | 'esewa';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type AddressLabel = 'home' | 'work' | 'other';
 export type VerificationPath = 'social' | 'marketplace' | 'offline';
@@ -312,6 +312,10 @@ export interface CartItem {
   quantity: number;
   selectedVariants?: Record<string, string>;
   price: number;
+  customization?: {
+    note?: string;
+    designImage?: string;
+  };
   addedAt: string;
 }
 
@@ -372,6 +376,10 @@ export interface OrderItem {
   price: number;
   total: number;
   selectedVariants?: Record<string, string>;
+  customization?: {
+    note?: string;
+    designImage?: string;
+  };
   productSnapshot: {
     name: string;
     slug: string;

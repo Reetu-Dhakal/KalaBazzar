@@ -23,7 +23,7 @@ export const CATEGORY_SUBCATEGORIES: Record<string, SubCategorySeed[]> = {
     { name: 'Beaded Necklaces', slug: 'beaded-necklaces', description: 'Hand-strung beaded necklaces' },
     { name: 'Rudraksha Malas', slug: 'rudraksha-malas', description: 'Traditional rudraksha prayer malas' },
   ],
-  'hemp-bags-accessories': [
+  'bags-accessories': [
     { name: 'Hemp Totes', slug: 'hemp-totes', description: 'Durable eco-friendly hemp totes' },
     { name: 'Hemp Pouches', slug: 'hemp-pouches', description: 'Woven hemp pouches' },
     { name: 'Hemp Wallets', slug: 'hemp-wallets', description: 'Handmade hemp wallets' },

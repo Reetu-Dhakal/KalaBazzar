@@ -159,6 +159,18 @@ export default function OrderInvoice() {
                         {snapshot.sku && (
                           <p className="text-xs text-gray-400 font-mono">SKU: {snapshot.sku}</p>
                         )}
+                        {item.customization && (item.customization.note || item.customization.designImage) && (
+                          <div className="mt-1 text-xs text-gray-600">
+                            {item.customization.note && <p>Customization: "{item.customization.note}"</p>}
+                            {item.customization.designImage && (
+                              <img
+                                src={item.customization.designImage}
+                                alt="Design reference"
+                                className="mt-1 h-10 w-10 rounded object-cover border border-gray-200"
+                              />
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </td>

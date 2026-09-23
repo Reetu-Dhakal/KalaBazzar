@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -17,6 +17,10 @@ import {
   ChevronUp,
   ThumbsUp,
   Eye,
+  Wand2,
+  Loader2,
+  X,
+  ImagePlus,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -190,6 +194,10 @@ export default function ProductDetail() {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [reviewPage, setReviewPage] = useState(1);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [customNote, setCustomNote] = useState('');
+  const [designImage, setDesignImage] = useState('');
+  const [isUploadingDesign, setIsUploadingDesign] = useState(false);
+  const designInputRef = useRef<HTMLInputElement>(null);
 
   const { data: productData, isLoading, error } = useQuery({
     queryKey: ['product', slug],
@@ -278,6 +286,32 @@ export default function ProductDetail() {
   const craftName = product?.craft?.name || '';
   const regionName = product?.region?.name || '';
 
+  const handleDesignUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    setIsUploadingDesign(true);
+    try {
+      const { data } = await api.post('/upload/single', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setDesignImage(data.data?.url || '');
+      toast.success('Design image uploaded');
+    } catch {
+      toast.error('Failed to upload design image');
+    } finally {
+      setIsUploadingDesign(false);
+      if (designInputRef.current) {
+        designInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleAddToCart = async () => {
     if (!product || isOutOfStock) return;
     if (!isAuthenticated) {
@@ -286,7 +320,12 @@ export default function ProductDetail() {
       return;
     }
     try {
-      await addToCart(product._id, quantity);
+      const customization = product.isCustomizable
+        ? { note: customNote.trim(), designImage }
+        : undefined;
+      await addToCart(product._id, quantity, undefined, customization);
+      setCustomNote('');
+      setDesignImage('');
       toast.success('Added to cart');
     } catch {
       toast.error('Failed to add to cart');
@@ -484,6 +523,73 @@ export default function ProductDetail() {
                     >
                       <Plus className="h-4 w-4" />
                     </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {product.isCustomizable && !isOutOfStock && (
+              <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border">
+                <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Wand2 className="h-4 w-4 text-primary" />
+                  Customize this product
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 mb-3">
+                  Add a short note or upload a design reference so the artisan can craft it just for you.
+                </p>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Notes for the artisan (optional)
+                </label>
+                <textarea
+                  value={customNote}
+                  onChange={(e) => setCustomNote(e.target.value)}
+                  maxLength={1000}
+                  rows={3}
+                  placeholder="e.g. Please add my initials 'SK' in the corner..."
+                  className="w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring resize-y"
+                />
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    Design reference (optional)
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      ref={designInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleDesignUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => designInputRef.current?.click()}
+                      disabled={isUploadingDesign}
+                      className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                    >
+                      {isUploadingDesign ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ImagePlus className="h-4 w-4" />
+                      )}
+                      {isUploadingDesign ? 'Uploading...' : 'Upload design'}
+                    </button>
+                    {designImage && (
+                      <div className="relative">
+                        <img
+                          src={designImage}
+                          alt="Design reference"
+                          className="h-14 w-14 rounded-lg object-cover border border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setDesignImage('')}
+                          className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-destructive text-white"
+                          title="Remove design"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

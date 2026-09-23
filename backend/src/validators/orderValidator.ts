@@ -15,6 +15,17 @@ export const orderValidation = [
     .optional()
     .isObject()
     .withMessage('Selected variants must be object'),
+  body('items.*.customization')
+    .optional()
+    .isObject()
+    .withMessage('Customization must be object'),
+  body('items.*.customization.note')
+    .optional()
+    .isLength({ max: 1000 })
+    .withMessage('Customization note max 1000 characters'),
+  body('items.*.customization.designImage')
+    .optional()
+    .isString(),
   body('selectedProductIds')
     .optional()
     .isArray({ min: 1 })
@@ -62,7 +73,7 @@ export const orderValidation = [
     .optional()
     .isObject(),
   body('paymentMethod')
-    .isIn(['cod', 'khalti', 'esewa'])
+    .isIn(['cod', 'card', 'khalti', 'esewa'])
     .withMessage('Invalid payment method'),
   body('notes')
     .optional()
@@ -103,7 +114,7 @@ export const orderQueryValidation = [
     .isIn(['pending', 'paid', 'failed', 'refunded']),
   query('paymentMethod')
     .optional()
-    .isIn(['cod', 'khalti', 'esewa']),
+    .isIn(['cod', 'card', 'khalti', 'esewa']),
   query('startDate')
     .optional()
     .isISO8601(),

@@ -30,10 +30,20 @@ export const productValidation = [
     .optional()
     .isMongoId()
     .withMessage('Valid category required'),
+  body('customCategory')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Custom category must be 2-100 characters'),
   body('craft')
     .optional()
     .isMongoId()
     .withMessage('Valid craft required'),
+  body('customCraft')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Custom craft must be 2-100 characters'),
   body('region')
     .optional()
     .isMongoId()

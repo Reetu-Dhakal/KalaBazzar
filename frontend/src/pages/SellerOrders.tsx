@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Package,
   Truck,
+  Wand2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -199,8 +200,28 @@ export default function SellerOrders() {
                             <p className="text-xs text-muted-foreground">{order.customer.email}</p>
                           )}
                         </td>
-                        <td className="p-4 text-sm text-foreground">
-                          {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                        <td className="p-4">
+                          <p className="text-sm text-foreground">
+                            {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                          </p>
+                          {order.items.length > 0 && (
+                            <div className="mt-1 space-y-0.5">
+                              {order.items.map((item, idx) => (
+                                <div key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <span className="truncate max-w-40">{item.productSnapshot?.name}</span>
+                                  {item.customization && (item.customization.note || item.customization.designImage) && (
+                                    <span
+                                      title={item.customization.note || 'Customization requested'}
+                                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary flex-shrink-0"
+                                    >
+                                      <Wand2 className="h-3 w-3" />
+                                      Custom
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </td>
                         <td className="p-4 text-sm font-medium">{formatCurrency(order.totalAmount)}</td>
                         <td className="p-4">

@@ -51,7 +51,7 @@ export const getCart = asyncHandler(async (req: AuthRequest, res: Response) => {
 
 export const addToCart = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user._id;
-  const { productId, quantity = 1, selectedVariants = {} } = req.body;
+  const { productId, quantity = 1, selectedVariants = {}, customization } = req.body;
 
   if (!productId) {
     throw ApiError.badRequest('Product ID is required');
@@ -94,6 +94,14 @@ export const addToCart = asyncHandler(async (req: AuthRequest, res: Response) =>
 
   const price = product.variants.length > 0 ? product.variants[0].price : product.basePrice;
 
+  const customData = customization && typeof customization === 'object'
+    ? {
+        note: customization.note?.trim() || undefined,
+        designImage: customization.designImage || undefined,
+      }
+    : undefined;
+  const hasCustom = customData && (customData.note || customData.designImage);
+
   let updatedCart;
 
   if (existingItem) {
@@ -104,6 +112,9 @@ export const addToCart = asyncHandler(async (req: AuthRequest, res: Response) =>
           'items.$.quantity': newQty,
           'items.$.price': price,
           'items.$.selectedVariants': selectedVariants,
+          ...(hasCustom
+            ? { 'items.$.customization': customData }
+            : { 'items.$.customization': {} }),
         },
       },
       { new: true }
@@ -118,6 +129,7 @@ export const addToCart = asyncHandler(async (req: AuthRequest, res: Response) =>
             quantity: qty,
             price,
             selectedVariants,
+            ...(hasCustom ? { customization: customData } : {}),
             addedAt: new Date(),
           },
         },

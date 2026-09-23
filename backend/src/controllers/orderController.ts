@@ -135,6 +135,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       price: cartItem.price,
       total: itemTotal,
       selectedVariants: cartItem.selectedVariants || {},
+      customization: cartItem.customization || {},
       productSnapshot: {
         name: product.name,
         slug: product.slug,

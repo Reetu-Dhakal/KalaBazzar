@@ -10,6 +10,17 @@ export const addToCartValidation = [
   body('selectedVariants')
     .optional()
     .isObject(),
+  body('customization')
+    .optional()
+    .isObject()
+    .withMessage('Customization must be an object'),
+  body('customization.note')
+    .optional()
+    .isLength({ max: 1000 })
+    .withMessage('Customization note must be at most 1000 characters'),
+  body('customization.designImage')
+    .optional()
+    .isString(),
 ];
 
 export const updateCartItemValidation = [

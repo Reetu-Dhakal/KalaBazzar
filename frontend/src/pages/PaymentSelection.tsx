@@ -10,8 +10,8 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import type { PaymentMethod, ShippingAddress } from '@/types';
 
-const PAYMENT_METHODS: { value: PaymentMethod; label: string; description: string; image: string; disabled?: boolean }[] = [
-  { value: 'cod', label: 'Credit/Debit Card', description: 'Credit/Debit Card', image: '/payment-card.svg', disabled: true },
+const PAYMENT_METHODS: { value: PaymentMethod; label: string; description: string; image: string }[] = [
+  { value: 'card', label: 'Credit/Debit Card', description: 'Credit/Debit Card', image: '/payment-card.svg' },
   { value: 'esewa', label: 'eSewa Mobile Wallet', description: 'eSewa Mobile Wallet', image: '/payment-esewa.svg' },
   { value: 'khalti', label: 'Khalti by IME', description: 'Mobile Wallet', image: '/payment-khalti.svg' },
   { value: 'cod', label: 'Cash on Delivery', description: 'Cash on Delivery', image: '/payment-cod.svg' },
@@ -74,6 +74,12 @@ export default function PaymentSelection() {
       if (paymentMethod === 'khalti' || paymentMethod === 'esewa') {
         const paymentData = await api.post('/payment/initiate', { orderId, paymentMethod });
         const payment = paymentData.data?.data;
+        if (payment?.offline) {
+          await clearCart(selectedIds);
+          toast.success('Order placed successfully!');
+          navigate(`/order-success/${orderId}`);
+          return;
+        }
         if (payment?.alreadyPaid) {
           await clearCart(selectedIds);
           navigate(`/order-success/${orderId}`);
@@ -115,20 +121,13 @@ export default function PaymentSelection() {
             <h1 className="mb-5 font-sans text-2xl font-medium text-foreground sm:text-3xl">Select Payment Method</h1>
             <div className="grid grid-cols-2 gap-1 bg-border sm:grid-cols-4">
               {PAYMENT_METHODS.map((method, index) => {
-                const isSelected = !method.disabled && paymentMethod === method.value && (method.value !== 'cod' || index === 3);
+                const isSelected = paymentMethod === method.value;
                 return (
                   <button
                     key={`${method.label}-${index}`}
                     type="button"
-                    disabled={method.disabled}
-                    onClick={() => {
-                      if (method.disabled) {
-                        toast('Credit/Debit Card payments are coming soon');
-                        return;
-                      }
-                      setPaymentMethod(method.value);
-                    }}
-                    className={`min-h-40 bg-card p-5 text-center transition-colors disabled:cursor-not-allowed disabled:opacity-75 ${isSelected ? 'bg-sky-50 ring-2 ring-inset ring-sky-500' : 'hover:bg-surface-hover'}`}
+                    onClick={() => setPaymentMethod(method.value)}
+                    className={`min-h-40 bg-card p-5 text-center transition-colors ${isSelected ? 'bg-sky-50 ring-2 ring-inset ring-sky-500' : 'hover:bg-surface-hover'}`}
                   >
                     <div className="mb-4 flex h-12 items-center justify-center">
                       <img src={method.image} alt={`${method.label} logo`} className="max-h-12 max-w-28 object-contain" />

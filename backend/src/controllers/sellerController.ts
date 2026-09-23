@@ -311,8 +311,8 @@ export const getSellerDashboardStats = asyncHandler(async (req: AuthRequest, res
   }
 
   const [totalProducts, publishedProducts, orderStats, recentOrders, lowStockProducts] = await Promise.all([
-    Product.countDocuments({ seller: userId }),
-    Product.countDocuments({ seller: userId, status: ProductStatus.APPROVED }),
+    Product.countDocuments({ seller: userId, isActive: { $ne: false } }),
+    Product.countDocuments({ seller: userId, status: ProductStatus.APPROVED, isActive: { $ne: false } }),
     Order.aggregate([
       { $unwind: '$items' },
       { $match: { 'items.seller': new mongoose.Types.ObjectId(userId) } },
@@ -366,7 +366,7 @@ export const getSellerProducts = asyncHandler(async (req: AuthRequest, res: Resp
   const { page, limit, skip, sortBy, sortOrder } = getPaginationParams(req);
   const { search, status, category, minPrice, maxPrice } = req.query;
 
-  const filter: any = { seller: userId };
+  const filter: any = { seller: userId, isActive: { $ne: false } };
 
   if (status) filter.status = status;
   if (category && mongoose.Types.ObjectId.isValid(category as string)) filter.category = category;

@@ -55,13 +55,25 @@ export function Navbar() {
     location.pathname === '/shop' ||
     location.pathname.startsWith('/category/');
 
-  const guestLinks = [
-    { label: 'Home', section: 'hero' },
-    { label: 'Features', section: 'features' },
-  ];
+  const isOffersPage = location.pathname === '/offers';
 
-  const handleGuestNav = (section: string) => {
+  const guestLinks = isOffersPage
+    ? [
+        { label: 'Shop', to: '/shop' },
+        { label: 'Features', section: 'features' },
+      ]
+    : [
+        { label: 'Home', section: 'hero' },
+        { label: 'Features', section: 'features' },
+      ];
+
+  const handleGuestNav = (link: { label: string; to?: string; section?: string }) => {
     setIsMobileMenuOpen(false);
+    if (link.to) {
+      navigate(link.to);
+      return;
+    }
+    const section = link.section ?? 'hero';
     if (section === 'hero') {
       if (location.pathname === '/') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -205,7 +217,7 @@ export function Navbar() {
                 {!isAuthenticated && !isShopPage && guestLinks.map((link) => (
                   <button
                     key={link.section}
-                    onClick={() => handleGuestNav(link.section)}
+onClick={() => handleGuestNav(link)}
                     className={cn(
                       'px-3 py-2 text-sm font-medium rounded-lg transition-colors',
                       activeSection === link.section
@@ -216,6 +228,12 @@ export function Navbar() {
                     {link.label}
                   </button>
                 ))}
+                <Link
+                  to="/offers"
+                  className="px-3 py-2 text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  Offers
+                </Link>
                 {navLinks.map((link) => (
                   <Link
                     key={link.to}
@@ -548,7 +566,7 @@ export function Navbar() {
               {!isAuthenticated && !isShopPage && guestLinks.map((link) => (
                 <button
                   key={link.section}
-                  onClick={() => handleGuestNav(link.section)}
+                  onClick={() => handleGuestNav(link)}
                   className={cn(
                     'block w-full text-left px-4 py-2.5 text-sm font-medium rounded-lg transition-colors',
                     activeSection === link.section
@@ -559,6 +577,13 @@ export function Navbar() {
                   {link.label}
                 </button>
               ))}
+              <Link
+                to="/offers"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block px-4 py-2.5 text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              >
+                Offers
+              </Link>
               {navLinks.map((link) => (
                 <Link
                   key={link.to}

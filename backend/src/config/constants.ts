@@ -48,6 +48,7 @@ export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 export const PaymentMethod = {
   COD: 'cod',
+  CARD: 'card',
   KHALTI: 'khalti',
   ESEWA: 'esewa',
 } as const;

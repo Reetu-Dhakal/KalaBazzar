@@ -358,6 +358,25 @@ export default function OrderDetail() {
                             ))}
                           </div>
                         )}
+                        {item.customization && (item.customization.note || item.customization.designImage) && (
+                          <div className="mt-1.5 p-2 rounded-lg bg-primary/5 border border-border">
+                            <p className="text-xs font-medium text-foreground">
+                              Customization request
+                            </p>
+                            {item.customization.note && (
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                "{item.customization.note}"
+                              </p>
+                            )}
+                            {item.customization.designImage && (
+                              <img
+                                src={item.customization.designImage}
+                                alt="Design reference"
+                                className="mt-1.5 h-16 w-16 rounded-md object-cover border border-border"
+                              />
+                            )}
+                          </div>
+                        )}
                         <p className="text-sm text-muted-foreground mt-1">
                           Qty: {item.quantity} × {formatCurrency(item.price)}
                         </p>

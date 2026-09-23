@@ -77,8 +77,10 @@ cd backend && npm run seed
 ### Payment gateways
 - Khalti: `POST /api/payment/initiate` (real Khalti ePayment v2 initiate) → redirect → lookup/verify; pidx saved to order before redirect
 - eSewa: initiate returns auto-submitting pay-form page → POST form to eSewa → `GET /api/payment/esewa/callback` verifies signature + status API → redirect
-- COD: no gateway call, paymentStatus stays 'Pending'
-- `PAYMENT_MODE=mock` (default): no real gateway calls — checkout redirects to `/payment/mock/:method/:orderId` for simulation; `PAYMENT_MODE=live` enables real gateways (needs `KHALTI_SECRET_KEY`, `ESEWA_MERCHANT_CODE`, `ESEWA_SECRET_KEY`)
+- COD/Card: no gateway call, order placed, paymentStatus stays 'Pending'
+- `PAYMENT_MODE=off` (default): no gateway calls — Card/eSewa/Khalti orders are placed directly with paymentStatus 'Pending' (no redirect, no sandbox)
+- `PAYMENT_MODE=mock`: checkout redirects to `/payment/mock/:method/:orderId` sandbox for simulation
+- `PAYMENT_MODE=live`: real gateways (needs `KHALTI_SECRET_KEY`, `ESEWA_MERCHANT_CODE`, `ESEWA_SECRET_KEY`); Khalti/eSewa pay via initiate → verify, COD stays 'Pending'
 - Contact form: `POST /api/contact` emails submitted form to support inbox
 - Newsletter: `POST /api/newsletter` (public, rate-limited subscribe), `POST /api/newsletter/unsubscribe`, admin `GET /api/newsletter` (searchable/paginated) + `DELETE /api/newsletter/:id`; Footer subscribe form wired to real API
 
@@ -199,4 +201,4 @@ cd backend && npm run seed
 
 ## Design tokens (from index.css)
 - Primary: `#6E1E1E`, Secondary: `#C89B3C`, Background: `#FBEED3`, Text: `#3A2A1F`
-- Fonts: Cormorant Garamond (headings), Poppins (body)
+- Fonts: Lora (headings), Poppins (body)

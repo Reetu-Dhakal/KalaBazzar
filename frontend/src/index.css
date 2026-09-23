@@ -73,9 +73,9 @@
   --color-soft-800: #420E17;
   --color-soft-900: #2C080F;
 
-  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-heading: 'Lora', 'Georgia', serif;
   --font-sans: 'Poppins', system-ui, sans-serif;
-  --font-script: 'Allura', 'Brush Script MT', cursive;
+  --font-script: 'Brush Script MT', cursive;
 
   --animate-marquee: marquee 42s linear infinite;
 

@@ -30,7 +30,12 @@ interface CartState {
 }
 
 interface CartContextType extends CartState {
-  addToCart: (productId: string, quantity?: number, selectedVariants?: Record<string, string>) => Promise<void>;
+  addToCart: (
+    productId: string,
+    quantity?: number,
+    selectedVariants?: Record<string, string>,
+    customization?: { note?: string; designImage?: string },
+  ) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => Promise<void>;
   clearCart: (productIds?: string[]) => Promise<void>;
@@ -84,11 +89,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     productId: string,
     quantity = 1,
     selectedVariants?: Record<string, string>,
+    customization?: { note?: string; designImage?: string },
   ) => {
     await api.post('/cart/items', {
       productId,
       quantity,
       selectedVariants,
+      customization,
     });
     await fetchCart();
   };

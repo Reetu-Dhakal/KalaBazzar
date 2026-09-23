@@ -233,11 +233,6 @@ productSchema.pre('save', function(next) {
   if (this.isModified('status') && this.status === ProductStatus.APPROVED && !this.publishedAt) {
     this.publishedAt = new Date();
   }
-  if (this.variants.length > 0) {
-    const mainVariant = this.variants[0];
-    this.basePrice = mainVariant.price;
-    this.compareAtPrice = mainVariant.compareAtPrice;
-  }
   next();
 });
 

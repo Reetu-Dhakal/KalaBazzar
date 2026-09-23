@@ -26,34 +26,14 @@ const productSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters'),
   story: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
+  customCategory: z.string().optional(),
   craft: z.string().min(1, 'Craft is required'),
+  customCraft: z.string().optional(),
   region: z.string().min(1, 'Region is required'),
   basePrice: z.number().min(1, 'Price must be at least 1'),
-  compareAtPrice: z.number().optional(),
-  tags: z.array(z.string()).optional(),
   materials: z.array(z.string()).optional(),
-  dimensions: z
-    .object({
-      length: z.number().optional(),
-      width: z.number().optional(),
-      height: z.number().optional(),
-      weight: z.number().optional(),
-      unit: z.enum(['cm', 'mm', 'in', 'ft']).default('cm'),
-    })
-    .optional(),
-  careInstructions: z.string().optional(),
   isHandmade: z.boolean().default(true),
   isCustomizable: z.boolean().default(false),
-  isFeatured: z.boolean().default(false),
-  shippingClass: z.string().default('standard'),
-  processingTime: z.number().default(3),
-  seo: z
-    .object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      keywords: z.array(z.string()).optional(),
-    })
-    .optional(),
   variants: z
     .array(
       z.object({
@@ -87,9 +67,7 @@ export default function SellerProductForm() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isLoadingProduct, setIsLoadingProduct] = useState(isEditing);
-  const [tagInput, setTagInput] = useState('');
   const [materialInput, setMaterialInput] = useState('');
-  const [keywordInput, setKeywordInput] = useState('');
 
   const {
     register,
@@ -107,20 +85,14 @@ export default function SellerProductForm() {
       description: '',
       story: '',
       category: '',
+      customCategory: '',
       craft: '',
+      customCraft: '',
       region: '',
       basePrice: 0,
-      compareAtPrice: undefined,
-      tags: [],
       materials: [],
-      dimensions: { unit: 'cm' },
-      careInstructions: '',
       isHandmade: true,
       isCustomizable: false,
-      isFeatured: false,
-      shippingClass: 'standard',
-      processingTime: 3,
-      seo: { title: '', description: '', keywords: [] },
       variants: [],
     },
   });
@@ -131,9 +103,9 @@ export default function SellerProductForm() {
     remove: removeVariant,
   } = useFieldArray({ control, name: 'variants' });
 
-  const tags = watch('tags') || [];
   const materials = watch('materials') || [];
-  const seoKeywords = watch('seo.keywords') || [];
+  const selectedCategory = watch('category');
+  const selectedCraft = watch('craft');
 
   useEffect(() => {
     const fetchMeta = async () => {
@@ -170,17 +142,9 @@ export default function SellerProductForm() {
           craft: typeof product.craft === 'object' ? product.craft._id : product.craft,
           region: typeof product.region === 'object' ? product.region._id : product.region,
           basePrice: product.basePrice,
-          compareAtPrice: product.compareAtPrice,
-          tags: product.tags || [],
           materials: product.materials || [],
-          dimensions: product.dimensions || { unit: 'cm' },
-          careInstructions: product.careInstructions || '',
           isHandmade: product.isHandmade,
           isCustomizable: product.isCustomizable,
-          isFeatured: product.isFeatured,
-          shippingClass: product.shippingClass || 'standard',
-          processingTime: product.processingTime || 3,
-          seo: product.seo || { title: '', description: '', keywords: [] },
           variants: product.variants?.map((v) => ({
             name: v.name,
             sku: v.sku || '',
@@ -202,16 +166,6 @@ export default function SellerProductForm() {
     fetchProduct();
   }, [isEditing, id, navigate, reset]);
 
-  const addTag = () => {
-    if (tagInput.trim()) {
-      const current = tags || [];
-      if (!current.includes(tagInput.trim())) {
-        setValue('tags', [...current, tagInput.trim()], { shouldValidate: true });
-      }
-      setTagInput('');
-    }
-  };
-
   const addMaterial = () => {
     if (materialInput.trim()) {
       const current = materials || [];
@@ -219,16 +173,6 @@ export default function SellerProductForm() {
         setValue('materials', [...current, materialInput.trim()], { shouldValidate: true });
       }
       setMaterialInput('');
-    }
-  };
-
-  const addKeyword = () => {
-    if (keywordInput.trim()) {
-      const current = seoKeywords || [];
-      if (!current.includes(keywordInput.trim())) {
-        setValue('seo.keywords', [...current, keywordInput.trim()], { shouldValidate: true });
-      }
-      setKeywordInput('');
     }
   };
 
@@ -271,11 +215,31 @@ export default function SellerProductForm() {
 
   const saveProduct = async (asDraft: boolean) => {
     const formData = watch();
+    const isOtherCategory = formData.category === '__other__';
+    const isOtherCraft = formData.craft === '__other__';
+    if (isOtherCategory && !formData.customCategory?.trim()) {
+      toast.error('Please enter a name for your custom category');
+      setIsSaving(false);
+      return;
+    }
+    if (isOtherCraft && !formData.customCraft?.trim()) {
+      toast.error('Please enter a name for your custom craft');
+      setIsSaving(false);
+      return;
+    }
     setIsSaving(true);
     try {
       const uploadedImages = await uploadImages();
       const payload = {
         ...formData,
+        category: isOtherCategory ? undefined : formData.category,
+        customCategory: isOtherCategory && formData.customCategory?.trim()
+          ? formData.customCategory.trim()
+          : undefined,
+        craft: isOtherCraft ? undefined : formData.craft,
+        customCraft: isOtherCraft && formData.customCraft?.trim()
+          ? formData.customCraft.trim()
+          : undefined,
         images: uploadedImages,
         status: asDraft ? 'draft' : 'approved',
       };
@@ -388,22 +352,13 @@ export default function SellerProductForm() {
               <CardTitle>Pricing</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Price (NPR)"
-                  type="number"
-                  min={0}
-                  error={errors.basePrice?.message}
-                  {...register('basePrice', { valueAsNumber: true })}
-                />
-                <Input
-                  label="Compare at Price (NPR)"
-                  type="number"
-                  min={0}
-                  helperText="Original price for showing discounts"
-                  {...register('compareAtPrice', { valueAsNumber: true })}
-                />
-              </div>
+              <Input
+                label="Price (NPR)"
+                type="number"
+                min={0}
+                error={errors.basePrice?.message}
+                {...register('basePrice', { valueAsNumber: true })}
+              />
             </CardContent>
           </Card>
 
@@ -522,73 +477,6 @@ export default function SellerProductForm() {
               )}
             </CardContent>
           </Card>
-
-          {/* SEO */}
-          <Card>
-            <CardHeader>
-              <CardTitle>SEO</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Input
-                label="SEO Title"
-                placeholder="Title for search engines"
-                {...register('seo.title')}
-              />
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  SEO Description
-                </label>
-                <textarea
-                  className="flex min-h-[6.25px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
-                  placeholder="Description for search engines"
-                  {...register('seo.description')}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Keywords
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add keyword"
-                    value={keywordInput}
-                    onChange={(e) => setKeywordInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addKeyword();
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="outline" onClick={addKeyword}>
-                    Add
-                  </Button>
-                </div>
-                {seoKeywords.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {seoKeywords.map((kw) => (
-                      <Badge key={kw} variant="secondary" className="gap-1">
-                        {kw}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setValue(
-                              'seo.keywords',
-                              seoKeywords.filter((k) => k !== kw),
-                              { shouldValidate: true },
-                            )
-                          }
-                          className="ml-1 hover:text-destructive"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Sidebar */}
@@ -613,9 +501,22 @@ export default function SellerProductForm() {
                       {cat.name}
                     </option>
                   ))}
+                  <option value="__other__">Other (add your own)...</option>
                 </select>
                 {errors.category && (
                   <p className="mt-1.5 text-xs text-destructive">{errors.category.message}</p>
+                )}
+                {selectedCategory === '__other__' && (
+                  <div className="mt-3">
+                    <Input
+                      label="New Category Name"
+                      placeholder="e.g. Bamboo Weaving"
+                      {...register('customCategory')}
+                    />
+                    {errors.customCategory && (
+                      <p className="mt-1.5 text-xs text-destructive">{errors.customCategory.message}</p>
+                    )}
+                  </div>
                 )}
               </div>
               <div>
@@ -632,9 +533,22 @@ export default function SellerProductForm() {
                       {craft.name}
                     </option>
                   ))}
+                  <option value="__other__">Other (add your own)...</option>
                 </select>
                 {errors.craft && (
                   <p className="mt-1.5 text-xs text-destructive">{errors.craft.message}</p>
+                )}
+                {selectedCraft === '__other__' && (
+                  <div className="mt-3">
+                    <Input
+                      label="New Craft Name"
+                      placeholder="e.g. Bamboo Weaving"
+                      {...register('customCraft')}
+                    />
+                    {errors.customCraft && (
+                      <p className="mt-1.5 text-xs text-destructive">{errors.customCraft.message}</p>
+                    )}
+                  </div>
                 )}
               </div>
               <div>
@@ -659,53 +573,12 @@ export default function SellerProductForm() {
             </CardContent>
           </Card>
 
-          {/* Tags & Materials */}
+          {/* Materials */}
           <Card>
             <CardHeader>
-              <CardTitle>Tags & Materials</CardTitle>
+              <CardTitle>Materials</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Tags</label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add tag"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addTag();
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="outline" onClick={addTag}>
-                    Add
-                  </Button>
-                </div>
-                {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="gap-1">
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setValue(
-                              'tags',
-                              tags.filter((t) => t !== tag),
-                              { shouldValidate: true },
-                            )
-                          }
-                          className="ml-1 hover:text-destructive"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
+            <CardContent>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">Materials</label>
                 <div className="flex gap-2">
@@ -750,119 +623,24 @@ export default function SellerProductForm() {
             </CardContent>
           </Card>
 
-          {/* Dimensions */}
+          {/* Options */}
           <Card>
             <CardHeader>
-              <CardTitle>Dimensions</CardTitle>
+              <CardTitle>Options</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  label="Length"
-                  type="number"
-                  min={0}
-                  step="0.1"
-                  {...register('dimensions.length', { valueAsNumber: true })}
+            <CardContent className="space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="rounded border-border" {...register('isHandmade')} />
+                <span className="text-sm font-medium">Handmade product</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="rounded border-border"
+                  {...register('isCustomizable')}
                 />
-                <Input
-                  label="Width"
-                  type="number"
-                  min={0}
-                  step="0.1"
-                  {...register('dimensions.width', { valueAsNumber: true })}
-                />
-                <Input
-                  label="Height"
-                  type="number"
-                  min={0}
-                  step="0.1"
-                  {...register('dimensions.height', { valueAsNumber: true })}
-                />
-                <Input
-                  label="Weight"
-                  type="number"
-                  min={0}
-                  step="0.1"
-                  {...register('dimensions.weight', { valueAsNumber: true })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Unit</label>
-                <select
-                  className="flex h-10 w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  {...register('dimensions.unit')}
-                >
-                  <option value="cm">cm</option>
-                  <option value="mm">mm</option>
-                  <option value="in">inches</option>
-                  <option value="ft">feet</option>
-                </select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Shipping & Options */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Shipping & Options</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Processing Time (days)
-                </label>
-                <Input
-                  type="number"
-                  min={1}
-                  {...register('processingTime', { valueAsNumber: true })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Shipping Class
-                </label>
-                <select
-                  className="flex h-10 w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  {...register('shippingClass')}
-                >
-                  <option value="standard">Standard</option>
-                  <option value="fragile">Fragile</option>
-                  <option value="oversized">Oversized</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Care Instructions
-                </label>
-                <textarea
-                  className="flex min-h-[6.25px] w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
-                  placeholder="How to care for this product..."
-                  {...register('careInstructions')}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded border-border" {...register('isHandmade')} />
-                  <span className="text-sm font-medium">Handmade product</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="rounded border-border"
-                    {...register('isCustomizable')}
-                  />
-                  <span className="text-sm font-medium">Customizable</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="rounded border-border"
-                    {...register('isFeatured')}
-                  />
-                  <span className="text-sm font-medium">Featured product</span>
-                </label>
-              </div>
+                <span className="text-sm font-medium">Customizable</span>
+              </label>
             </CardContent>
           </Card>
         </div>

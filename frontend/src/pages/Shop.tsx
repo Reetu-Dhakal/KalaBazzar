@@ -176,7 +176,7 @@ export default function Shop() {
                 Authentic handmade crafts for your festive home — every piece carries a story.
               </p>
               <Link
-                to="/shop"
+                to="/offers"
                 className="mt-3 inline-flex items-center gap-2 rounded-md bg-[#C9972F] px-4 py-2 text-xs font-semibold text-[#4A1018] transition-colors hover:bg-[#D9B45B] sm:text-sm"
               >
                 Shop Handmade Goods →
